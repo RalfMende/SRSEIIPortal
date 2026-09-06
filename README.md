@@ -1,49 +1,22 @@
 # SRSEII Portal
 
-Das SRSEII Portal ist die einfache, zentrale Bedienoberflaeche fuer die Gleisbox.
-Es soll typische Aufgaben fuer normale Nutzer schnell erreichbar machen und trotzdem den Expertenzugang zu LuCI erhalten.
+SRSEII ("Smallest Railroad Server Ever II") is a small embedded computer that runs a model railway layout's control system. The SRSEII Portal is its web-based control panel: a simple dashboard so that even non-technical users can check status, manage the network, and launch the layout's companion apps, without needing to touch the underlying OpenWrt router software directly.
 
-## Zielbild
+## What the portal provides
 
-- Portal als zentrale Startoberflaeche unter `http://gleisbox/`
-- Klarer Zugang zu Modellbahn-Webanwendungen
-- Verstaendliche System- und Netzwerkansicht
-- Schrittweise Erweiterung um WLAN-Setup, Diagnose und Recovery
-- LuCI bleibt dauerhaft als Expertenmodus verfuegbar
+- A central dashboard at `http://<host>`
+- Quick links to companion model-railway web apps
+- Status, network, and WiFi setup overview
+- A link to LuCI (the underlying OpenWrt admin UI) as an expert mode, for anyone who needs it
 
-## Grundprinzip
+## Additional URLs
 
-Das Portal ergaenzt die bestehende OpenWrt-Umgebung und darf die laufende Modellbahnsteuerung nicht beeintraechtigen.
-Neue Funktionen werden in kleinen, testbaren Schritten integriert.
+- LuCI (expert mode): `/cgi-bin/luci/` (forwards to http://<host>:6020)
+- Mobile Station Web App: `/mswebapp/` (forwards to http://<host>:6020)
+- RailControl: `/railcontrol/` (forwards to http://<host>:8082)
 
-## Kernbereiche der Oberflaeche
+## Repository layout
 
-- App-Launcher fuer Webanwendungen
-- Status- und Diagnosebereich
-- Netzwerk- und WLAN-Bedienung
-- Link zu LuCI als erweiterter Expertenbereich
-
-## Technische Leitlinien
-
-- Laufzeit auf OpenWrt mit `uhttpd`
-- Leichtgewichtiges statisches Frontend (HTML, CSS, Vanilla JavaScript)
-- Kleine, klar abgegrenzte Backend-Endpunkte fuer Status und Systemaktionen
-- Keine grossen Frameworks oder zusaetzliche schwere Laufzeitumgebungen
-
-## URL-Konzept
-
-- Portal: `/srseii/` (Entwicklung und sichere Einfuehrung)
-- Mobile Station Web App: `/mswebapp/`
-- RailControl: `http://<host>:8082/`
-- LuCI (Expertenmodus): `/cgi-bin/luci/`
-
-Die Umstellung der Root-URL auf das Portal wird bewusst separat und kontrolliert durchgefuehrt.
-
-## Repository-Struktur
-
-- `src/usr/sbin/` Shell-Skripte und Backend-Helfer zur Entwicklung
-- `src/www/` CGI-Endpunkte und Frontend-Dateien zur Entwicklung
-- `packaging/openwrt/Makefile` OpenWrt-Paketdefinition fuer den Feed
-- `packaging/openwrt/files/` nur Symlinks auf `src/usr` und `src/www` (keine Dateikopien)
-
-Die Paketierung greift direkt auf `src/` zu. So bleibt die Quelle eindeutig und es gibt keine duplizierten Dateien zwischen Entwicklungs- und Feed-Struktur.
+- `src/usr/sbin/` — backend shell scripts
+- `src/www/` — CGI endpoints and frontend files
+- `packaging/openwrt/` — OpenWrt package definition; `files/` contains only symlinks into `src/`, no copies

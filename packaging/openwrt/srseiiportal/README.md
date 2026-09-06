@@ -1,27 +1,38 @@
 # OpenWrt Packaging
 
-Dieser Ordner enthaelt die Feed-Integration fuer das SRSEII Portal.
+This folder contains the feed integration for the SRSEII Portal.
 
-## Inhalt
+## Contents
 
-- `Makefile`: OpenWrt-Paketdefinition fuer `srseii-portal`
-- `files/usr` und `files/www`: Symlinks auf die Entwicklungsquellen in `src/usr` und `src/www`
+- `Makefile`: OpenWrt package definition for `srseiiportal`
+- `files/usr` and `files/www`: symlinks to the development sources in `src/usr` and `src/www` (kept for reference; the package build itself does not read through these symlinks, see below)
 
-## Prinzip: keine Dateikopien
+## Principle: no file copies
 
-Die eigentlichen Quellen liegen ausschliesslich unter `src/`.
-Die Paketierung referenziert diese Quellen direkt ueber `$(CURDIR)/../../src/...`.
-Damit bleibt die Codebasis an einer einzigen Stelle wartbar.
+The actual sources live only under `src/`, so the codebase stays maintainable in a single place.
 
-## Erwartete Struktur
+## How the build finds the sources
+
+The Makefile does **not** build from `files/usr`/`files/www`. It hardcodes:
+
+```makefile
+SRSEII_ROOT:=/work/srseiiportal
+```
+
+and installs from `$(SRSEII_ROOT)/src/www/.` and `$(SRSEII_ROOT)/src/usr/sbin/*`. To build this package, make sure a checkout of this repository is available at `/work/srseiiportal` on the build host (so `/work/srseiiportal/src/...` resolves to this repo's `src/` directory), or override the path, e.g.:
+
+```sh
+make package/srseiiportal/compile SRSEII_ROOT=/path/to/srseii-portal
+```
+
+## Expected structure
 
 - `src/usr/sbin/...`
 - `src/www/...`
-- `packaging/openwrt/Makefile`
-- `packaging/openwrt/files/usr -> ../../../src/usr`
-- `packaging/openwrt/files/www -> ../../../src/www`
+- `packaging/openwrt/srseiiportal/Makefile`
+- `packaging/openwrt/srseiiportal/files/usr -> ../../../src/usr`
+- `packaging/openwrt/srseiiportal/files/www -> ../../../src/www`
 
-## Nutzung im Feed
+## Usage in a feed
 
-Dieses Verzeichnis kann als Paketordner in einem OpenWrt-Feed verwendet werden.
-Es werden keine Dateien unter `packaging/openwrt/files` dupliziert.
+This directory can be used as a package directory in an OpenWrt feed. No files are duplicated under `packaging/openwrt/srseiiportal/files`; just make sure `SRSEII_ROOT` points at a checkout of this repository when building.
