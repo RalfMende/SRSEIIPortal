@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0" />
   <title>SRSEII Portal</title>
   <meta name="description" content="SRSEII Portal" />
-  <link rel="stylesheet" href="/srseiiportal/style.css?v=0.9.10" />
+  <link rel="stylesheet" href="/srseiiportal/style.css?v=0.9.16" />
 </head>
 <body>
   <main class="layout">
@@ -106,7 +106,7 @@
 
         <div class="wifi-actions">
           <button class="btn btn-secondary" id="wifi-scan" type="button" data-i18n="wifiScan">Scan Wifi</button>
-          <button class="btn" id="wifi-connect" type="button" data-i18n="wifiConnect">Connect</button>
+          <button class="btn btn-secondary" id="wifi-connect" type="button" data-i18n="wifiConnect">Connect</button>
           <button class="btn btn-ghost" id="wifi-manual-toggle" type="button" data-i18n="wifiManualToggleShow">Show advanced configuration</button>
         </div>
 
@@ -167,7 +167,7 @@
 
         <article class="feature-card">
           <div class="feature-copy">
-            <h4 data-i18n="modelRailwayBaseFunctionsTitle">Model railway base functions</h4>
+            <h4 data-i18n="modelRailwayBaseFunctionsTitle">Model railway connection</h4>
             <p data-i18n="modelRailwayBaseFunctionsDesc">The connection to the track box is active.</p>
           </div>
           <div class="feature-actions">
@@ -176,7 +176,7 @@
         </article>
       </div>
 
-      <details class="status-details">
+      <details class="status-details status-technical-details">
         <summary data-i18n="technicalDetailsTitle">Technical details</summary>
         <ul class="status-details-list">
           <li><span class="label">mswebapp</span><span id="st-mswebapp-svc" class="pill pending" data-i18n="loading">loading</span></li>
@@ -194,19 +194,19 @@
       </details>
     </section>
 
-    <section class="feature-block" aria-label="Model railway functions">
+    <section class="feature-block" aria-label="Control your model railway">
       <details class="section-toggle" id="model-railway-toggle">
         <summary class="section-summary">
           <span class="section-summary-text">
-            <h2 data-i18n="modelRailwayFunctionsTitle">Model railway functions</h2>
-            <p class="feature-intro" data-i18n="modelRailwayFunctionsIntro">Pick how you'd like to take the controls.</p>
+            <h2 data-i18n="modelRailwayFunctionsTitle">Control your model railway</h2>
+            <p class="feature-intro" data-i18n="modelRailwayFunctionsIntro">Choose how you want to control your model railway.</p>
           </span>
           <span class="section-toggle-chevron" aria-hidden="true"></span>
         </summary>
 
         <div class="section-body">
           <div class="feature-group" id="browser-control-group">
-            <h3 data-i18n="browserDirectTitle">DIRECTLY IN THE BROWSER</h3>
+            <h3><span data-i18n="browserDirectTitle">DIRECTLY IN THE BROWSER</span><span class="feature-group-hint" data-i18n="browserDirectIntro"> - without an additional control app</span></h3>
 
         <article class="feature-card" style="--delay: 0ms;">
           <div class="feature-copy">
@@ -230,7 +230,7 @@
       </div>
 
       <div class="feature-group" id="mobile-control-group">
-        <h3 data-i18n="smartphoneTabletTitle">WITH SMARTPHONE / TABLET</h3>
+        <h3><span data-i18n="smartphoneTabletTitle">WITH MOBILE CONTROLLERS AND APPS</span><span class="feature-group-hint" data-i18n="smartphoneTabletIntro"> - for Z21-compatible devices, Central Station 2 clients, and compatible apps</span></h3>
 
         <article class="feature-card" style="--delay: 180ms;">
           <div class="feature-copy">
@@ -254,7 +254,7 @@
       </div>
 
       <div class="feature-group" id="pc-control-group">
-        <h3 data-i18n="pcControlTitle">WITH PC CONTROL</h3>
+        <h3><span data-i18n="pcControlTitle">WITH PC CONTROL</span><span class="feature-group-hint" data-i18n="pcControlIntro"> - for iTrain, Win-Digipet, Rocrail, and other PC software via SRSEII interfaces</span></h3>
 
         <article class="feature-card" style="--delay: 360ms;">
           <div class="feature-copy">
@@ -348,11 +348,11 @@
       </details>
     </section>
 
-    <section class="tooling-block" aria-label="Expert tools">
+    <section class="tooling-block" aria-label="Advanced settings">
       <details class="section-toggle" id="expert-tools-toggle">
         <summary class="section-summary">
           <span class="section-summary-text">
-            <h2 data-i18n="expertToolsTitle">Expert tools</h2>
+            <h2 data-i18n="expertToolsTitle">Advanced settings</h2>
             <p class="feature-intro" data-i18n="expertToolsIntro">Advanced settings ahead — you should know what you're doing here.</p>
           </span>
           <span class="section-toggle-chevron" aria-hidden="true"></span>
@@ -583,6 +583,6 @@
     </div>
   </dialog>
 
-  <script src="/srseiiportal/app.js?v=0.9.19"></script>
+  <script src="/srseiiportal/app.js?v=0.9.23"></script>
 </body>
 </html>

@@ -192,23 +192,35 @@ body {
 }
 
 .feature-group {
-  margin-top: 1.25rem;
-  padding-top: 0.7rem;
-  border-top: 1px solid rgba(26, 32, 44, 0.12);
+  margin-top: 1.8rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(30, 58, 95, 0.4);
 }
 
 .feature-group:first-of-type {
-  margin-top: 0.8rem;
-  border-top: none;
-  padding-top: 0;
+  margin-top: 1rem;
+  border-top: 1px solid rgba(30, 58, 95, 0.24);
+  padding-top: 0.9rem;
 }
 
 .feature-group h3 {
-  margin: 0 0 0.7rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  margin: 0;
+  color: var(--brand-dark);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.feature-group-hint {
   color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.feature-group h3 {
+  line-height: 1.4;
 }
 
 .feature-card {
@@ -526,23 +538,23 @@ body {
 }
 
 .tooling-block .feature-group {
-  margin-top: 1.25rem;
-  padding-top: 0.7rem;
-  border-top: 1px solid rgba(26, 32, 44, 0.12);
+  margin-top: 1.8rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(30, 58, 95, 0.4);
 }
 
 .tooling-block .feature-group:first-of-type {
-  margin-top: 0.8rem;
-  border-top: none;
-  padding-top: 0;
+  margin-top: 1rem;
+  border-top: 1px solid rgba(30, 58, 95, 0.24);
+  padding-top: 0.9rem;
 }
 
 .tooling-block .feature-group h3 {
-  margin: 0 0 0.7rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
+  margin: 0;
+  color: var(--brand-dark);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
 }
 
 .tooling-block .feature-card {
@@ -694,11 +706,12 @@ body {
   display: grid;
   gap: 3rem;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  border-top: 1px solid rgba(30, 58, 95, 0.4);
+  padding-top: 0.9rem;
 }
 
 .network-card {
   padding: 0.35rem 0 0.85rem;
-  border-bottom: 1px solid rgba(26, 32, 44, 0.1);
 }
 
 .network-card-heading {
@@ -786,11 +799,10 @@ body {
   transform: rotate(90deg);
 }
 
-/* separates the always-visible quick-info from the collapsible content below it */
+/* keeps the always-visible quick-info visually separated from the content below it */
 .section-body {
   margin-top: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(26, 32, 44, 0.12);
 }
 
 .section-body-actions {
@@ -830,6 +842,11 @@ body {
   margin-top: 0.9rem;
   border-top: 1px solid var(--line);
   padding-top: 0.8rem;
+}
+
+.status-technical-details,
+.wifi-details {
+  border-top-color: rgba(30, 58, 95, 0.4);
 }
 
 .status-details summary {
