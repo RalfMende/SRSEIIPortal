@@ -222,6 +222,7 @@
       locoListDownload: "Lokliste herunterladen",
       locoListUpdateButton: "Lokliste aktualisieren",
       locoListResetButton: "Lokliste zurücksetzen",
+      locoListResetConfirm: "Dadurch wird die Lokliste auf dem SRSEII auf die Liste in der Mobile Station zurückgesetzt.",
       locoListRefreshSending: "Befehl wird an das SRSEII gesendet...",
       locoListSynchronizing: "Lokliste wird synchronisiert... (%s s)",
       locoListRefreshDone: "Lokliste wurde aktualisiert.",
@@ -459,6 +460,7 @@
       locoListDownload: "Download locomotive list",
       locoListUpdateButton: "Update locomotive list",
       locoListResetButton: "Reset locomotive list",
+      locoListResetConfirm: "This will reset the locomotive list on the SRSEII to the list in Mobile Station",
       locoListRefreshSending: "Sending command to the SRSEII...",
       locoListSynchronizing: "Synchronizing locomotive list... (%s s)",
       locoListRefreshDone: "Locomotive list updated.",
@@ -1837,6 +1839,9 @@
   }
   if (locoListResetButton) {
     locoListResetButton.addEventListener("click", function () {
+      if (!window.confirm(t("locoListResetConfirm"))) {
+        return;
+      }
       sendLocoListRefresh("reset");
     });
   }
