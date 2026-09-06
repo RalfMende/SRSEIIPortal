@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0" />
   <title>SRSEII Portal</title>
   <meta name="description" content="SRSEII Portal" />
-  <link rel="stylesheet" href="/srseiiportal/style.css?v=0.9.16" />
+  <link rel="stylesheet" href="/srseiiportal/style.css?v=0.9.18" />
 </head>
 <body>
   <main class="layout">
@@ -133,7 +133,7 @@
             <button class="btn btn-secondary" id="status-refresh" type="button" data-i18n="refresh">Refresh</button>
           </div>
           <div class="feature-group">
-            <h3 data-i18n="readinessTitle">Readiness</h3>
+            <h3><span data-i18n="readinessTitle">READINESS</span><span class="feature-group-hint" data-i18n="readinessIntro"> - current system and model railway availability</span></h3>
         <article class="feature-card">
           <div class="feature-copy">
             <h4 data-i18n="overallStatus">Overall status</h4>
@@ -142,16 +142,6 @@
           </div>
           <div class="feature-actions">
             <span id="st-overall-status" class="pill pending" data-i18n="loading">loading</span>
-          </div>
-        </article>
-
-        <article class="feature-card">
-          <div class="feature-copy">
-            <h4 data-i18n="updatesTitle">Updates</h4>
-            <p id="updates-note" data-i18n="updatesIdleNote">Update status not checked yet.</p>
-          </div>
-          <div class="feature-actions">
-            <button class="btn btn-secondary overall-action" id="update-packages" type="button" data-i18n="updateCheckButton">Check for updates</button>
           </div>
         </article>
 
@@ -174,21 +164,41 @@
             <span id="st-can2lan-status" class="pill pending" data-i18n="loading">loading</span>
           </div>
         </article>
+
+        <details class="status-details status-technical-details">
+          <summary data-i18n="technicalDetailsTitle">Technical details</summary>
+          <ul class="status-details-list">
+            <li><span class="label">mswebapp</span><span id="st-mswebapp-svc" class="pill pending" data-i18n="loading">loading</span></li>
+            <li><span class="label">railcontrol</span><span id="st-railcontrol-svc" class="pill pending" data-i18n="loading">loading</span></li>
+            <li><span class="label">z21emu</span><span id="st-z21emu" class="pill pending" data-i18n="loading">loading</span></li>
+            <li><span class="label">can2lan</span><span id="st-can2lan" class="pill pending" data-i18n="loading">loading</span></li>
+            <li><span class="label">clone-ms2-loco</span><span id="st-clone-ms2-loco" class="pill pending" data-i18n="loading">loading</span></li>
+            <li><span class="label">maecanserver</span><span id="st-maecanserver" class="pill pending" data-i18n="loading">loading</span></li>
+            <li><span class="label">ms2-loco-list</span><span id="st-ms2-loco-list" class="pill pending" data-i18n="loading">loading</span></li>
+            <li><span class="label">wake-up-links88</span><span id="st-wake-up-links88" class="pill pending" data-i18n="loading">loading</span></li>
+          </ul>
+        </details>
       </div>
 
-      <details class="status-details status-technical-details">
-        <summary data-i18n="technicalDetailsTitle">Technical details</summary>
-        <ul class="status-details-list">
-          <li><span class="label">mswebapp</span><span id="st-mswebapp-svc" class="pill pending" data-i18n="loading">loading</span></li>
-          <li><span class="label">railcontrol</span><span id="st-railcontrol-svc" class="pill pending" data-i18n="loading">loading</span></li>
-          <li><span class="label">z21emu</span><span id="st-z21emu" class="pill pending" data-i18n="loading">loading</span></li>
-          <li><span class="label">can2lan</span><span id="st-can2lan" class="pill pending" data-i18n="loading">loading</span></li>
-          <li><span class="label">clone-ms2-loco</span><span id="st-clone-ms2-loco" class="pill pending" data-i18n="loading">loading</span></li>
-          <li><span class="label">maecanserver</span><span id="st-maecanserver" class="pill pending" data-i18n="loading">loading</span></li>
-          <li><span class="label">ms2-loco-list</span><span id="st-ms2-loco-list" class="pill pending" data-i18n="loading">loading</span></li>
-          <li><span class="label">wake-up-links88</span><span id="st-wake-up-links88" class="pill pending" data-i18n="loading">loading</span></li>
+      <div class="feature-group" id="maintenance-group">
+        <h3><span data-i18n="maintenanceTitle">MAINTENANCE</span><span class="feature-group-hint" data-i18n="maintenanceIntro"> - package updates and system maintenance</span></h3>
+        <article class="feature-card">
+          <div class="feature-copy">
+            <h4 data-i18n="updatesTitle">Updates</h4>
+            <p id="updates-note" data-i18n="updatesIdleNote">Update status not checked yet.</p>
+          </div>
+          <div class="feature-actions">
+            <button class="btn btn-secondary overall-action" id="update-packages" type="button" data-i18n="updateCheckButton">Check for updates</button>
+          </div>
+        </article>
+      </div>
+
+      <div class="feature-group" id="events-group">
+        <h3><span data-i18n="eventsTitle">LAST ACTIVITIES</span><span class="feature-group-hint" data-i18n="eventsIntro"> - recent system messages and events</span></h3>
+        <ul class="event-log" id="event-log-list">
+          <li data-i18n="noEvents">No events.</li>
         </ul>
-      </details>
+      </div>
 
         </div>
       </details>
@@ -327,24 +337,6 @@
         </div>
 
         <p class="status-note feature-status-note is-hidden" id="model-railway-note"></p>
-      </details>
-    </section>
-
-    <section class="status" aria-label="Events">
-      <details class="section-toggle" id="events-toggle">
-        <summary class="section-summary">
-          <span class="section-summary-text">
-            <h2 data-i18n="eventsTitle">Events</h2>
-            <p class="feature-intro" data-i18n="eventsIntro">A quiet logbook of what your SRSEII has been up to.</p>
-          </span>
-          <span class="section-toggle-chevron" aria-hidden="true"></span>
-        </summary>
-
-        <div class="section-body">
-          <ul class="event-log" id="event-log-list">
-            <li data-i18n="noEvents">No events.</li>
-          </ul>
-        </div>
       </details>
     </section>
 
@@ -583,6 +575,6 @@
     </div>
   </dialog>
 
-  <script src="/srseiiportal/app.js?v=0.9.23"></script>
+  <script src="/srseiiportal/app.js?v=0.9.25"></script>
 </body>
 </html>

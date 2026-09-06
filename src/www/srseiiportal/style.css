@@ -844,7 +844,10 @@ body {
   padding-top: 0.8rem;
 }
 
-.status-technical-details,
+.status-technical-details {
+  border-top: none;
+}
+
 .wifi-details {
   border-top-color: rgba(30, 58, 95, 0.4);
 }
