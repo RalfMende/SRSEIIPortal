@@ -21,6 +21,30 @@
       <p class="subtitle" data-i18n="heroSubtitle">Smallest Railroad Server Ever II</p>
     </header>
 
+    <section class="feature-block quick-start" id="quick-start" aria-labelledby="quick-start-title">
+      <div class="quick-start-header">
+        <h2 id="quick-start-title" data-i18n="quickStartTitle">What do you want to do?</h2>
+        <p data-i18n="quickStartIntro">Choose a way to control your model railway.</p>
+      </div>
+      <div class="quick-start-grid">
+        <article class="quick-start-option">
+          <h3 data-i18n="quickStartBrowserTitle">Control in the browser</h3>
+          <p data-i18n="quickStartBrowserDesc">Open a browser-based control panel.</p>
+          <button class="btn btn-secondary" id="quick-start-browser" type="button" data-quick-start-target="browser-control-group" data-i18n="quickStartAction">Show options</button>
+        </article>
+        <article class="quick-start-option">
+          <h3 data-i18n="quickStartMobileTitle">Use a smartphone or tablet</h3>
+          <p data-i18n="quickStartMobileDesc">Connect a compatible mobile controller.</p>
+          <button class="btn btn-secondary" id="quick-start-mobile" type="button" data-quick-start-target="mobile-control-group" data-i18n="quickStartAction">Show options</button>
+        </article>
+        <article class="quick-start-option">
+          <h3 data-i18n="quickStartPcTitle">Connect a PC control program</h3>
+          <p data-i18n="quickStartPcDesc">Set up iTrain, Win-Digipet, or Rocrail.</p>
+          <button class="btn btn-secondary" id="quick-start-pc" type="button" data-quick-start-target="pc-control-group" data-i18n="quickStartAction">Show options</button>
+        </article>
+      </div>
+    </section>
+
     <section class="network" aria-label="Network">
       <details class="section-toggle" id="network-toggle">
         <summary class="section-summary">
@@ -181,7 +205,7 @@
         </summary>
 
         <div class="section-body">
-          <div class="feature-group">
+          <div class="feature-group" id="browser-control-group">
             <h3 data-i18n="browserDirectTitle">DIRECTLY IN THE BROWSER</h3>
 
         <article class="feature-card" style="--delay: 0ms;">
@@ -205,7 +229,7 @@
         </article>
       </div>
 
-      <div class="feature-group">
+      <div class="feature-group" id="mobile-control-group">
         <h3 data-i18n="smartphoneTabletTitle">WITH SMARTPHONE / TABLET</h3>
 
         <article class="feature-card" style="--delay: 180ms;">
@@ -229,7 +253,7 @@
         </article>
       </div>
 
-      <div class="feature-group">
+      <div class="feature-group" id="pc-control-group">
         <h3 data-i18n="pcControlTitle">WITH PC CONTROL</h3>
 
         <article class="feature-card" style="--delay: 360ms;">
@@ -559,6 +583,6 @@
     </div>
   </dialog>
 
-  <script src="/srseiiportal/app.js?v=0.9.16"></script>
+  <script src="/srseiiportal/app.js?v=0.9.19"></script>
 </body>
 </html>

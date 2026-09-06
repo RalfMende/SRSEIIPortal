@@ -69,6 +69,15 @@
       metaDescription: "SRSEII Portal",
       siteTitle: "SRSEII",
       heroSubtitle: "Smallest Railroad Server Ever II",
+      quickStartTitle: "Was möchtest du tun?",
+      quickStartIntro: "Wähle, wie du deine Modellbahn steuern möchtest.",
+      quickStartBrowserTitle: "Im Browser steuern",
+      quickStartBrowserDesc: "Öffne eine browserbasierte Steuerung.",
+      quickStartMobileTitle: "Mobile Steuergeräte und Apps nutzen",
+      quickStartMobileDesc: "Verbinde eine kompatible mobile Steuerung.",
+      quickStartPcTitle: "PC-Steuerung verbinden",
+      quickStartPcDesc: "Richte iTrain, Win-Digipet oder Rocrail ein.",
+      quickStartAction: "Optionen anzeigen",
       aboutButton: "About",
       aboutTitle: "About SRSEII",
       aboutIntroConnector: "ist ein Open-Source-Projekt von",
@@ -247,7 +256,7 @@
       locoListName: "Name",
       locoListDetails: "Details",
       browserDirectTitle: "DIREKT IM BROWSER",
-      smartphoneTabletTitle: "MIT SMARTPHONE / TABLET",
+      smartphoneTabletTitle: "MIT MOBILEN STEUERGERÄTEN UND APPS",
       pcControlTitle: "MIT PC-STEUERUNG",
       eventsTitle: "Ereignisse",
       eventsIntro: "Das ruhige Logbuch deines SRSEII – hier steht, was zuletzt passiert ist.",
@@ -312,6 +321,15 @@
       metaDescription: "SRSEII Portal",
       siteTitle: "SRSEII",
       heroSubtitle: "Smallest Railroad Server Ever II",
+      quickStartTitle: "What do you want to do?",
+      quickStartIntro: "Choose a way to control your model railway.",
+      quickStartBrowserTitle: "Control in the browser",
+      quickStartBrowserDesc: "Open a browser-based control panel.",
+      quickStartMobileTitle: "Use mobile controllers and apps",
+      quickStartMobileDesc: "Connect a compatible mobile controller.",
+      quickStartPcTitle: "Connect a PC control program",
+      quickStartPcDesc: "Set up iTrain, Win-Digipet, or Rocrail.",
+      quickStartAction: "Show options",
       aboutButton: "About",
       aboutTitle: "About SRSEII",
       aboutIntroConnector: "is an open source project by",
@@ -490,7 +508,7 @@
       locoListName: "Name",
       locoListDetails: "Details",
       browserDirectTitle: "DIRECTLY IN THE BROWSER",
-      smartphoneTabletTitle: "WITH SMARTPHONE / TABLET",
+      smartphoneTabletTitle: "WITH MOBILE CONTROLLERS AND APPS",
       pcControlTitle: "WITH PC CONTROL",
       eventsTitle: "Events",
       eventsIntro: "A quiet logbook of what your SRSEII has been up to.",
@@ -881,6 +899,22 @@
       return;
     }
     note.textContent = text;
+  }
+
+  function bindQuickStartActions() {
+    var quickStartButtons = document.querySelectorAll("[data-quick-start-target]");
+    Array.prototype.forEach.call(quickStartButtons, function (button) {
+      button.addEventListener("click", function () {
+        var target = document.getElementById(button.getAttribute("data-quick-start-target"));
+        var modelRailwaySection = document.getElementById("model-railway-toggle");
+        if (!target || !modelRailwaySection) {
+          return;
+        }
+
+        modelRailwaySection.open = true;
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
   }
 
   function readSectionStates() {
@@ -1971,5 +2005,6 @@
   setManualMode(false);
   setWifiNote(t("wifiIdle"), false);
   bindSectionStatePersistence();
+  bindQuickStartActions();
   loadStatus();
 })();
