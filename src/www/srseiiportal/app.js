@@ -601,7 +601,7 @@
     }
 
     if (terminalLink) {
-      terminalLink.href = "http://" + host + ":22/";
+      terminalLink.href = "http://" + host + ":4200/";
     }
 
     if (hostHint) {
