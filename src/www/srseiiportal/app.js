@@ -223,6 +223,11 @@
       locoListUpdateButton: "Lokliste aktualisieren",
       locoListResetButton: "Lokliste zurücksetzen",
       locoListResetConfirm: "Dadurch wird die Lokliste auf dem SRSEII auf die Liste in der Mobile Station zurückgesetzt.",
+      locoListActions: "Aktionen",
+      locoListDeleteButton: "Lokomotive löschen",
+      locoListDeleteConfirm: "Diese Lokomotive aus der Lokliste löschen?",
+      locoListDeleting: "Lokomotive wird gelöscht...",
+      locoListDeleteError: "Fehler beim Löschen der Lokomotive: %s",
       locoListRefreshSending: "Befehl wird an das SRSEII gesendet...",
       locoListSynchronizing: "Lokliste wird synchronisiert... (%s s)",
       locoListRefreshDone: "Lokliste wurde aktualisiert.",
@@ -461,6 +466,11 @@
       locoListUpdateButton: "Update locomotive list",
       locoListResetButton: "Reset locomotive list",
       locoListResetConfirm: "This will reset the locomotive list on the SRSEII to the list in Mobile Station",
+      locoListActions: "Actions",
+      locoListDeleteButton: "Delete locomotive",
+      locoListDeleteConfirm: "Delete this locomotive from the locomotive list?",
+      locoListDeleting: "Deleting locomotive...",
+      locoListDeleteError: "Error deleting locomotive: %s",
       locoListRefreshSending: "Sending command to the SRSEII...",
       locoListSynchronizing: "Synchronizing locomotive list... (%s s)",
       locoListRefreshDone: "Locomotive list updated.",
@@ -938,12 +948,27 @@
       var addressCell = document.createElement("td");
       var protocolCell = document.createElement("td");
       var nameCell = document.createElement("td");
+      var actionsCell = document.createElement("td");
+      var deleteButton = document.createElement("button");
+      var locomotiveId = locomotive && locomotive.id !== undefined ? String(locomotive.id) : "";
       addressCell.textContent = locomotive && locomotive.address !== undefined ? String(locomotive.address) : "-";
       protocolCell.textContent = locomotive && locomotive.protocol ? String(locomotive.protocol) : "-";
       nameCell.textContent = locomotive && locomotive.name ? String(locomotive.name) : "-";
+      actionsCell.className = "loco-list-actions";
+      deleteButton.className = "loco-list-delete";
+      deleteButton.type = "button";
+      deleteButton.textContent = "\u00d7";
+      deleteButton.title = t("locoListDeleteButton");
+      deleteButton.setAttribute("aria-label", t("locoListDeleteButton"));
+      deleteButton.disabled = !locomotiveId;
+      deleteButton.addEventListener("click", function () {
+        deleteLocoListEntry(locomotiveId, deleteButton);
+      });
       row.appendChild(addressCell);
       row.appendChild(protocolCell);
       row.appendChild(nameCell);
+      actionsCell.appendChild(deleteButton);
+      row.appendChild(actionsCell);
       rows.appendChild(row);
     });
     tableWrap.classList.remove("is-hidden");
@@ -973,6 +998,40 @@
       .then(renderLocoList)
       .catch(function () {
         renderLocoList({ status: "error" });
+      });
+  }
+
+  function deleteLocoListEntry(locomotiveId, button) {
+    if (!window.confirm(t("locoListDeleteConfirm"))) {
+      return;
+    }
+
+    button.disabled = true;
+    setLocoListRefreshNote(t("locoListDeleting"), false);
+    fetch("/cgi-bin/srseiiportal/loco-list-delete?id=" + encodeURIComponent(locomotiveId), {
+      method: "POST",
+      cache: "no-store"
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status);
+        }
+        return response.json();
+      })
+      .then(function (data) {
+        if (!data || !data.ok) {
+          throw new Error(getLocalizedStatusValue(data, "message", "messageDe") || "");
+        }
+        return fetchLocoListData().then(function (updatedData) {
+          renderLocoList(updatedData);
+          setLocoListRefreshNote(getLocalizedStatusValue(data, "message", "messageDe"), false);
+        });
+      })
+      .catch(function (error) {
+        setLocoListRefreshNote(t("locoListDeleteError").replace("%s", error.message || String(error)), true);
+      })
+      .then(function () {
+        button.disabled = false;
       });
   }
 

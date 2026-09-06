@@ -1,0 +1,105 @@
+#!/bin/sh
+
+set -u
+
+json_escape() {
+	printf '%s' "$1" | tr '\r\n' '  ' | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+json_response() {
+	response_ok="$1"
+	response_message="$2"
+	response_message_de="$3"
+
+	printf 'Content-Type: application/json\n'
+	printf 'Cache-Control: no-store\n'
+	printf '\n'
+	printf '{"ok":%s,"message":"%s","messageDe":"%s"}\n' \
+		"$response_ok" \
+		"$(json_escape "$response_message")" \
+		"$(json_escape "$response_message_de")"
+}
+
+if [ "${REQUEST_METHOD:-GET}" != "POST" ]; then
+	json_response false "Only POST requests are supported." "Es werden nur POST-Anfragen unterstützt."
+	exit 0
+fi
+
+record_id="$(printf '%s' "${QUERY_STRING:-}" | tr '&' '\n' | sed -n 's/^id=\([0-9][0-9]*\)$/\1/p')"
+if ! printf '%s\n' "$record_id" | grep -Eq '^[1-9][0-9]*$'; then
+	json_response false "A valid locomotive identifier is required." "Eine gültige Lokkennung ist erforderlich."
+	exit 0
+fi
+
+list_file=""
+for candidate in \
+	/www/config/lokomotive.cs2 \
+	/var/lokomotive.cs2 \
+	/tmp/lokomotive.cs2; do
+	if [ -f "$candidate" ]; then
+		if [ ! -r "$candidate" ] || [ ! -w "$candidate" ]; then
+			json_response false "The locomotive list cannot be changed." "Die Lokliste kann nicht geändert werden."
+			exit 0
+		fi
+		list_file="$candidate"
+		break
+	fi
+done
+
+if [ -z "$list_file" ]; then
+	json_response false "No locomotive list is available." "Keine Lokliste vorhanden."
+	exit 0
+fi
+
+temp_file="$(mktemp "${list_file}.XXXXXX")" || {
+	json_response false "Could not prepare the locomotive list update." "Die Aktualisierung der Lokliste konnte nicht vorbereitet werden."
+	exit 0
+}
+trap 'rm -f "$temp_file"' EXIT
+
+if ! awk -v target_record="$record_id" '
+function flush_record() {
+	if (!in_record) {
+		return
+	}
+	if (record_number == target_record) {
+		removed = 1
+	} else {
+		printf "%s", record
+	}
+	record = ""
+}
+
+/^[[:space:]]*lokomotive[[:space:]]*$/ {
+	flush_record()
+	in_record = 1
+	record_number++
+	record = $0 ORS
+	next
+}
+
+in_record {
+	record = record $0 ORS
+	next
+}
+
+{ print }
+
+END {
+	flush_record()
+	if (!removed) {
+		exit 3
+	}
+}
+' "$list_file" > "$temp_file"; then
+	json_response false "The locomotive was not found in the list." "Die Lokomotive wurde nicht in der Liste gefunden."
+	exit 0
+fi
+
+if ! mv "$temp_file" "$list_file"; then
+	json_response false "Could not update the locomotive list." "Die Lokliste konnte nicht aktualisiert werden."
+	exit 0
+fi
+
+trap - EXIT
+json_response true "Locomotive removed from the list." "Lokomotive aus der Liste entfernt."

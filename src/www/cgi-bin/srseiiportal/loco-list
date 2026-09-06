@@ -66,15 +66,17 @@ function hex_value(value,    digits, pos, result, digit) {
 
 function emit_record() {
 	if (address != "" && name != "") {
-		print hex_value(address) "\t" name "\t" protocol
+		print hex_value(address) "\t" record_id "\t" uid "\t" name "\t" protocol
 	}
 	address = ""
+	uid = ""
 	name = ""
 	protocol = ""
 }
 
 /^[[:space:]]*lokomotive[[:space:]]*$/ {
 	emit_record()
+	record_id++
 	in_record = 1
 	next
 }
@@ -83,6 +85,12 @@ in_record && /^[[:space:]]\.(adresse|adr|addr|address)=/ {
 	value = $0
 	sub(/^[[:space:]]\.(adresse|adr|addr|address)=/, "", value)
 	address = value
+	next
+}
+
+in_record && /^[[:space:]]\.uid=/ {
+	uid = $0
+	sub(/^[[:space:]]\.uid=/, "", uid)
 	next
 }
 
@@ -118,9 +126,9 @@ fi
 sorted_records="$(printf '%s\n' "$records" | sort -n -k1,1)"
 count="$(printf '%s\n' "$sorted_records" | wc -l | tr -d ' ')"
 items=""
-while IFS="$(printf '\t')" read -r address name protocol; do
+while IFS="$(printf '\t')" read -r address record_id uid name protocol; do
 	[ -n "$address" ] || continue
-	item="{\"address\":$address,\"name\":\"$(json_escape "$name")\",\"protocol\":\"$(json_escape "$protocol")\"}"
+	item="{\"address\":$address,\"id\":$record_id,\"uid\":\"$(json_escape "$uid")\",\"name\":\"$(json_escape "$name")\",\"protocol\":\"$(json_escape "$protocol")\"}"
 	if [ -n "$items" ]; then
 		items="$items,$item"
 	else
