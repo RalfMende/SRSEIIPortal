@@ -105,11 +105,15 @@
         </summary>
 
         <div class="section-body">
+          <div class="section-body-actions">
+            <button class="btn btn-secondary" id="status-refresh" type="button" data-i18n="refresh">Refresh</button>
+          </div>
           <div class="feature-group">
             <h3 data-i18n="readinessTitle">Readiness</h3>
         <article class="feature-card">
           <div class="feature-copy">
             <h4 data-i18n="overallStatus">Overall status</h4>
+            <p class="status-note" id="st-note" data-i18n="statusLoading">Loading status...</p>
             <p class="status-note is-hidden" id="overall-status-note"></p>
           </div>
           <div class="feature-actions">
@@ -555,6 +559,6 @@
     </div>
   </dialog>
 
-  <script src="/srseiiportal/app.js?v=0.9.14"></script>
+  <script src="/srseiiportal/app.js?v=0.9.16"></script>
 </body>
 </html>

@@ -25,6 +25,7 @@
   var luciLink = document.getElementById("luci-link");
   var terminalLink = document.getElementById("terminal-link");
   var hostHint = document.getElementById("host-hint");
+  var statusRefreshButton = document.getElementById("status-refresh");
   var updatePackagesButton = document.getElementById("update-packages");
   var updatesNote = document.getElementById("updates-note");
   var wifiScanButton = document.getElementById("wifi-scan");
@@ -45,6 +46,14 @@
   var updateCheckPromise = null;
   var updateOperationInFlight = false;
   var portalVersion = getPortalVersion();
+  var persistentSectionIds = [
+    "network-toggle",
+    "status-toggle",
+    "model-railway-toggle",
+    "events-toggle",
+    "expert-tools-toggle"
+  ];
+  var sectionStateStorageKey = "srseii.portal.section-states.v1";
 
   // Derives the portal version from this script's own cache-busting "?v=" query param.
   function getPortalVersion() {
@@ -874,6 +883,45 @@
     note.textContent = text;
   }
 
+  function readSectionStates() {
+    try {
+      var stored = window.localStorage.getItem(sectionStateStorageKey);
+      var states = stored ? JSON.parse(stored) : null;
+      return states && typeof states === "object" && !Array.isArray(states) ? states : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function saveSectionState(sectionId, isOpen) {
+    try {
+      var states = readSectionStates() || {};
+      states[sectionId] = isOpen;
+      window.localStorage.setItem(sectionStateStorageKey, JSON.stringify(states));
+    } catch (error) {
+      // Storage may be unavailable or blocked; the HTML defaults still work.
+    }
+  }
+
+  function bindSectionStatePersistence() {
+    var states = readSectionStates();
+
+    persistentSectionIds.forEach(function (sectionId) {
+      var section = document.getElementById(sectionId);
+      if (!section) {
+        return;
+      }
+
+      if (states && Object.prototype.hasOwnProperty.call(states, sectionId) && typeof states[sectionId] === "boolean") {
+        section.open = states[sectionId];
+      }
+
+      section.addEventListener("toggle", function () {
+        saveSectionState(sectionId, section.open);
+      });
+    });
+  }
+
   function renderEventLog(events) {
     var list = document.getElementById("event-log-list");
     if (!list) {
@@ -1680,6 +1728,9 @@
   }
 
   function loadStatus() {
+    if (statusRefreshButton) {
+      statusRefreshButton.disabled = true;
+    }
     setStatusNote(t("statusLoading"));
     setNetworkNote(t("statusLoading"));
 
@@ -1704,7 +1755,11 @@
         setNetworkNote(t("statusLoadError") + " " + error.message);
       });
 
-    return statusPromise;
+    return statusPromise.finally(function () {
+      if (statusRefreshButton) {
+        statusRefreshButton.disabled = false;
+      }
+    });
   }
 
   bindUseCaseAction(mswebappLink, "mswebapp");
@@ -1717,6 +1772,14 @@
 
   if (updatePackagesButton) {
     updatePackagesButton.addEventListener("click", handleUpdateButtonClick);
+  }
+
+  if (statusRefreshButton) {
+    statusRefreshButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      loadStatus();
+    });
   }
 
   if (z21emuGuideButton && z21emuGuideDialog) {
@@ -1907,5 +1970,6 @@
   applyTranslations();
   setManualMode(false);
   setWifiNote(t("wifiIdle"), false);
+  bindSectionStatePersistence();
   loadStatus();
 })();
