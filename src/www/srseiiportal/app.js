@@ -119,7 +119,6 @@
       centralStationTitle: "Central Station 2 kompatible Schnittstelle",
       centralStationDesc: "Verbindung über kompatible Apps wie RemoteCS, RailControl Pro oder Mobile Station WLAN.",
       centralStationGuideButton: "Anleitung",
-      setupButton: "Einrichten",
       itrainTitle: "iTrain",
       itrainDesc: "Verwende den SRSEII als Mini-Zentrale für die iTrain-Software.",
       winDigipetTitle: "Win-Digipet",
@@ -377,7 +376,6 @@
       centralStationTitle: "Central Station 2 compatible interface",
       centralStationDesc: "Connect using compatible apps such as RemoteCS, RailControl Pro, or Mobile Station WLAN.",
       centralStationGuideButton: "Instructions",
-      setupButton: "Set up",
       itrainTitle: "iTrain",
       itrainDesc: "Use the SRSEII as a mini central for iTrain Software.",
       winDigipetTitle: "Win-Digipet",
@@ -1376,9 +1374,9 @@
     setFeatureButtonState(railcontrolLink, railcontrolReady ? "ready" : "setup", t("open"), "railcontrol");
     setFeatureButtonState(z21emuGuideButton, z21InterfaceReady ? "ready" : "setup", t("z21GuideButton"), "z21interface", t("setupRequired"));
     setFeatureButtonState(centralStationGuideButton, centralStationReady ? "ready" : "setup", t("centralStationGuideButton"), "cs2interface", t("setupRequired"));
-    setFeatureButtonState(itrainGuideButton, itrainReady ? "ready" : "setup", t("itrainGuideButton"), "itrain", t("setupButton"));
-    setFeatureButtonState(winDigipetGuideButton, winDigipetReady ? "ready" : "setup", t("winDigipetGuideButton"), "windigipet", t("setupButton"));
-    setFeatureButtonState(rocrailGuideButton, rocrailReady ? "ready" : "setup", t("rocrailGuideButton"), "rocrail", t("setupButton"));
+    setFeatureButtonState(itrainGuideButton, itrainReady ? "ready" : "setup", t("itrainGuideButton"), "itrain", t("setupRequired"));
+    setFeatureButtonState(winDigipetGuideButton, winDigipetReady ? "ready" : "setup", t("winDigipetGuideButton"), "windigipet", t("setupRequired"));
+    setFeatureButtonState(rocrailGuideButton, rocrailReady ? "ready" : "setup", t("rocrailGuideButton"), "rocrail", t("setupRequired"));
 
     setModelRailwayNote("", false);
 
