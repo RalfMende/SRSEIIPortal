@@ -9,7 +9,11 @@ PKG_NAME:=srseiiportal
 PKG_VERSION:=0.9.2
 PKG_RELEASE:=1
 
-SRSEII_ROOT:=/work/srseiiportal
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=https://github.com/RalfMende/SRSEIIPortal.git
+PKG_SOURCE_VERSION:=main
+
+PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -31,10 +35,10 @@ endef
 
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/www
-	$(CP) $(SRSEII_ROOT)/src/www/. $(1)/www/
+	$(CP) $(PKG_BUILD_DIR)/src/www/. $(1)/www/
 
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(SRSEII_ROOT)/src/usr/sbin/* $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/usr/sbin/* $(1)/usr/sbin/
 endef
 
 define Package/$(PKG_NAME)/postinst
