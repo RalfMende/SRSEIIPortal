@@ -1,0 +1,96 @@
+#!/bin/sh
+
+set -u
+
+ICON_DIR="${SRSEII_ICON_DIR:-/www/icons}"
+MAX_BYTES=2097152
+
+json_escape() {
+	printf '%s' "$1" | tr '\r\n' '  ' | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+json_response() {
+	response_ok="$1"
+	response_message="$2"
+	response_message_de="$3"
+	response_name="${4:-}"
+
+	printf 'Content-Type: application/json\n'
+	printf 'Cache-Control: no-store\n'
+	printf '\n'
+	printf '{"ok":%s,"name":"%s","message":"%s","messageDe":"%s"}\n' \
+		"$response_ok" \
+		"$(json_escape "$response_name")" \
+		"$(json_escape "$response_message")" \
+		"$(json_escape "$response_message_de")"
+}
+
+if [ "${REQUEST_METHOD:-GET}" != "POST" ]; then
+	json_response false "Only POST requests are supported." "Es werden nur POST-Anfragen unterstützt."
+	exit 0
+fi
+
+# The file name arrives as UTF-8 bytes in octal (3 digits each, e.g. "A" = 101), which avoids
+# locale and printf differences of busybox when handling umlauts.
+octal_name="$(printf '%s' "${QUERY_STRING:-}" | tr '&' '\n' | sed -n 's/^nameoct=\([0-7]*\)$/\1/p' | head -n 1)"
+allowed_byte='(0[4-7][0-7]|1[0-6][0-7]|17[0-6]|[23][0-7][0-7])'
+if ! printf '%s\n' "$octal_name" | grep -Eq "^${allowed_byte}+\$" || [ "${#octal_name}" -gt 450 ]; then
+	json_response false "Invalid file name." "Ungültiger Dateiname."
+	exit 0
+fi
+file_name="$(printf '%b' "$(printf '%s' "$octal_name" | sed 's/\(...\)/\\0\1/g')")"
+
+name_ok=1
+case "$file_name" in
+	*/* | *\\* | .* | *..* | "") name_ok=0 ;;
+	*.[pP][nN][gG]) ;;
+	*) name_ok=0 ;;
+esac
+if [ "$name_ok" -ne 1 ]; then
+	json_response false "Invalid file name. Only .png files without path separators are allowed." "Ungültiger Dateiname. Erlaubt sind nur .png-Dateien ohne Pfadtrenner." "$file_name"
+	exit 0
+fi
+file_name="${file_name%.*}.png"
+
+content_length="${CONTENT_LENGTH:-0}"
+if ! printf '%s' "$content_length" | grep -Eq '^[0-9]+$' || [ "$content_length" -le 8 ]; then
+	json_response false "The file is empty." "Die Datei ist leer." "$file_name"
+	exit 0
+fi
+if [ "$content_length" -gt "$MAX_BYTES" ]; then
+	json_response false "The file is too large (max. 2 MB)." "Die Datei ist zu groß (max. 2 MB)." "$file_name"
+	exit 0
+fi
+
+if ! mkdir -p "$ICON_DIR" 2>/dev/null || [ ! -w "$ICON_DIR" ]; then
+	json_response false "The icon directory is not writable." "Das Icon-Verzeichnis ist nicht beschreibbar." "$file_name"
+	exit 0
+fi
+
+temp_file="$(mktemp "$ICON_DIR/.upload.XXXXXX")" || {
+	json_response false "Could not create a temporary file." "Temporäre Datei konnte nicht angelegt werden." "$file_name"
+	exit 0
+}
+trap 'rm -f "$temp_file"' EXIT
+
+head -c "$content_length" > "$temp_file"
+
+if [ "$(wc -c < "$temp_file" | tr -d ' ')" -ne "$content_length" ]; then
+	json_response false "The upload was incomplete." "Der Upload war unvollständig." "$file_name"
+	exit 0
+fi
+
+# PNG signature 89 50 4E 47 0D 0A 1A 0A; every non-alphanumeric byte becomes "."
+signature="$(head -c 8 "$temp_file" | LC_ALL=C tr -c 'A-Za-z0-9' '.')"
+if [ "$signature" != ".PNG...." ]; then
+	json_response false "The file is not a valid PNG image." "Die Datei ist kein gültiges PNG-Bild." "$file_name"
+	exit 0
+fi
+
+chmod 644 "$temp_file"
+if ! mv -f "$temp_file" "$ICON_DIR/$file_name"; then
+	json_response false "The file could not be saved." "Die Datei konnte nicht gespeichert werden." "$file_name"
+	exit 0
+fi
+
+json_response true "File saved." "Datei gespeichert." "$file_name"

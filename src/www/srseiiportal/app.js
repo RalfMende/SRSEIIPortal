@@ -256,6 +256,12 @@
       locoListProtocol: "Protokoll",
       locoListName: "Name",
       locoListDetails: "Details",
+      fileManagerTitle: "DATEIVERWALTUNG",
+      iconUploadIntro: "Lade Lokbilder (nur PNG) hoch. Sie werden unter /www/icons/ abgelegt und von den Steuerungs-Apps verwendet.",
+      iconUploadButton: "Lokbilder hochladen",
+      iconUploadOnlyPng: "Nur PNG-Dateien sind erlaubt: %s",
+      iconUploadDone: "%s von %s Dateien hochgeladen.",
+      iconUploadFileError: "%s: Fehler: %s",
       browserDirectTitle: "DIREKT IM BROWSER",
       browserDirectIntro: " – ohne zusätzliche Steuer-App",
       smartphoneTabletTitle: "MIT MOBILEN STEUERGERÄTEN UND APPS",
@@ -513,6 +519,12 @@
       locoListProtocol: "Protocole",
       locoListName: "Nom",
       locoListDetails: "Détails",
+      fileManagerTitle: "GESTION DES FICHIERS",
+      iconUploadIntro: "Téléversez des images de locomotives (PNG uniquement). Elles sont enregistrées dans /www/icons/ et utilisées par les applications de commande.",
+      iconUploadButton: "Téléverser des images de locomotives",
+      iconUploadOnlyPng: "Seuls les fichiers PNG sont autorisés : %s",
+      iconUploadDone: "%s fichiers sur %s téléversés.",
+      iconUploadFileError: "%s : erreur : %s",
       browserDirectTitle: "DIRECTEMENT DANS LE NAVIGATEUR",
       browserDirectIntro: " – sans application de commande supplémentaire",
       smartphoneTabletTitle: "AVEC DES COMMANDES ET APPLICATIONS MOBILES",
@@ -770,6 +782,12 @@
       locoListProtocol: "Protocol",
       locoListName: "Naam",
       locoListDetails: "Details",
+      fileManagerTitle: "BESTANDSBEHEER",
+      iconUploadIntro: "Upload locomotiefafbeeldingen (alleen PNG). Ze worden opgeslagen in /www/icons/ en gebruikt door de besturings-apps.",
+      iconUploadButton: "Locomotiefafbeeldingen uploaden",
+      iconUploadOnlyPng: "Alleen PNG-bestanden zijn toegestaan: %s",
+      iconUploadDone: "%s van %s bestanden geüpload.",
+      iconUploadFileError: "%s: fout: %s",
       browserDirectTitle: "DIRECT IN DE BROWSER",
       browserDirectIntro: " - zonder extra besturingsapp",
       smartphoneTabletTitle: "MET MOBIELE BESTURING EN APPS",
@@ -1027,6 +1045,12 @@
       locoListProtocol: "Protocol",
       locoListName: "Name",
       locoListDetails: "Details",
+      fileManagerTitle: "FILE MANAGEMENT",
+      iconUploadIntro: "Upload locomotive images (PNG only). They are stored in /www/icons/ and used by the control apps.",
+      iconUploadButton: "Upload locomotive images",
+      iconUploadOnlyPng: "Only PNG files are allowed: %s",
+      iconUploadDone: "%s of %s files uploaded.",
+      iconUploadFileError: "%s: error: %s",
       browserDirectTitle: "DIRECTLY IN THE BROWSER",
       browserDirectIntro: " - without an additional control app",
       smartphoneTabletTitle: "WITH MOBILE CONTROLLERS AND APPS",
@@ -1801,6 +1825,92 @@
           resetButton.disabled = false;
         }
       });
+  }
+
+  function bindIconUpload() {
+    var button = document.getElementById("icon-upload-button");
+    var input = document.getElementById("icon-upload-input");
+    var results = document.getElementById("icon-upload-results");
+    if (!button || !input || !results) {
+      return;
+    }
+
+    function addResult(text, isError) {
+      var item = document.createElement("li");
+      item.textContent = text;
+      item.classList.toggle("err", !!isError);
+      results.appendChild(item);
+    }
+
+    function encodeFileNameOctal(name) {
+      return Array.prototype.map.call(new TextEncoder().encode(name.normalize("NFC")), function (byte) {
+        return ("00" + byte.toString(8)).slice(-3);
+      }).join("");
+    }
+
+    function uploadFile(file) {
+      return fetch("/cgi-bin/srseiiportal/icon-upload?nameoct=" + encodeFileNameOctal(file.name), {
+        method: "POST",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: file,
+        cache: "no-store"
+      })
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+          }
+          return response.json();
+        })
+        .then(function (data) {
+          if (data && data.ok) {
+            return true;
+          }
+          throw new Error(getLocalizedStatusValue(data, "message", "messageDe") || "?");
+        });
+    }
+
+    button.addEventListener("click", function () {
+      input.click();
+    });
+
+    input.addEventListener("change", function () {
+      var files = Array.prototype.slice.call(input.files || []);
+      input.value = "";
+      results.textContent = "";
+      var valid = files.filter(function (file) {
+        return /\.png$/i.test(file.name);
+      });
+      var rejected = files.filter(function (file) {
+        return valid.indexOf(file) === -1;
+      });
+      rejected.forEach(function (file) {
+        addResult(t("iconUploadOnlyPng").replace("%s", file.name), true);
+      });
+      if (!valid.length) {
+        return;
+      }
+
+      button.disabled = true;
+      var done = 0;
+      var chain = Promise.resolve();
+      valid.forEach(function (file) {
+        chain = chain
+          .then(function () {
+            return uploadFile(file);
+          })
+          .then(function () {
+            done += 1;
+            addResult("✓ " + file.name, false);
+          })
+          .catch(function (error) {
+            addResult(t("iconUploadFileError").replace("%s", file.name).replace("%s", error.message || String(error)), true);
+          });
+      });
+      chain.then(function () {
+        addResult(t("iconUploadDone").replace("%s", String(done)).replace("%s", String(valid.length)), done !== valid.length);
+        button.disabled = false;
+      });
+    });
   }
 
   function setNetworkNote(text) {
@@ -2593,5 +2703,6 @@
   setWifiNote(t("wifiIdle"), false);
   bindSectionStatePersistence();
   bindQuickStartActions();
+  bindIconUpload();
   loadStatus();
 })();
