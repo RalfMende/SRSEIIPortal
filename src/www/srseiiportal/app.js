@@ -1509,11 +1509,36 @@
     });
   }
 
+  var locoListSortKey = "address";
+  var locoListSortDirection = "asc";
+  var currentLocoListData = null;
+
+  function compareLocoListValues(left, right, key) {
+    var leftValue = left && left[key] !== undefined && left[key] !== null ? String(left[key]) : "";
+    var rightValue = right && right[key] !== undefined && right[key] !== null ? String(right[key]) : "";
+    var comparison;
+
+    if (key === "address") {
+      var leftNumber = Number(leftValue);
+      var rightNumber = Number(rightValue);
+      if (leftValue !== "" && rightValue !== "" && isFinite(leftNumber) && isFinite(rightNumber)) {
+        comparison = leftNumber - rightNumber;
+      } else {
+        comparison = leftValue.localeCompare(rightValue, lang, { numeric: true, sensitivity: "base" });
+      }
+    } else {
+      comparison = leftValue.localeCompare(rightValue, lang, { numeric: true, sensitivity: "base" });
+    }
+
+    return locoListSortDirection === "asc" ? comparison : -comparison;
+  }
+
   function renderLocoList(data) {
     var status = document.getElementById("loco-list-status");
     var empty = document.getElementById("loco-list-empty");
     var tableWrap = document.getElementById("loco-list-table-wrap");
     var rows = document.getElementById("loco-list-rows");
+    var table = tableWrap && tableWrap.querySelector(".loco-list-table");
     var errorDetails = document.getElementById("loco-list-error-details");
     var errorText = document.getElementById("loco-list-error-text");
     var meta = document.getElementById("loco-list-meta");
@@ -1521,9 +1546,37 @@
     var summary = document.getElementById("loco-list-summary");
     var locomotives = data && Array.isArray(data.locomotives) ? data.locomotives : [];
 
-    if (!status || !empty || !tableWrap || !rows || !errorDetails || !errorText || !meta || !download || !summary) {
+    if (!status || !empty || !tableWrap || !rows || !table || !errorDetails || !errorText || !meta || !download || !summary) {
       return;
     }
+
+    currentLocoListData = data;
+    if (!table.dataset.sortListenersBound) {
+      var sortButtons = table.querySelectorAll(".loco-list-sort");
+      Array.prototype.forEach.call(sortButtons, function (button) {
+        button.addEventListener("click", function () {
+          var key = button.getAttribute("data-sort-key");
+          if (locoListSortKey === key) {
+            locoListSortDirection = locoListSortDirection === "asc" ? "desc" : "asc";
+          } else {
+            locoListSortKey = key;
+            locoListSortDirection = "asc";
+          }
+          renderLocoList(currentLocoListData);
+        });
+      });
+      table.dataset.sortListenersBound = "true";
+    }
+
+    Array.prototype.forEach.call(table.querySelectorAll("th"), function (header) {
+      var button = header.querySelector(".loco-list-sort");
+      var indicator = header.querySelector(".loco-list-sort-indicator");
+      var active = button && button.getAttribute("data-sort-key") === locoListSortKey;
+      header.setAttribute("aria-sort", active ? (locoListSortDirection === "asc" ? "ascending" : "descending") : "none");
+      if (indicator) {
+        indicator.textContent = active ? (locoListSortDirection === "asc" ? "\u2191" : "\u2193") : "";
+      }
+    });
 
     empty.classList.add("is-hidden");
     tableWrap.classList.add("is-hidden");
@@ -1557,7 +1610,9 @@
     if (data.updatedAt) {
       meta.textContent = t("locoListUpdated").replace("%s", formatLocoListDate(data.updatedAt));
     }
-    locomotives.forEach(function (locomotive) {
+    locomotives.slice().sort(function (left, right) {
+      return compareLocoListValues(left, right, locoListSortKey);
+    }).forEach(function (locomotive) {
       var row = document.createElement("tr");
       var addressCell = document.createElement("td");
       var protocolCell = document.createElement("td");

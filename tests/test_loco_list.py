@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
 
-endpoint = Path("src/www/cgi-bin/srseii-portal/loco-list")
-download_endpoint = Path("src/www/cgi-bin/srseii-portal/loco-list-download")
-html = Path("src/www/srseii-portal/index.html").read_text(encoding="utf-8")
-app_js = Path("src/www/srseii-portal/app.js").read_text(encoding="utf-8")
-makefile = Path("packaging/openwrt/Makefile").read_text(encoding="utf-8")
+endpoint = Path("src/www/cgi-bin/srseiiportal/loco-list")
+download_endpoint = Path("src/www/cgi-bin/srseiiportal/loco-list-download")
+html = Path("src/www/srseiiportal/index.html").read_text(encoding="utf-8")
+app_js = Path("src/www/srseiiportal/app.js").read_text(encoding="utf-8")
+makefile = Path("packaging/openwrt/srseiiportal/Makefile").read_text(encoding="utf-8")
 
 assert endpoint.exists()
 assert download_endpoint.exists()
@@ -29,8 +29,7 @@ for required in [
 ]:
     assert required in endpoint_text, f"Missing locomotive-list behavior: {required}"
 
-assert '$(INSTALL_BIN) $(SRSEII_SRC_DIR)/www/cgi-bin/srseii-portal/loco-list' in makefile
-assert '$(INSTALL_BIN) $(SRSEII_SRC_DIR)/www/cgi-bin/srseii-portal/loco-list-download' in makefile
+assert '$(CP) $(PKG_BUILD_DIR)/src/www/.' in makefile
 for required in [
     'id="loco-list-status"',
     'id="loco-list-details"',
@@ -42,6 +41,9 @@ for required in [
     'data-i18n="locoListAddress"',
     'data-i18n="locoListProtocol"',
     'data-i18n="locoListName"',
+    'data-sort-key="address"',
+    'data-sort-key="protocol"',
+    'data-sort-key="name"',
     'id="loco-list-meta"',
     'id="loco-list-download"',
     'data-i18n="locoListDownload"',
@@ -62,6 +64,9 @@ for required in [
     'locoListUpdated',
     'locoListDownload',
     'formatLocoListDate',
+    'compareLocoListValues',
+    'aria-sort',
+    'localeCompare',
 ]:
     assert required in app_js, f"Missing locomotive-list frontend behavior: {required}"
 
