@@ -316,7 +316,7 @@
 
         <div class="section-body">
       <div class="feature-group content-management-group">
-        <h3 data-i18n="srseiiContentManagementTitle">SRSEII CONTENT MANAGEMENT</h3>
+        <h3 data-i18n="srseiiContentManagementTitle">CONTENT MANAGEMENT</h3>
         <article class="feature-card">
           <div class="feature-copy">
             <h4 data-i18n="locomotiveIconsTitle">Locomotive Icons</h4>
@@ -376,12 +376,12 @@
         </article>
       </div>
       <div class="feature-group s88-group">
-        <h3 data-i18n="s88Title">S88 configuration</h3>
+        <h3 data-i18n="s88Title">S88 CONFIGURATION</h3>
         <article class="feature-card">
           <div class="feature-copy">
             <h4 data-i18n="s88GatewayTitle">Integrated S88 gateway</h4>
             <p data-i18n="s88Intro">Current settings of the integrated SRSEII S88 gateway.</p>
-            <div class="feature-actions">
+            <div class="feature-actions s88-actions">
               <button class="btn btn-secondary" id="s88-read" type="button" data-i18n="s88Read">Read configuration</button>
               <button class="btn btn-secondary" id="s88-write" type="button" disabled data-i18n="s88Write">Write configuration</button>
             </div>
@@ -408,7 +408,7 @@
                 <input id="s88-in-delay" type="number" min="0" max="255" step="1" disabled />
               </div>
 
-              <details class="status-details">
+              <details class="status-details s88-advanced">
                 <summary data-i18n="s88Advanced">Advanced diagnostics</summary>
                 <div class="wifi-grid">
                   <label for="s88-in-forced2" data-i18n="s88Forced2">Forced events, second variant (bit 1)</label>
@@ -416,10 +416,14 @@
 
                   <label for="s88-in-deviceid" data-i18n="s88DeviceId">S88 device ID</label>
                   <input id="s88-in-deviceid" type="number" min="0" max="65534" step="1" disabled />
+
+                  <label for="s88-in-uid" data-i18n="s88Uid">UID (two low bytes, hex)</label>
+                  <input id="s88-in-uid" type="text" maxlength="4" pattern="[0-9A-Fa-f]{4}" placeholder="3322" spellcheck="false" disabled />
                 </div>
               </details>
 
               <p class="status-note" id="s88-ranges"></p>
+              <p class="status-note" data-i18n="s88DebounceHint">With longer buses, debouncing on 2 equal samples is recommended; otherwise short events (e.g. a train passing a switch track) may be missed.</p>
               <p class="status-note" data-i18n="s88WriteHint">Only changed values are sent. Empty fields (not set in the gateway) are left untouched. The gateway stores the values in its EEPROM.</p>
               <ul class="icon-upload-results" id="s88-write-results" aria-live="polite"></ul>
             </form>
@@ -666,6 +670,6 @@
     </div>
   </dialog>
 
-  <script src="/srseiiportal/app.js?v=0.9.34"></script>
+  <script src="/srseiiportal/app.js?v=0.9.40"></script>
 </body>
 </html>

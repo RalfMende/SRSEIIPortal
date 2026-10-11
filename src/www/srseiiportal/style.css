@@ -1368,3 +1368,17 @@ button.btn[disabled] {
   width: auto;
   justify-self: start;
 }
+
+.s88-actions {
+  margin: 1.2rem 0;
+}
+
+.s88-advanced {
+  border-top: none;
+  padding-top: 0;
+  margin-bottom: 1.4rem;
+}
+
+.s88-advanced .wifi-grid {
+  margin-top: 0.6rem;
+}

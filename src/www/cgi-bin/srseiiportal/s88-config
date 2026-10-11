@@ -3,7 +3,7 @@
 # gateway over the CAN bus. Request-scoped: runs only when the portal triggers
 # it, listens for a bounded time window and exits. No daemon, no polling.
 #
-# Write mode: POST ...?action=write&id=N&modules=N&offset=N&flags=N&delay=N
+# Write mode: POST ...?action=write&id=N&modules=N&offset=N&flags=N&delay=N&uid=HHHH
 # (every parameter optional, decimal only). Each written channel is read back
 # and reported as "sent" and, only if the readback matches, as "verified".
 
@@ -11,8 +11,10 @@ set -u
 
 CAN_IF="can0"
 LISTEN_SECONDS=2
-# Allowlisted config channels (UID is intentionally excluded: channel mapping unverified).
-CHANNELS="01 03 04 07 08"
+# Allowlisted config channels. Channel 6 (UID, two low bytes) is addressed with
+# 0B06 as in the firmware source (can-inspect.inc); the 0B07 in the text
+# documentation is a typo and would overwrite the option flags (channel 7).
+CHANNELS="01 03 04 06 07 08"
 LOCK_DIR="/tmp/srseii-s88-config.lock"
 finished=0
 
@@ -62,6 +64,17 @@ add_write() {
 	write_pairs="$write_pairs $2=$(printf '%04X' "$param_value")"
 }
 
+# add_write_hex <param> <channel>: exactly four hex digits
+add_write_hex() {
+	query_param "$1"
+	[ -n "$param_value" ] || return 0
+	case "$param_value" in
+	[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]) ;;
+	*) fail "Invalid value for $1." "Ungültiger Wert für $1." ;;
+	esac
+	write_pairs="$write_pairs $2=$(printf '%s' "$param_value" | tr 'a-f' 'A-F')"
+}
+
 query_param action
 if [ "$param_value" = "write" ]; then
 	mode="write"
@@ -69,6 +82,7 @@ if [ "$param_value" = "write" ]; then
 	add_write id 01 0 65534
 	add_write modules 03 0 16
 	add_write offset 04 0 65534
+	add_write_hex uid 06
 	add_write flags 07 0 255
 	add_write delay 08 0 255
 	[ -n "$write_pairs" ] || fail "No values to write." "Keine Werte zum Schreiben."

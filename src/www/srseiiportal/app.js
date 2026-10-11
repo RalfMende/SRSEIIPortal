@@ -228,7 +228,7 @@
       technicalDetailsTitle: "Technische Details",
       modelRailwayFunctionsTitle: "Modellbahn steuern",
       modelRailwayFunctionsIntro: "Wähle, wie du deine Modellbahn steuern möchtest.",
-      srseiiContentManagementTitle: "SRSEII-INHALTSVERWALTUNG",
+      srseiiContentManagementTitle: "INHALTSVERWALTUNG",
       locomotiveIconsTitle: "Lokomotiv-Icons",
       modelRailwayStatusError: "Die Modellbahn-Funktionen konnten nicht geprüft werden:",
       locoListTitle: "Lokliste",
@@ -278,14 +278,14 @@
       noEvents: "Keine Ereignisse.",
       expertToolsTitle: "Erweiterte Einstellungen",
       expertToolsIntro: "Erweiterte Einstellungen – hier solltest du wissen, was du tust.",
-      s88Title: "S88-Konfiguration",
+      s88Title: "S88-KONFIGURATION",
       configurationTitle: "SRSEII Konfiguration & Verwaltung",
       configurationIntro: "Konfiguriere und verwalte die Inhalte und Schnittstellen deines SRSEII.",
       s88GatewayTitle: "Integriertes S88-Gateway",
       s88Intro: "Aktuelle Einstellungen des integrierten SRSEII-S88-Gateways.",
       s88Read: "Konfiguration auslesen",
       s88Idle: "Es wird nichts an den CAN-Bus gesendet, bis du „Konfiguration auslesen“ oder „Konfiguration schreiben“ klickst.",
-      s88Disclaimer: "Die Werte werden für die S88-Gateway-Firmware v1.17 interpretiert; die Firmware-Version wird nicht erkannt. Die Modulanzahl ist die konfigurierte Kettenlänge, keine erkannte Hardware.",
+      s88Disclaimer: "Die Werte werden für die S88-Gateway-Firmware v1.27 interpretiert; die Firmware-Version wird nicht erkannt. Die Modulanzahl ist die konfigurierte Kettenlänge, keine erkannte Hardware.",
       s88Forced1: "Alle Zustände nach dem Start einmal senden",
       s88Forced2: "Forced Events, zweite Variante (Bit 1)",
       s88Advanced: "Erweiterte Diagnose",
@@ -300,6 +300,10 @@
       s88WriteSent: "Befehle gesendet, aber nicht alle Werte bestätigt",
       s88WriteFailed: "Senden fehlgeschlagen",
       s88WriteHint: "Es werden nur geänderte Werte gesendet. Leere Felder (im Gateway nicht gesetzt) bleiben unverändert. Das Gateway speichert die Werte im EEPROM.",
+      s88Uid: "UID (untere zwei Bytes, hex)",
+      s88UidConfirm: "Achtung: Eine geänderte UID ändert die CAN-Kennung des Gateways. Steuerungen müssen es danach neu erkennen.",
+      s88BusOffConfirm: "Achtung: Bei 0 Modulen wird der S88-Bus ausgeschaltet.",
+      s88DebounceHint: "Bei größerer Buslänge wird eine Entprellung mit 2 gleichen Messwerten empfohlen, sonst werden kurze Ereignisse (z. B. Überfahren eines Schaltgleises) ggf. nicht erkannt.",
       s88Delay: "Verzögerung Forced Events (ms)",
       s88Reading: "Lese CAN-Bus …",
       s88Done: "Konfiguration ausgelesen",
@@ -539,7 +543,7 @@
       technicalDetailsTitle: "Détails techniques",
       modelRailwayFunctionsTitle: "Piloter votre réseau miniature",
       modelRailwayFunctionsIntro: "Choisissez comment prendre les commandes.",
-      srseiiContentManagementTitle: "GESTION DU CONTENU SRSEII",
+      srseiiContentManagementTitle: "GESTION DU CONTENU",
       locomotiveIconsTitle: "Icônes de locomotives",
       modelRailwayStatusError: "Impossible de vérifier les fonctions du réseau miniature :",
       locoListTitle: "Liste des locomotives",
@@ -589,14 +593,14 @@
       noEvents: "Aucun événement.",
       expertToolsTitle: "Paramètres avancés",
       expertToolsIntro: "Paramètres avancés : à utiliser en connaissance de cause.",
-      s88Title: "Configuration S88",
+      s88Title: "CONFIGURATION S88",
       configurationTitle: "Configuration et gestion du SRSEII",
       configurationIntro: "Configurez et gérez les contenus et les interfaces de votre SRSEII.",
       s88GatewayTitle: "Passerelle S88 intégrée",
       s88Intro: "Réglages actuels de la passerelle S88 intégrée du SRSEII.",
       s88Read: "Lire la configuration",
       s88Idle: "Rien n'est envoyé sur le bus CAN tant que vous ne cliquez pas sur « Lire la configuration » ou « Écrire la configuration ».",
-      s88Disclaimer: "Les valeurs sont interprétées pour le firmware v1.17 de la passerelle S88 ; la version du firmware n'est pas détectée. Le nombre de modules est la longueur de chaîne configurée, pas du matériel détecté.",
+      s88Disclaimer: "Les valeurs sont interprétées pour le firmware v1.27 de la passerelle S88 ; la version du firmware n'est pas détectée. Le nombre de modules est la longueur de chaîne configurée, pas du matériel détecté.",
       s88Forced1: "Envoyer tous les états une fois après la mise sous tension",
       s88Forced2: "Forced events, seconde variante (bit 1)",
       s88Advanced: "Diagnostic avancé",
@@ -611,6 +615,10 @@
       s88WriteSent: "Commandes envoyées, mais toutes les valeurs ne sont pas confirmées",
       s88WriteFailed: "Échec de l'envoi",
       s88WriteHint: "Seules les valeurs modifiées sont envoyées. Les champs vides (non définis dans la passerelle) restent inchangés. La passerelle enregistre les valeurs dans son EEPROM.",
+      s88Uid: "UID (deux octets de poids faible, hex)",
+      s88UidConfirm: "Attention : modifier l'UID change l'identité CAN de la passerelle. Les logiciels de commande doivent la redétecter ensuite.",
+      s88BusOffConfirm: "Attention : 0 module désactive le bus S88.",
+      s88DebounceHint: "Pour un bus plus long, un antirebond sur 2 mesures identiques est recommandé ; sinon des événements brefs (p. ex. passage sur une voie de commutation) peuvent être manqués.",
       s88Delay: "Délai des forced events (ms)",
       s88Reading: "Lecture du bus CAN…",
       s88Done: "Configuration lue",
@@ -850,7 +858,7 @@
       technicalDetailsTitle: "Technische details",
       modelRailwayFunctionsTitle: "Je modelspoorbaan besturen",
       modelRailwayFunctionsIntro: "Kies hoe je de besturing wilt gebruiken.",
-      srseiiContentManagementTitle: "SRSEII-INHOUDSBEHEER",
+      srseiiContentManagementTitle: "INHOUDSBEHEER",
       locomotiveIconsTitle: "Locomotieficonen",
       modelRailwayStatusError: "De modelspoorfuncties konden niet worden gecontroleerd:",
       locoListTitle: "Locomotievenlijst",
@@ -900,14 +908,14 @@
       noEvents: "Geen gebeurtenissen.",
       expertToolsTitle: "Geavanceerde instellingen",
       expertToolsIntro: "Geavanceerde instellingen - weet wat je doet.",
-      s88Title: "S88-configuratie",
+      s88Title: "S88-CONFIGURATIE",
       configurationTitle: "SRSEII-configuratie en beheer",
       configurationIntro: "Configureer en beheer de inhoud en interfaces van je SRSEII.",
       s88GatewayTitle: "Geïntegreerde S88-gateway",
       s88Intro: "Huidige instellingen van de geïntegreerde SRSEII S88-gateway.",
       s88Read: "Configuratie uitlezen",
       s88Idle: "Er wordt niets naar de CAN-bus gestuurd totdat je op \"Configuratie uitlezen\" of \"Configuratie schrijven\" klikt.",
-      s88Disclaimer: "Waarden worden geïnterpreteerd voor S88-gatewayfirmware v1.17; de firmwareversie wordt niet gedetecteerd. Het aantal modules is de ingestelde ketenlengte, geen gedetecteerde hardware.",
+      s88Disclaimer: "Waarden worden geïnterpreteerd voor S88-gatewayfirmware v1.27; de firmwareversie wordt niet gedetecteerd. Het aantal modules is de ingestelde ketenlengte, geen gedetecteerde hardware.",
       s88Forced1: "Alle statussen eenmalig sturen na inschakelen",
       s88Forced2: "Forced events, tweede variant (bit 1)",
       s88Advanced: "Geavanceerde diagnose",
@@ -922,6 +930,10 @@
       s88WriteSent: "Opdrachten verzonden, maar niet alle waarden bevestigd",
       s88WriteFailed: "Verzenden mislukt",
       s88WriteHint: "Alleen gewijzigde waarden worden verzonden. Lege velden (niet ingesteld in de gateway) blijven ongewijzigd. De gateway slaat de waarden op in het EEPROM.",
+      s88Uid: "UID (twee laagste bytes, hex)",
+      s88UidConfirm: "Let op: een gewijzigde UID wijzigt de CAN-identiteit van de gateway. Besturingssoftware moet deze daarna opnieuw herkennen.",
+      s88BusOffConfirm: "Let op: 0 modules schakelt de S88-bus uit.",
+      s88DebounceHint: "Bij een langere bus wordt ontdenderen op 2 gelijke metingen aanbevolen; anders kunnen korte gebeurtenissen (bijv. overrijden van een schakelrail) gemist worden.",
       s88Delay: "Vertraging forced events (ms)",
       s88Reading: "CAN-bus uitlezen…",
       s88Done: "Configuratie uitgelezen",
@@ -1161,7 +1173,7 @@
       technicalDetailsTitle: "Technical details",
       modelRailwayFunctionsTitle: "Control your model railway",
       modelRailwayFunctionsIntro: "Choose how you'd like to control your model railway.",
-      srseiiContentManagementTitle: "SRSEII CONTENT MANAGEMENT",
+      srseiiContentManagementTitle: "CONTENT MANAGEMENT",
       locomotiveIconsTitle: "Locomotive Icons",
       modelRailwayStatusError: "The model railway functions could not be checked:",
       locoListTitle: "Locomotive List",
@@ -1211,14 +1223,14 @@
       noEvents: "No events.",
       expertToolsTitle: "Advanced settings",
       expertToolsIntro: "Advanced settings ahead — you should know what you're doing here.",
-      s88Title: "S88 configuration",
+      s88Title: "S88 CONFIGURATION",
       configurationTitle: "SRSEII Configuration & Management",
       configurationIntro: "Configure and manage the contents and interfaces of your SRSEII.",
       s88GatewayTitle: "Integrated S88 gateway",
       s88Intro: "Current settings of the integrated SRSEII S88 gateway.",
       s88Read: "Read configuration",
       s88Idle: "Nothing is sent to the CAN bus until you click \"Read configuration\" or \"Write configuration\".",
-      s88Disclaimer: "Values are interpreted for the S88 gateway firmware v1.17; the firmware version is not detected. The module count is the configured chain length, not detected hardware.",
+      s88Disclaimer: "Values are interpreted for the S88 gateway firmware v1.27; the firmware version is not detected. The module count is the configured chain length, not detected hardware.",
       s88Forced1: "Send all states once after power-on",
       s88Forced2: "Forced events, second variant (bit 1)",
       s88Advanced: "Advanced diagnostics",
@@ -1233,6 +1245,10 @@
       s88WriteSent: "Commands sent, but not all values confirmed",
       s88WriteFailed: "Sending failed",
       s88WriteHint: "Only changed values are sent. Empty fields (not set in the gateway) are left untouched. The gateway stores the values in its EEPROM.",
+      s88Uid: "UID (two low bytes, hex)",
+      s88UidConfirm: "Warning: Changing the UID changes the gateway's CAN identity. Control software has to detect it again afterwards.",
+      s88BusOffConfirm: "Warning: 0 modules switches the S88 bus off.",
+      s88DebounceHint: "With longer buses, debouncing on 2 equal samples is recommended; otherwise short events (e.g. a train passing a switch track) may be missed.",
       s88Delay: "Forced-event delay (ms)",
       s88Reading: "Reading CAN bus...",
       s88Done: "Configuration read",
@@ -2937,7 +2953,7 @@
     });
   }
 
-  // S88 gateway (firmware v1.17) value decoding. Values arrive as hex strings.
+  // S88 gateway (firmware v1.27) value decoding. Values arrive as hex strings.
   function s88Bytes(hex) {
     var bytes = [];
     for (var i = 0; i + 1 < hex.length; i += 2) {
@@ -2986,7 +3002,7 @@
     ranges.textContent = count > 0 && parts.length ? count + " × 16 = " + count * 16 + " — " + parts.join("; ") : "";
   }
 
-  var s88FormFields = ["s88-in-modules", "s88-in-firstid", "s88-in-debounce", "s88-in-forced", "s88-in-delay", "s88-in-forced2", "s88-in-deviceid"];
+  var s88FormFields = ["s88-in-modules", "s88-in-firstid", "s88-in-debounce", "s88-in-forced", "s88-in-delay", "s88-in-forced2", "s88-in-deviceid", "s88-in-uid"];
 
   // Values as read from the gateway; null = channel unset or not answered.
   var s88Original = null;
@@ -3021,12 +3037,24 @@
       delay: num("08")
     };
     s88SetNumber("s88-in-deviceid", s88Original.id);
+    s88Original.uid = channels["06"] && /^[0-9A-F]{4}$/i.test(channels["06"].value) ? channels["06"].value.toUpperCase() : null;
+    s88El("s88-in-uid").value = s88Original.uid === null ? "" : s88Original.uid;
     s88El("s88-in-modules").value = s88Original.modules === null ? "" : String(s88Original.modules);
     s88SetNumber("s88-in-firstid", s88Original.firstId);
     s88SetNumber("s88-in-delay", s88Original.delay);
     s88El("s88-in-debounce").value = (s88Original.flags & 0x80) ? "2" : "4";
     s88El("s88-in-forced").checked = !!(s88Original.flags & 0x01);
     s88El("s88-in-forced2").checked = !!(s88Original.flags & 0x02);
+    // Show 0xFFFF ("not set") explicitly instead of leaving the field blank.
+    [["s88-in-deviceid", "01"], ["s88-in-modules", "03"], ["s88-in-firstid", "04"], ["s88-in-delay", "08"]].forEach(function (pair) {
+      var entry = channels[pair[1]];
+      var unset = !entry ? t("s88NoReply") : (s88IsUnset(entry.value) ? "0xFFFF – " + t("s88Unset") : "");
+      var el = s88El(pair[0]);
+      el.placeholder = el.tagName === "INPUT" ? unset : "";
+      if (el.tagName === "SELECT" && el.options.length) {
+        el.options[0].textContent = unset || "–";
+      }
+    });
     s88FormFields.forEach(function (id) { s88El(id).disabled = false; });
     s88El("s88-write").disabled = false;
     updateS88DelayState();
@@ -3066,6 +3094,15 @@
       }
       parts.push(f.param + "=" + (f.convert ? f.convert(r.value) : r.value));
     }
+    var uid = s88El("s88-in-uid").value.trim().toUpperCase();
+    if (uid !== "") {
+      if (!/^[0-9A-F]{4}$/.test(uid)) {
+        return { error: "s88Invalid" };
+      }
+      if (uid !== s88Original.uid) {
+        parts.push("uid=" + uid);
+      }
+    }
     var flags = s88Original.flags & ~0x83;
     flags |= s88El("s88-in-debounce").value === "2" ? 0x80 : 0;
     flags |= s88El("s88-in-forced").checked ? 0x01 : 0;
@@ -3076,7 +3113,7 @@
     return { query: parts.join("&") };
   }
 
-  var s88Channel2Label = { "01": "s88DeviceId", "03": "s88Modules", "04": "s88FirstId", "07": "s88Flags", "08": "s88Delay" };
+  var s88Channel2Label = { "01": "s88DeviceId", "03": "s88Modules", "04": "s88FirstId", "06": "s88Uid", "07": "s88Flags", "08": "s88Delay" };
 
   function showS88WriteResults(results) {
     var list = s88El("s88-write-results");
@@ -3165,7 +3202,10 @@
         s88Note.textContent = t("s88NothingToWrite");
         return;
       }
-      if (!window.confirm(t("s88WriteConfirm"))) {
+      var busOff = /(^|&)modules=0(&|$)/.test(changes.query);
+      var uidChange = /(^|&)uid=/.test(changes.query);
+      var warnings = (busOff ? t("s88BusOffConfirm") + "\n\n" : "") + (uidChange ? t("s88UidConfirm") + "\n\n" : "");
+      if (!window.confirm(warnings + t("s88WriteConfirm"))) {
         return;
       }
       s88Note.textContent = t("s88Writing");

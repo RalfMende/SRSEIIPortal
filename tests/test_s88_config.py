@@ -30,7 +30,7 @@ def run(dump_lines, method="POST", with_tools=True, query=""):
 out, sent = run(["(1.0) can0 00000300#434255530B03", "(1.1) can0 00010300#434255530B030001", "(1.2) can0 00010300#434255530B0403E8"])
 assert '"03":{"value":"0001"' in out and '"04":{"value":"03E8"' in out, out
 assert '"01"' not in out
-assert sent == [f"00000300#434255530B{c}" for c in ("01", "03", "04", "07", "08")], sent
+assert sent == [f"00000300#434255530B{c}" for c in ("01", "03", "04", "06", "07", "08")], sent
 
 out, _ = run([])
 assert '"ok":false' in out and "No S88 reply" in out, out
@@ -53,6 +53,13 @@ assert '"07":{"sent":"0081","verified":true}' in out, out
 
 for bad in ("action=write&modules=17", "action=write&flags=256", "action=write&offset=65535", "action=write&modules=1x", "action=write&modules=-1", "action=write", "action=format"):
     out, sent = run(REPLY, query=bad)
+    assert '"ok":false' in out and sent == [], (bad, out, sent)
+
+out, sent = run(["(1.1) can0 0001B311#434255530B063322"], query="action=write&uid=3322")
+assert sent[0] == "00000300#434255530B063322", sent
+assert '"06":{"sent":"3322","verified":true}' in out, out
+for bad in ("action=write&uid=332", "action=write&uid=33221", "action=write&uid=zzzz"):
+    out, sent = run([], query=bad)
     assert '"ok":false' in out and sent == [], (bad, out, sent)
 
 print("s88 config contract check passed")
