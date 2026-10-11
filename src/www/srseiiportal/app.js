@@ -1721,7 +1721,7 @@
 
     button.disabled = true;
     setLocoListRefreshNote(t("locoListDeleting"), false);
-    fetch("/cgi-bin/srseiiportal/loco-list-delete?id=" + encodeURIComponent(locomotiveId), {
+    fetch("/cgi-bin/srseiiportal/loco-list?id=" + encodeURIComponent(locomotiveId), {
       method: "POST",
       cache: "no-store"
     })
@@ -1810,7 +1810,7 @@
       })
       .then(function (previousData) {
         var previousRevision = getLocoListRevision(previousData);
-        return fetch("/cgi-bin/srseiiportal/loco-list-refresh?action=" + action, { cache: "no-store" })
+        return fetch("/cgi-bin/srseiiportal/loco-list?action=" + action, { cache: "no-store" })
           .then(function (response) {
             if (!response.ok) {
               throw new Error("HTTP " + response.status);

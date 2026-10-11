@@ -2,6 +2,227 @@
 
 set -eu
 
+json_escape() {
+	printf '%s' "$1" | tr '\r\n' '  ' | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+json_response() {
+	response_ok="$1"
+	response_message="$2"
+	response_message_de="$3"
+
+	printf 'Content-Type: application/json\n'
+	printf 'Cache-Control: no-store\n'
+	printf '\n'
+	printf '{"ok":%s,"message":"%s","messageDe":"%s"}\n' \
+		"$response_ok" \
+		"$(json_escape "$response_message")" \
+		"$(json_escape "$response_message_de")"
+}
+
+refresh_json_response() {
+	response_ok="$1"
+	response_status="$2"
+	response_message="$3"
+	response_message_de="$4"
+
+	printf 'Content-Type: application/json\n'
+	printf 'Cache-Control: no-store\n'
+	printf '\n'
+	printf '{"ok":%s,"status":"%s","message":"%s","messageDe":"%s"}\n' \
+		"$response_ok" \
+		"$(json_escape "$response_status")" \
+		"$(json_escape "$response_message")" \
+		"$(json_escape "$response_message_de")"
+}
+
+delete_locomotive() {
+	if [ "${REQUEST_METHOD:-GET}" != "POST" ]; then
+		json_response false "Only POST requests are supported." "Es werden nur POST-Anfragen unterstützt."
+		return
+	fi
+
+	record_id="$(printf '%s' "${QUERY_STRING:-}" | tr '&' '\n' | sed -n 's/^id=\([0-9][0-9]*\)$/\1/p')"
+	if ! printf '%s\n' "$record_id" | grep -Eq '^[1-9][0-9]*$'; then
+		json_response false "A valid locomotive identifier is required." "Eine gültige Lokkennung ist erforderlich."
+		return
+	fi
+
+	list_file=""
+	for candidate in \
+		/www/config/lokomotive.cs2 \
+		/var/lokomotive.cs2 \
+		/tmp/lokomotive.cs2; do
+		if [ -f "$candidate" ]; then
+			if [ ! -r "$candidate" ] || [ ! -w "$candidate" ]; then
+				json_response false "The locomotive list cannot be changed." "Die Lokliste kann nicht geändert werden."
+				return
+			fi
+			list_file="$candidate"
+			break
+		fi
+	done
+
+	if [ -z "$list_file" ]; then
+		json_response false "No locomotive list is available." "Keine Lokliste vorhanden."
+		return
+	fi
+
+	temp_file="$(mktemp "${list_file}.XXXXXX")" || {
+		json_response false "Could not prepare the locomotive list update." "Die Aktualisierung der Lokliste konnte nicht vorbereitet werden."
+		return
+	}
+	trap 'rm -f "$temp_file"' EXIT
+
+	if ! awk -v target_record="$record_id" '
+function flush_record() {
+	if (!in_record) {
+		return
+	}
+	if (record_number == target_record) {
+		removed = 1
+	} else {
+		printf "%s", record
+	}
+	record = ""
+}
+
+/^[[:space:]]*lokomotive[[:space:]]*$/ {
+	flush_record()
+	in_record = 1
+	record_number++
+	record = $0 ORS
+	next
+}
+
+in_record {
+	record = record $0 ORS
+	next
+}
+
+{ print }
+
+END {
+	flush_record()
+	if (!removed) {
+		exit 3
+	}
+}
+' "$list_file" > "$temp_file"; then
+		json_response false "The locomotive was not found in the list." "Die Lokomotive wurde nicht in der Liste gefunden."
+		return
+	fi
+
+	if ! mv "$temp_file" "$list_file"; then
+		json_response false "Could not update the locomotive list." "Die Lokliste konnte nicht aktualisiert werden."
+		return
+	fi
+
+	trap - EXIT
+	json_response true "Locomotive removed from the list." "Lokomotive aus der Liste entfernt."
+}
+
+download_locomotive_list() {
+	if [ "${REQUEST_METHOD:-GET}" != "GET" ]; then
+		printf 'Status: 405 Method Not Allowed\n'
+		printf 'Content-Type: text/plain\n'
+		printf '\n'
+		printf 'Only read access is supported.\n'
+		return
+	fi
+
+	list_file=""
+	for candidate in \
+		/www/config/lokomotive.cs2 \
+		/var/lokomotive.cs2 \
+		/tmp/lokomotive.cs2; do
+		if [ -f "$candidate" ] && [ -r "$candidate" ]; then
+			list_file="$candidate"
+			break
+		fi
+	done
+
+	if [ -z "$list_file" ]; then
+		printf 'Status: 404 Not Found\n'
+		printf 'Content-Type: text/plain\n'
+		printf '\n'
+		printf 'No locomotive list is available.\n'
+		return
+	fi
+
+	printf 'Content-Type: application/octet-stream\n'
+	printf 'Content-Disposition: attachment; filename="lokomotive.cs2"\n'
+	printf 'Cache-Control: no-store\n'
+	printf '\n'
+	cat "$list_file"
+}
+
+refresh_locomotive_list() {
+	if [ "${REQUEST_METHOD:-GET}" != "GET" ]; then
+		refresh_json_response false "error" "Only read access is supported." "Nur Lesezugriff wird unterstützt."
+		return
+	fi
+
+	action=""
+	case "${QUERY_STRING:-}" in
+		*action=update*) action="update" ;;
+		*action=reset*) action="reset" ;;
+	esac
+
+	case "$action" in
+		update) can_frame="000C0300#000000010001" ;;
+		reset) can_frame="000C0300#000000010004" ;;
+		*)
+			refresh_json_response false "error" "Unknown or missing action." "Unbekannte oder fehlende Aktion."
+			return
+			;;
+	esac
+
+	can_interface="${SRSEII_CAN_INTERFACE:-can0}"
+	if ! command -v cansend >/dev/null 2>&1; then
+		refresh_json_response false "error" "cansend is not available on this system." "cansend ist auf diesem System nicht verfügbar."
+		return
+	fi
+
+	can_error_file="/tmp/srseii-loco-list-refresh.$$.err"
+	trap 'rm -f "$can_error_file"' EXIT
+
+	if ! cansend "$can_interface" "$can_frame" 2>"$can_error_file"; then
+		can_error="$(cat "$can_error_file" 2>/dev/null || true)"
+		refresh_json_response false "error" "Sending the CAN command failed: ${can_error}" "Senden des CAN-Befehls ist fehlgeschlagen: ${can_error}"
+		return
+	fi
+
+	if [ "$action" = "update" ]; then
+		refresh_json_response true "ok" "Locomotive list update requested." "Aktualisierung der Lokliste angefordert."
+	else
+		refresh_json_response true "ok" "Locomotive list reset requested." "Zurücksetzen der Lokliste angefordert."
+	fi
+}
+
+case "${REQUEST_METHOD:-GET}" in
+	POST)
+		delete_locomotive
+		exit 0
+		;;
+	GET)
+		case "${QUERY_STRING:-}" in
+			*action=download*)
+				download_locomotive_list
+				exit 0
+				;;
+			*action=*)
+				refresh_locomotive_list
+				exit 0
+				;;
+		*id=*)
+			delete_locomotive
+			exit 0
+			;;
+	esac
+		;;
+esac
+
 echo "Content-Type: application/json"
 echo "Cache-Control: no-store"
 echo ""
@@ -10,10 +231,6 @@ if [ "${REQUEST_METHOD:-GET}" != "GET" ]; then
 	printf '{"status":"error","message":"Only read access is supported."}\n'
 	exit 0
 fi
-
-json_escape() {
-	printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
-}
 
 file_updated_at() {
 	if command -v stat >/dev/null 2>&1; then
