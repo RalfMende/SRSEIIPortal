@@ -9,10 +9,11 @@ ENDPOINT = Path("src/www/cgi-bin/srseiiportal/loco-icons")
 MAX_BYTES = 6 * 1024
 
 
-def request(icon_dir, method="GET"):
+def request(icon_dir, method="GET", query=""):
     env = os.environ.copy()
     env.update(
         REQUEST_METHOD=method,
+        QUERY_STRING=query,
         SRSEII_ICON_DIR=str(icon_dir),
     )
     result = subprocess.run(
@@ -95,3 +96,26 @@ with tempfile.TemporaryDirectory() as directory:
         assert result["ok"] is True
         assert (tmp_path / "icon.png").exists()
 print("icon-upload limits passed")
+
+# Delete all icons
+with tempfile.TemporaryDirectory() as directory:
+    icon_dir = Path(directory)
+    for name in ["a.png", "b.PNG", "other.txt", ".hidden", ".upload.tmp"]:
+        (icon_dir / name).write_bytes(b"x")
+    (icon_dir / "nested").mkdir()
+    (icon_dir / "nested" / "keep.png").write_bytes(b"x")
+
+    _, response = request(icon_dir, method="GET", query="action=delete-all")
+    assert "icons" in response and (icon_dir / "a.png").exists()
+
+    _, response = request(icon_dir, method="POST", query="action=delete-all")
+    assert response["ok"] is True and response["message"] == "5 file(s) deleted.", response
+    assert sorted(p.name for p in icon_dir.iterdir()) == ["nested"]
+    assert (icon_dir / "nested" / "keep.png").exists()
+
+    _, response = request(icon_dir, method="POST", query="action=delete-all")
+    assert response["ok"] is True and response["message"] == "0 file(s) deleted.", response
+
+_, response = request("/directory/that/does/not/exist", method="POST", query="action=delete-all")
+assert response["ok"] is True
+print("icon-delete checks passed")

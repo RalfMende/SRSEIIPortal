@@ -264,6 +264,8 @@
       iconListEmpty: "Keine Lokomotiv-Icons gefunden.",
       iconListError: "Lokomotiv-Icons konnten nicht geladen werden.",
       iconUploadButton: "Lokomotiv-Icons hochladen",
+      iconDeleteButton: "Alle Lokomotiv-Icons löschen",
+      iconDeleteConfirm: "Wirklich ALLE Dateien in /www/icons/ auf dem SRSEII löschen? Das kann nicht rückgängig gemacht werden.",
       iconUploadOnlyPng: "Nur PNG-Dateien sind erlaubt: %s",
       iconUploadDone: "%s von %s Dateien hochgeladen.",
       iconUploadFileError: "%s: Fehler: %s",
@@ -579,6 +581,8 @@
       iconListEmpty: "Aucune icône de locomotive trouvée.",
       iconListError: "Impossible de charger les icônes de locomotives.",
       iconUploadButton: "Téléverser des icônes de locomotives",
+      iconDeleteButton: "Supprimer toutes les icônes de locomotives",
+      iconDeleteConfirm: "Supprimer vraiment TOUS les fichiers de /www/icons/ sur le SRSEII ? Cette action est irréversible.",
       iconUploadOnlyPng: "Seuls les fichiers PNG sont autorisés : %s",
       iconUploadDone: "%s fichiers sur %s téléversés.",
       iconUploadFileError: "%s : erreur : %s",
@@ -894,6 +898,8 @@
       iconListEmpty: "Geen locomotieficonen gevonden.",
       iconListError: "Locomotieficonen konden niet worden geladen.",
       iconUploadButton: "Locomotieficonen uploaden",
+      iconDeleteButton: "Alle locomotieficonen verwijderen",
+      iconDeleteConfirm: "Echt ALLE bestanden in /www/icons/ op de SRSEII verwijderen? Dit kan niet ongedaan worden gemaakt.",
       iconUploadOnlyPng: "Alleen PNG-bestanden zijn toegestaan: %s",
       iconUploadDone: "%s van %s bestanden geüpload.",
       iconUploadFileError: "%s: fout: %s",
@@ -1209,6 +1215,8 @@
       iconListEmpty: "No locomotive icons found.",
       iconListError: "Could not load locomotive icons.",
       iconUploadButton: "Upload locomotive icons",
+      iconDeleteButton: "Delete all locomotive icons",
+      iconDeleteConfirm: "Really delete ALL files in /www/icons/ on the SRSEII? This cannot be undone.",
       iconUploadOnlyPng: "Only PNG files are allowed: %s",
       iconUploadDone: "%s of %s files uploaded.",
       iconUploadFileError: "%s: error: %s",
@@ -2123,6 +2131,38 @@
     button.addEventListener("click", function () {
       input.click();
     });
+
+    var deleteButton = document.getElementById("icon-delete-button");
+    if (deleteButton) {
+      deleteButton.addEventListener("click", function () {
+        if (!window.confirm(t("iconDeleteConfirm"))) {
+          return;
+        }
+        results.textContent = "";
+        deleteButton.disabled = true;
+        button.disabled = true;
+        fetch("/cgi-bin/srseiiportal/loco-icons?action=delete-all", { method: "POST", cache: "no-store" })
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error("HTTP " + response.status);
+            }
+            return response.json();
+          })
+          .then(function (data) {
+            addResult(getLocalizedStatusValue(data, "message", "messageDe") || "?", !(data && data.ok));
+          })
+          .catch(function (error) {
+            addResult(error.message || String(error), true);
+          })
+          .then(function () {
+            deleteButton.disabled = false;
+            button.disabled = false;
+            if (iconListDetails.open) {
+              loadIconList();
+            }
+          });
+      });
+    }
 
     input.addEventListener("change", function () {
       var files = Array.prototype.slice.call(input.files || []);

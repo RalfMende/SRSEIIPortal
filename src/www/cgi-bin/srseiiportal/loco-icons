@@ -83,6 +83,36 @@ if [ "$request_method" != "POST" ]; then
 	exit 0
 fi
 
+case "&${QUERY_STRING:-}&" in
+	*"&action=delete-all&"*)
+		if [ ! -d "$ICON_DIR" ]; then
+			json_response true "No icons to delete." "Keine Icons zum Löschen vorhanden."
+			exit 0
+		fi
+		cd "$ICON_DIR" 2>/dev/null || {
+			json_response false "The icon directory could not be read." "Das Icon-Verzeichnis konnte nicht gelesen werden."
+			exit 0
+		}
+		deleted=0
+		failed=0
+		# Only regular files directly in the icon directory; subdirectories are left alone
+		for icon in * .[!.]* ..?*; do
+			[ -f "$icon" ] && [ ! -L "$icon" ] || continue
+			if rm -f -- "$icon"; then
+				deleted=$((deleted + 1))
+			else
+				failed=$((failed + 1))
+			fi
+		done
+		if [ "$failed" -gt 0 ]; then
+			json_response false "$failed file(s) could not be deleted ($deleted deleted)." "$failed Datei(en) konnten nicht gelöscht werden ($deleted gelöscht)."
+		else
+			json_response true "$deleted file(s) deleted." "$deleted Datei(en) gelöscht."
+		fi
+		exit 0
+		;;
+esac
+
 # The file name arrives as UTF-8 bytes in octal (3 digits each, e.g. "A" = 101), which avoids
 # locale and printf differences of busybox when handling umlauts.
 octal_name="$(printf '%s' "${QUERY_STRING:-}" | tr '&' '\n' | sed -n 's/^nameoct=\([0-7]*\)$/\1/p' | head -n 1)"
