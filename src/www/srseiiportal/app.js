@@ -259,7 +259,11 @@
       locoListName: "Name",
       locoListDetails: "Details",
       iconUploadIntro: "Lade Lokbilder (PNG, maximal 6 KB) hoch. Es gelten dieselben Einschränkungen wie bei der Märklin CS2. Die Bilder werden unter /www/icons/ abgelegt und von den Steuerungs-Apps verwendet.",
-      iconUploadButton: "Lokbilder hochladen",
+      iconListShowButton: "Lokomotiv-Icons auflisten",
+      iconListLoading: "Lokomotiv-Icons werden geladen...",
+      iconListEmpty: "Keine Lokomotiv-Icons gefunden.",
+      iconListError: "Lokomotiv-Icons konnten nicht geladen werden.",
+      iconUploadButton: "Lokomotiv-Icons hochladen",
       iconUploadOnlyPng: "Nur PNG-Dateien sind erlaubt: %s",
       iconUploadDone: "%s von %s Dateien hochgeladen.",
       iconUploadFileError: "%s: Fehler: %s",
@@ -523,7 +527,11 @@
       locoListName: "Nom",
       locoListDetails: "Détails",
       iconUploadIntro: "Téléversez des images de locomotives (PNG, 6 Ko maximum), avec les mêmes restrictions que pour la Märklin CS2. Elles sont enregistrées dans /www/icons/ et utilisées par les applications de commande.",
-      iconUploadButton: "Téléverser des images de locomotives",
+      iconListShowButton: "Afficher la liste des icônes de locomotives",
+      iconListLoading: "Chargement des icônes de locomotives...",
+      iconListEmpty: "Aucune icône de locomotive trouvée.",
+      iconListError: "Impossible de charger les icônes de locomotives.",
+      iconUploadButton: "Téléverser des icônes de locomotives",
       iconUploadOnlyPng: "Seuls les fichiers PNG sont autorisés : %s",
       iconUploadDone: "%s fichiers sur %s téléversés.",
       iconUploadFileError: "%s : erreur : %s",
@@ -787,7 +795,11 @@
       locoListName: "Naam",
       locoListDetails: "Details",
       iconUploadIntro: "Upload locomotiefafbeeldingen (PNG, maximaal 6 KB); dezelfde beperkingen gelden als voor de Märklin CS2. Ze worden opgeslagen in /www/icons/ en gebruikt door de besturings-apps.",
-      iconUploadButton: "Locomotiefafbeeldingen uploaden",
+      iconListShowButton: "Locomotieficonen weergeven",
+      iconListLoading: "Locomotieficonen laden...",
+      iconListEmpty: "Geen locomotieficonen gevonden.",
+      iconListError: "Locomotieficonen konden niet worden geladen.",
+      iconUploadButton: "Locomotieficonen uploaden",
       iconUploadOnlyPng: "Alleen PNG-bestanden zijn toegestaan: %s",
       iconUploadDone: "%s van %s bestanden geüpload.",
       iconUploadFileError: "%s: fout: %s",
@@ -1051,7 +1063,11 @@
       locoListName: "Name",
       locoListDetails: "Details",
       iconUploadIntro: "Upload locomotive images (PNG, maximum 6 KB); the same restrictions as for the Märklin CS2 apply. They are stored in /www/icons/ and used by the control apps.",
-      iconUploadButton: "Upload locomotive images",
+      iconListShowButton: "List locomotive icons",
+      iconListLoading: "Loading locomotive icons...",
+      iconListEmpty: "No locomotive icons found.",
+      iconListError: "Could not load locomotive icons.",
+      iconUploadButton: "Upload locomotive icons",
       iconUploadOnlyPng: "Only PNG files are allowed: %s",
       iconUploadDone: "%s of %s files uploaded.",
       iconUploadFileError: "%s: error: %s",
@@ -1835,7 +1851,8 @@
     var button = document.getElementById("icon-upload-button");
     var input = document.getElementById("icon-upload-input");
     var results = document.getElementById("icon-upload-results");
-    if (!button || !input || !results) {
+    var iconListDetails = document.querySelector(".icon-list-details");
+    if (!button || !input || !results || !iconListDetails) {
       return;
     }
 
@@ -1853,7 +1870,7 @@
     }
 
     function uploadFile(file) {
-      return fetch("/cgi-bin/srseiiportal/icon-upload?nameoct=" + encodeFileNameOctal(file.name), {
+      return fetch("/cgi-bin/srseiiportal/loco-icons?nameoct=" + encodeFileNameOctal(file.name), {
         method: "POST",
         headers: { "Content-Type": "application/octet-stream" },
         body: file,
@@ -1872,6 +1889,48 @@
           throw new Error(getLocalizedStatusValue(data, "message", "messageDe") || "?");
         });
     }
+
+    function loadIconList() {
+      var status = document.getElementById("icon-list-status");
+      var list = document.getElementById("icon-list");
+      if (!status || !list) {
+        return;
+      }
+
+      list.textContent = "";
+      status.textContent = t("iconListLoading");
+      fetch("/cgi-bin/srseiiportal/loco-icons?ts=" + Date.now(), { cache: "no-store" })
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+          }
+          return response.json();
+        })
+        .then(function (data) {
+          if (!data || data.status !== "ready" || !Array.isArray(data.icons)) {
+            throw new Error(getLocalizedStatusValue(data, "message", "messageDe") || t("iconListError"));
+          }
+          if (!data.icons.length) {
+            status.textContent = t("iconListEmpty");
+            return;
+          }
+          status.textContent = "";
+          data.icons.forEach(function (icon) {
+            var item = document.createElement("li");
+            item.textContent = String(icon);
+            list.appendChild(item);
+          });
+        })
+        .catch(function () {
+          status.textContent = t("iconListError");
+        });
+    }
+
+    iconListDetails.addEventListener("toggle", function () {
+      if (iconListDetails.open) {
+        loadIconList();
+      }
+    });
 
     button.addEventListener("click", function () {
       input.click();
@@ -1913,6 +1972,9 @@
       chain.then(function () {
         addResult(t("iconUploadDone").replace("%s", String(done)).replace("%s", String(valid.length)), done !== valid.length);
         button.disabled = false;
+        if (iconListDetails.open && done > 0) {
+          loadIconList();
+        }
       });
     });
   }

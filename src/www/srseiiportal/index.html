@@ -304,11 +304,18 @@
           <div class="feature-copy">
             <h4 data-i18n="locomotiveIconsTitle">Locomotive Icons</h4>
             <p class="loco-list-intro" data-i18n="iconUploadIntro">Upload locomotive images (PNG, maximum 6 KB); the same restrictions as for the Märklin CS2 apply. They are stored in /www/icons/ and used by the control apps.</p>
-            <ul class="icon-upload-results" id="icon-upload-results"></ul>
-          </div>
-          <div class="feature-actions loco-list-refresh-actions">
-            <button class="btn btn-secondary" id="icon-upload-button" type="button" data-i18n="iconUploadButton">Upload locomotive images</button>
-            <input type="file" id="icon-upload-input" accept=".png,image/png" multiple hidden>
+            <details class="icon-list-details">
+              <summary data-i18n="iconListShowButton">List locomotive icons</summary>
+              <div class="icon-list-content">
+                <div class="feature-actions loco-list-refresh-actions">
+                  <button class="btn btn-secondary" id="icon-upload-button" type="button" data-i18n="iconUploadButton">Upload locomotive icons</button>
+                  <input type="file" id="icon-upload-input" accept=".png,image/png" multiple hidden>
+                </div>
+                <p class="icon-list-status" id="icon-list-status" data-i18n="iconListLoading">Loading locomotive icons...</p>
+                <ul class="icon-list" id="icon-list"></ul>
+                <ul class="icon-upload-results" id="icon-upload-results" aria-live="polite"></ul>
+              </div>
+            </details>
           </div>
         </article>
         <article class="feature-card">

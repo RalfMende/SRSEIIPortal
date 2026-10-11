@@ -304,6 +304,37 @@ body {
   border-radius: 4px;
 }
 
+.icon-list-details {
+  padding-top: 0.7rem;
+}
+
+.icon-list-details > summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.icon-list-details > summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.icon-list-content {
+  margin-top: 1rem;
+}
+
+.icon-list-status {
+  margin: 0 0 0.65rem;
+  color: var(--muted);
+}
+
+.icon-list {
+  margin: 0 0 0.65rem;
+  padding-left: 1.25rem;
+  color: var(--muted);
+}
+
 .loco-list-content {
   margin-top: 1rem;
 }

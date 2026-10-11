@@ -25,8 +25,61 @@ json_response() {
 		"$(json_escape "$response_message_de")"
 }
 
-if [ "${REQUEST_METHOD:-GET}" != "POST" ]; then
-	json_response false "Only POST requests are supported." "Es werden nur POST-Anfragen unterstützt."
+list_icons() {
+	printf 'Content-Type: application/json\n'
+	printf 'Cache-Control: no-store\n'
+	printf '\n'
+
+	if [ ! -d "$ICON_DIR" ] || [ ! -r "$ICON_DIR" ]; then
+		printf '{"status":"error","message":"The icon directory could not be read.","messageDe":"Das Icon-Verzeichnis konnte nicht gelesen werden."}\n'
+		exit 0
+	fi
+
+	cd "$ICON_DIR" 2>/dev/null || {
+		printf '{"status":"error","message":"The icon directory could not be read.","messageDe":"Das Icon-Verzeichnis konnte nicht gelesen werden."}\n'
+		exit 0
+	}
+
+	icons=""
+	for icon in *; do
+		[ -f "$icon" ] || continue
+		case "$icon" in
+			*.[pP][nN][gG])
+				if [ -n "$icons" ]; then
+					icons="${icons}
+${icon}"
+				else
+					icons="$icon"
+				fi
+				;;
+		esac
+	done
+
+	if [ -n "$icons" ]; then
+		sorted_icons="$(printf '%s\n' "$icons" | LC_ALL=C sort)"
+	else
+		sorted_icons=""
+	fi
+
+	printf '{"status":"ready","icons":['
+	separator=""
+	while IFS= read -r icon; do
+		[ -n "$icon" ] || continue
+		printf '%s"%s"' "$separator" "$(json_escape "$icon")"
+		separator=","
+	done <<EOF
+$sorted_icons
+EOF
+	printf ']}\n'
+}
+
+request_method="${REQUEST_METHOD:-GET}"
+if [ "$request_method" = "GET" ]; then
+	list_icons
+	exit 0
+fi
+if [ "$request_method" != "POST" ]; then
+	json_response false "Only GET and POST requests are supported." "Es werden nur GET- und POST-Anfragen unterstützt."
 	exit 0
 fi
 

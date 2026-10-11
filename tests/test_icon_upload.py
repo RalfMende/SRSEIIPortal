@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 
-ENDPOINT = Path("src/www/cgi-bin/srseiiportal/icon-upload")
+ENDPOINT = Path("src/www/cgi-bin/srseiiportal/loco-icons")
 MAX_BYTES = 6 * 1024
 
 
