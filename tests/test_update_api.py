@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 
 
-script = Path("src/www/cgi-bin/srseii-portal/update").read_text(encoding="utf-8")
-script_path = Path("src/www/cgi-bin/srseii-portal/update")
+script = Path("src/www/cgi-bin/srseiiportal/update").read_text(encoding="utf-8")
+script_path = Path("src/www/cgi-bin/srseiiportal/update")
 
 required = [
     "opkg update",

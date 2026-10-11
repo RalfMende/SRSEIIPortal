@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-script = Path("src/www/cgi-bin/srseii-portal/wifi-assistant").read_text(encoding="utf-8")
+script = Path("src/www/cgi-bin/srseiiportal/wifi-assistant").read_text(encoding="utf-8")
 
 scan_start = script.index("scan_networks() {")
 scan_end = script.index("\n}\n", scan_start)
