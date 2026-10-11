@@ -298,52 +298,58 @@
         </article>
       </div>
 
-      <div class="feature-group loco-list-group">
-        <h3 data-i18n="locoListTitle">LOCOMOTIVE LIST</h3>
-        <p class="loco-list-intro" data-i18n="locoListIntro">This is the locomotive list stored on the SRSEII. Locomotives must be synchronized from the Gleisbox/MS2 before the installed control apps can use them.</p>
-        <details class="loco-list-details" id="loco-list-details">
-          <summary data-i18n="locoListShowButton">Show locomotive list</summary>
-          <div class="loco-list-content">
-            <p class="loco-list-meta" id="loco-list-meta"></p>
-            <a class="loco-list-download is-hidden" id="loco-list-download" href="/cgi-bin/srseiiportal/loco-list-download" download data-i18n="locoListDownload">Download locomotive list</a>
-            <div class="feature-actions loco-list-refresh-actions">
-              <button class="btn btn-secondary" id="loco-list-update-button" type="button" data-i18n="locoListUpdateButton">Update locomotive list</button>
-              <button class="btn btn-secondary" id="loco-list-reset-button" type="button" data-i18n="locoListResetButton">Reset locomotive list</button>
-            </div>
-            <p class="loco-list-summary" id="loco-list-summary"></p>
-            <p class="loco-list-status" id="loco-list-status" data-i18n="locoListLoading">Loading locomotive list...</p>
-            <div class="loco-list-empty is-hidden" id="loco-list-empty">
-              <p data-i18n="locoListEmpty">No locomotive list is available under /www/config/lokomotive.cs2.</p>
-            </div>
-            <div class="loco-list-table-wrap is-hidden" id="loco-list-table-wrap">
-              <table class="loco-list-table">
-                <thead>
-                  <tr>
-                    <th scope="col" aria-sort="ascending"><button class="loco-list-sort" type="button" data-sort-key="address" data-i18n="locoListAddress">Address</button><span class="loco-list-sort-indicator" aria-hidden="true">↑</span></th>
-                    <th scope="col" aria-sort="none"><button class="loco-list-sort" type="button" data-sort-key="protocol" data-i18n="locoListProtocol">Protocol</button><span class="loco-list-sort-indicator" aria-hidden="true"></span></th>
-                    <th scope="col" aria-sort="none"><button class="loco-list-sort" type="button" data-sort-key="name" data-i18n="locoListName">Name</button><span class="loco-list-sort-indicator" aria-hidden="true"></span></th>
-                    <th scope="col" class="loco-list-actions-heading" data-i18n="locoListActions">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="loco-list-rows"></tbody>
-              </table>
-            </div>
-            <details class="status-details is-hidden" id="loco-list-error-details">
-              <summary data-i18n="locoListDetails">Details</summary>
-              <p id="loco-list-error-text"></p>
+      <div class="feature-group content-management-group">
+        <h3 data-i18n="srseiiContentManagementTitle">SRSEII CONTENT MANAGEMENT</h3>
+        <article class="feature-card">
+          <div class="feature-copy">
+            <h4 data-i18n="locomotiveIconsTitle">Locomotive Icons</h4>
+            <p class="loco-list-intro" data-i18n="iconUploadIntro">Upload locomotive images (PNG, maximum 6 KB); the same restrictions as for the Märklin CS2 apply. They are stored in /www/icons/ and used by the control apps.</p>
+            <ul class="icon-upload-results" id="icon-upload-results"></ul>
+          </div>
+          <div class="feature-actions loco-list-refresh-actions">
+            <button class="btn btn-secondary" id="icon-upload-button" type="button" data-i18n="iconUploadButton">Upload locomotive images</button>
+            <input type="file" id="icon-upload-input" accept=".png,image/png" multiple hidden>
+          </div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-copy">
+            <h4 data-i18n="locoListTitle">Locomotive List</h4>
+            <p class="loco-list-intro" data-i18n="locoListIntro">This is the locomotive list stored on the SRSEII. Locomotives must be synchronized from the Gleisbox/MS2 before the installed control apps can use them.</p>
+            <details class="loco-list-details" id="loco-list-details">
+              <summary data-i18n="locoListShowButton">Show locomotive list</summary>
+              <div class="loco-list-content">
+                <p class="loco-list-meta" id="loco-list-meta"></p>
+                <a class="loco-list-download is-hidden" id="loco-list-download" href="/cgi-bin/srseiiportal/loco-list-download" download data-i18n="locoListDownload">Download locomotive list</a>
+                <div class="feature-actions loco-list-refresh-actions">
+                  <button class="btn btn-secondary" id="loco-list-update-button" type="button" data-i18n="locoListUpdateButton">Update locomotive list</button>
+                  <button class="btn btn-secondary" id="loco-list-reset-button" type="button" data-i18n="locoListResetButton">Reset locomotive list</button>
+                </div>
+                <p class="loco-list-summary" id="loco-list-summary"></p>
+                <p class="loco-list-status" id="loco-list-status" data-i18n="locoListLoading">Loading locomotive list...</p>
+                <div class="loco-list-empty is-hidden" id="loco-list-empty">
+                  <p data-i18n="locoListEmpty">No locomotive list is available under /www/config/lokomotive.cs2.</p>
+                </div>
+                <div class="loco-list-table-wrap is-hidden" id="loco-list-table-wrap">
+                  <table class="loco-list-table">
+                    <thead>
+                      <tr>
+                        <th scope="col" aria-sort="ascending"><button class="loco-list-sort" type="button" data-sort-key="address" data-i18n="locoListAddress">Address</button><span class="loco-list-sort-indicator" aria-hidden="true">↑</span></th>
+                        <th scope="col" aria-sort="none"><button class="loco-list-sort" type="button" data-sort-key="protocol" data-i18n="locoListProtocol">Protocol</button><span class="loco-list-sort-indicator" aria-hidden="true"></span></th>
+                        <th scope="col" aria-sort="none"><button class="loco-list-sort" type="button" data-sort-key="name" data-i18n="locoListName">Name</button><span class="loco-list-sort-indicator" aria-hidden="true"></span></th>
+                        <th scope="col" class="loco-list-actions-heading" data-i18n="locoListActions">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="loco-list-rows"></tbody>
+                  </table>
+                </div>
+                <details class="status-details is-hidden" id="loco-list-error-details">
+                  <summary data-i18n="locoListDetails">Details</summary>
+                  <p id="loco-list-error-text"></p>
+                </details>
+              </div>
             </details>
           </div>
-        </details>
-      </div>
-
-      <div class="feature-group loco-list-group">
-        <h3 data-i18n="fileManagerTitle">FILE MANAGEMENT</h3>
-        <p class="loco-list-intro" data-i18n="iconUploadIntro">Upload locomotive images (PNG, maximum 6 KB); the same restrictions as for the Märklin CS2 apply. They are stored in /www/icons/ and used by the control apps.</p>
-        <div class="feature-actions loco-list-refresh-actions">
-          <button class="btn btn-secondary" id="icon-upload-button" type="button" data-i18n="iconUploadButton">Upload locomotive images</button>
-          <input type="file" id="icon-upload-input" accept=".png,image/png" multiple hidden>
-        </div>
-        <ul class="icon-upload-results" id="icon-upload-results"></ul>
+        </article>
       </div>
         </div>
 
