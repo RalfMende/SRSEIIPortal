@@ -278,6 +278,38 @@
       noEvents: "Keine Ereignisse.",
       expertToolsTitle: "Erweiterte Einstellungen",
       expertToolsIntro: "Erweiterte Einstellungen – hier solltest du wissen, was du tust.",
+      s88Title: "S88-Konfiguration",
+      configurationTitle: "SRSEII Konfiguration & Verwaltung",
+      configurationIntro: "Konfiguriere und verwalte die Inhalte und Schnittstellen deines SRSEII.",
+      s88GatewayTitle: "Integriertes S88-Gateway",
+      s88Intro: "Aktuelle Einstellungen des integrierten SRSEII-S88-Gateways.",
+      s88Read: "Konfiguration auslesen",
+      s88Idle: "Es wird nichts an den CAN-Bus gesendet, bis du „Konfiguration auslesen“ klickst.",
+      s88Disclaimer: "Nur lesend. Die Werte werden für die S88-Gateway-Firmware v1.17 interpretiert; die Firmware-Version wird nicht erkannt. Die Modulanzahl ist die konfigurierte Kettenlänge, keine erkannte Hardware.",
+      s88RawTitle: "Rohe CAN-Antworten",
+      s88Reading: "Lese CAN-Bus …",
+      s88Done: "Konfiguration ausgelesen",
+      s88Failed: "Auslesen fehlgeschlagen",
+      s88DeviceId: "S88-Geräte-ID",
+      s88Modules: "Anzahl S88-Module",
+      s88Inputs: "Rückmeldeeingänge gesamt",
+      s88FirstId: "Erste Rückmelder-ID",
+      s88Debounce: "Entprellung",
+      s88DebounceN: "%n gleiche Messwerte",
+      s88AllOnFirst: "Alle Zustände nach dem Start senden",
+      s88Delay: "Verzögerung (Forced Events)",
+      s88LedTest: "LED-Test beim Einschalten",
+      s88LedEeprom: "LED-Anzeige beim EEPROM-Schreiben",
+      s88Flags: "Optionsflags (roh)",
+      s88Off: "Aus (0 Module)",
+      s88Yes: "Ja",
+      s88No: "Nein",
+      s88NoReply: "Keine Antwort",
+      s88RawValue: "Rohwert",
+      s88Unknown: "Nicht interpretierbar",
+      s88Unset: "Nicht gesetzt (Standardwert)",
+      s88ModulesLabel: "Module",
+      s88Range: "Modul %n: IDs %a–%b",
       sshTerminalTitle: "SSH / Terminal",
       sshTerminalDesc: "Shell in a Box über Port 4200.",
       loading: "wird geladen",
@@ -546,6 +578,38 @@
       noEvents: "Aucun événement.",
       expertToolsTitle: "Paramètres avancés",
       expertToolsIntro: "Paramètres avancés : à utiliser en connaissance de cause.",
+      s88Title: "Configuration S88",
+      configurationTitle: "Configuration et gestion du SRSEII",
+      configurationIntro: "Configurez et gérez les contenus et les interfaces de votre SRSEII.",
+      s88GatewayTitle: "Passerelle S88 intégrée",
+      s88Intro: "Réglages actuels de la passerelle S88 intégrée du SRSEII.",
+      s88Read: "Lire la configuration",
+      s88Idle: "Rien n'est envoyé sur le bus CAN tant que vous ne cliquez pas sur « Lire la configuration ».",
+      s88Disclaimer: "Lecture seule. Les valeurs sont interprétées pour le firmware v1.17 de la passerelle S88 ; la version du firmware n'est pas détectée. Le nombre de modules est la longueur de chaîne configurée, pas du matériel détecté.",
+      s88RawTitle: "Réponses CAN brutes",
+      s88Reading: "Lecture du bus CAN…",
+      s88Done: "Configuration lue",
+      s88Failed: "Échec de la lecture",
+      s88DeviceId: "ID de l'appareil S88",
+      s88Modules: "Nombre de modules S88",
+      s88Inputs: "Entrées de rétrosignalisation au total",
+      s88FirstId: "Première ID de rétrosignalisation",
+      s88Debounce: "Antirebond",
+      s88DebounceN: "%n mesures identiques",
+      s88AllOnFirst: "Envoyer tous les états après la mise sous tension",
+      s88Delay: "Délai (forced events)",
+      s88LedTest: "Test des LED à la mise sous tension",
+      s88LedEeprom: "Affichage LED pendant l'écriture EEPROM",
+      s88Flags: "Indicateurs d'option (bruts)",
+      s88Off: "Désactivé (0 module)",
+      s88Yes: "Oui",
+      s88No: "Non",
+      s88NoReply: "Pas de réponse",
+      s88RawValue: "Valeur brute",
+      s88Unknown: "Non interprétable",
+      s88Unset: "Non défini (valeur par défaut)",
+      s88ModulesLabel: "Modules",
+      s88Range: "Module %n : IDs %a–%b",
       sshTerminalTitle: "SSH / Terminal",
       sshTerminalDesc: "Shell in a Box via le port 4200.",
       loading: "chargement",
@@ -814,6 +878,38 @@
       noEvents: "Geen gebeurtenissen.",
       expertToolsTitle: "Geavanceerde instellingen",
       expertToolsIntro: "Geavanceerde instellingen - weet wat je doet.",
+      s88Title: "S88-configuratie",
+      configurationTitle: "SRSEII-configuratie en beheer",
+      configurationIntro: "Configureer en beheer de inhoud en interfaces van je SRSEII.",
+      s88GatewayTitle: "Geïntegreerde S88-gateway",
+      s88Intro: "Huidige instellingen van de geïntegreerde SRSEII S88-gateway.",
+      s88Read: "Configuratie uitlezen",
+      s88Idle: "Er wordt niets naar de CAN-bus gestuurd totdat je op \"Configuratie uitlezen\" klikt.",
+      s88Disclaimer: "Alleen-lezen. Waarden worden geïnterpreteerd voor S88-gatewayfirmware v1.17; de firmwareversie wordt niet gedetecteerd. Het aantal modules is de ingestelde ketenlengte, geen gedetecteerde hardware.",
+      s88RawTitle: "Ruwe CAN-antwoorden",
+      s88Reading: "CAN-bus uitlezen…",
+      s88Done: "Configuratie uitgelezen",
+      s88Failed: "Uitlezen mislukt",
+      s88DeviceId: "S88-apparaat-ID",
+      s88Modules: "Aantal S88-modules",
+      s88Inputs: "Totaal aantal terugmeldingingangen",
+      s88FirstId: "Eerste terugmeld-ID",
+      s88Debounce: "Ontdendering",
+      s88DebounceN: "%n gelijke metingen",
+      s88AllOnFirst: "Alle statussen na inschakelen sturen",
+      s88Delay: "Vertraging (forced events)",
+      s88LedTest: "LED-test bij inschakelen",
+      s88LedEeprom: "LED-indicatie bij EEPROM-schrijven",
+      s88Flags: "Optievlaggen (ruw)",
+      s88Off: "Uit (0 modules)",
+      s88Yes: "Ja",
+      s88No: "Nee",
+      s88NoReply: "Geen antwoord",
+      s88RawValue: "Ruwe waarde",
+      s88Unknown: "Niet te interpreteren",
+      s88Unset: "Niet ingesteld (standaardwaarde)",
+      s88ModulesLabel: "Modules",
+      s88Range: "Module %n: ID's %a–%b",
       sshTerminalTitle: "SSH / Terminal",
       sshTerminalDesc: "Shell in a Box via poort 4200.",
       loading: "laden",
@@ -1082,6 +1178,38 @@
       noEvents: "No events.",
       expertToolsTitle: "Advanced settings",
       expertToolsIntro: "Advanced settings ahead — you should know what you're doing here.",
+      s88Title: "S88 configuration",
+      configurationTitle: "SRSEII Configuration & Management",
+      configurationIntro: "Configure and manage the contents and interfaces of your SRSEII.",
+      s88GatewayTitle: "Integrated S88 gateway",
+      s88Intro: "Current settings of the integrated SRSEII S88 gateway.",
+      s88Read: "Read configuration",
+      s88Idle: "Nothing is sent to the CAN bus until you click \"Read configuration\".",
+      s88Disclaimer: "Read-only. Values are interpreted for the S88 gateway firmware v1.17; the firmware version is not detected. The module count is the configured chain length, not detected hardware.",
+      s88RawTitle: "Raw CAN replies",
+      s88Reading: "Reading CAN bus...",
+      s88Done: "Configuration read",
+      s88Failed: "Read failed",
+      s88DeviceId: "S88 device ID",
+      s88Modules: "Number of S88 modules",
+      s88Inputs: "Total feedback inputs",
+      s88FirstId: "First feedback ID",
+      s88Debounce: "Debounce",
+      s88DebounceN: "%n equal samples",
+      s88AllOnFirst: "Send all states after power-on",
+      s88Delay: "Forced-event delay",
+      s88LedTest: "LED test at power-on",
+      s88LedEeprom: "LED indication on EEPROM write",
+      s88Flags: "Option flags (raw)",
+      s88Off: "Off (0 modules)",
+      s88Yes: "Yes",
+      s88No: "No",
+      s88NoReply: "No reply",
+      s88RawValue: "Raw value",
+      s88Unknown: "Cannot be interpreted",
+      s88Unset: "Not set (default)",
+      s88ModulesLabel: "Modules",
+      s88Range: "Module %n: IDs %a-%b",
       sshTerminalTitle: "SSH / Terminal",
       sshTerminalDesc: "Shell in a Box via port 4200.",
       loading: "loading",
@@ -2762,6 +2890,171 @@
         return;
       }
       sendLocoListRefresh("reset");
+    });
+  }
+
+  // S88 gateway (firmware v1.17) value decoding. Values arrive as hex strings.
+  function s88Bytes(hex) {
+    var bytes = [];
+    for (var i = 0; i + 1 < hex.length; i += 2) {
+      bytes.push(parseInt(hex.substr(i, 2), 16));
+    }
+    return bytes;
+  }
+
+  function s88Uint(hex) {
+    var bytes = s88Bytes(hex);
+    if (!bytes.length || bytes.length > 2) {
+      return null;
+    }
+    return bytes.length === 2 ? bytes[0] * 256 + bytes[1] : bytes[0];
+  }
+
+  function s88ModuleCount(hex) {
+    var count = s88Uint(hex);
+    return count !== null && count <= 16 ? count : null;
+  }
+
+  // 0xFFFF means the channel holds no value (factory default / unset).
+  function s88IsUnset(hex) {
+    return /^f+$/i.test(hex);
+  }
+
+  function s88Hex(value, ch) {
+    return value ? "0x" + value : "-";
+  }
+
+  function s88Card(label, value) {
+    var card = document.createElement("article");
+    card.className = "network-card";
+    var heading = document.createElement("div");
+    heading.className = "network-card-heading";
+    var h = document.createElement("h3");
+    h.textContent = label;
+    heading.appendChild(h);
+    var p = document.createElement("p");
+    p.className = "network-address";
+    p.textContent = value;
+    card.appendChild(heading);
+    card.appendChild(p);
+    return card;
+  }
+
+  function s88Rendered(hex, text) {
+    return text === null ? t("s88Unknown") + " (" + s88Hex(hex) + ")" : text;
+  }
+
+  function renderS88(channels) {
+    var cards = document.getElementById("s88-cards");
+    var ranges = document.getElementById("s88-ranges");
+    var raw = document.getElementById("s88-raw");
+    var result = document.getElementById("s88-result");
+    if (!cards || !ranges || !raw || !result) {
+      return;
+    }
+    cards.textContent = "";
+    ranges.textContent = "";
+    var lines = [];
+    var count = null;
+    var firstId = null;
+    var ch;
+    for (ch in channels) {
+      if (Object.prototype.hasOwnProperty.call(channels, ch)) {
+        lines.push(channels[ch].frame);
+      }
+    }
+    raw.textContent = lines.join("\n");
+
+    function value(channel) {
+      return channels[channel] ? channels[channel].value : null;
+    }
+
+    var id = value("01");
+    if (id !== null) {
+      var idNum = s88Uint(id);
+      cards.appendChild(s88Card(t("s88DeviceId"), s88IsUnset(id) ? t("s88Unset") : s88Rendered(id, idNum === null ? null : String(idNum))));
+    }
+
+    var modules = value("03");
+    if (modules !== null) {
+      count = s88ModuleCount(modules);
+      cards.appendChild(s88Card(t("s88Modules"), s88Rendered(modules, count === null ? null : (count === 0 ? t("s88Off") : String(count)))));
+      if (count !== null) {
+        cards.appendChild(s88Card(t("s88Inputs"), count + " × 16 = " + count * 16));
+      }
+    }
+
+    var offset = value("04");
+    if (offset !== null) {
+      var offsetNum = s88Uint(offset);
+      // Convention from the firmware post: displayed first ID = offset + 1.
+      firstId = offsetNum === null || s88IsUnset(offset) ? null : offsetNum + 1;
+      cards.appendChild(s88Card(t("s88FirstId"), s88IsUnset(offset) ? t("s88Unset") : s88Rendered(offset, firstId === null ? null : String(firstId))));
+    }
+
+    var flagsHex = value("07");
+    var flags = null;
+    if (flagsHex !== null) {
+      var bytes = s88Bytes(flagsHex);
+      flags = bytes.length === 1 || bytes.length === 2 ? bytes[bytes.length - 1] : null;
+      if (s88IsUnset(flagsHex)) {
+        cards.appendChild(s88Card(t("s88Flags"), t("s88Unset")));
+      } else if (flags === null) {
+        cards.appendChild(s88Card(t("s88Flags"), s88Rendered(flagsHex, null)));
+      } else {
+        var yn = function (bit) { return (flags & bit) ? t("s88Yes") : t("s88No"); };
+        cards.appendChild(s88Card(t("s88Debounce"), t("s88DebounceN").replace("%n", (flags & 0x80) ? "2" : "4")));
+        cards.appendChild(s88Card(t("s88AllOnFirst"), yn(0x01) + " / " + yn(0x02)));
+        cards.appendChild(s88Card(t("s88LedTest"), yn(0x04)));
+        cards.appendChild(s88Card(t("s88LedEeprom"), yn(0x08)));
+        cards.appendChild(s88Card(t("s88Flags"), "0x" + ("0" + flags.toString(16).toUpperCase()).slice(-2)));
+      }
+    }
+
+    var delay = value("08");
+    if (delay !== null) {
+      var delayNum = s88Uint(delay);
+      cards.appendChild(s88Card(t("s88Delay"), s88IsUnset(delay) ? t("s88Unset") : s88Rendered(delay, delayNum === null || delayNum > 255 ? null : delayNum + " ms")));
+    }
+
+    if (count && firstId !== null) {
+      var parts = [];
+      for (var m = 0; m < count; m++) {
+        parts.push(t("s88Range").replace("%n", String(m + 1)).replace("%a", String(firstId + m * 16)).replace("%b", String(firstId + m * 16 + 15)));
+      }
+      ranges.textContent = parts.join("; ");
+    }
+    result.classList.remove("is-hidden");
+  }
+
+  var s88ReadButton = document.getElementById("s88-read");
+  var s88Note = document.getElementById("s88-note");
+  if (s88ReadButton && s88Note) {
+    s88ReadButton.addEventListener("click", function () {
+      s88ReadButton.disabled = true;
+      s88Note.textContent = t("s88Reading");
+      fetch("/cgi-bin/srseiiportal/s88-config?ts=" + Date.now(), { method: "POST", cache: "no-store" })
+        .then(function (response) {
+          return response.text().then(function (body) {
+            try {
+              return JSON.parse(body);
+            } catch (parseError) {
+              throw new Error("HTTP " + response.status + ": " + (body.replace(/\s+/g, " ").trim().slice(0, 160) || "empty response"));
+            }
+          });
+        })
+        .then(function (data) {
+          if (!data || !data.ok) {
+            var message = data && (lang === "de" ? data.messageDe : data.message);
+            throw new Error(message || t("s88Failed"));
+          }
+          renderS88(data.channels || {});
+          s88Note.textContent = t("s88Done") + " (" + new Date().toLocaleTimeString() + ")";
+        })
+        .catch(function (error) {
+          s88Note.textContent = t("s88Failed") + ": " + (error && error.message ? error.message : t("s88NoReply"));
+        })
+        .then(function () { s88ReadButton.disabled = false; });
     });
   }
   applyTranslations();

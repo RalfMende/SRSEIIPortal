@@ -298,6 +298,23 @@
         </article>
       </div>
 
+        </div>
+
+        <p class="status-note feature-status-note is-hidden" id="model-railway-note"></p>
+      </details>
+    </section>
+
+    <section class="feature-block configuration-block" aria-label="SRSEII Configuration &amp; Management">
+      <details class="section-toggle" id="configuration-toggle">
+        <summary class="section-summary">
+          <span class="section-summary-text">
+            <h2 data-i18n="configurationTitle">SRSEII Configuration &amp; Management</h2>
+            <p class="feature-intro" data-i18n="configurationIntro">Configure and manage the contents and interfaces of your SRSEII.</p>
+          </span>
+          <span class="section-toggle-chevron" aria-hidden="true"></span>
+        </summary>
+
+        <div class="section-body">
       <div class="feature-group content-management-group">
         <h3 data-i18n="srseiiContentManagementTitle">SRSEII CONTENT MANAGEMENT</h3>
         <article class="feature-card">
@@ -358,9 +375,30 @@
           </div>
         </article>
       </div>
-        </div>
+      <div class="feature-group s88-group">
+        <h3 data-i18n="s88Title">S88 configuration</h3>
+        <article class="feature-card">
+          <div class="feature-copy">
+            <h4 data-i18n="s88GatewayTitle">Integrated S88 gateway</h4>
+            <p data-i18n="s88Intro">Current settings of the integrated SRSEII S88 gateway.</p>
+            <div class="feature-actions">
+              <button class="btn btn-secondary" id="s88-read" type="button" data-i18n="s88Read">Read configuration</button>
+            </div>
+            <p class="status-note" id="s88-note" data-i18n="s88Idle">Nothing is sent to the CAN bus until you click "Read configuration".</p>
 
-        <p class="status-note feature-status-note is-hidden" id="model-railway-note"></p>
+            <div id="s88-result" class="is-hidden">
+              <div class="network-grid" id="s88-cards"></div>
+              <p class="status-note" id="s88-ranges"></p>
+              <details class="status-details">
+                <summary data-i18n="s88RawTitle">Raw CAN replies</summary>
+                <pre id="s88-raw"></pre>
+              </details>
+            </div>
+            <p class="status-note" data-i18n="s88Disclaimer">Read-only. Values are interpreted for the S88 gateway firmware v1.17; the firmware version is not detected. The module count is the configured chain length, not detected hardware.</p>
+          </div>
+        </article>
+      </div>
+        </div>
       </details>
     </section>
 
@@ -599,6 +637,6 @@
     </div>
   </dialog>
 
-  <script src="/srseiiportal/app.js?v=0.9.28"></script>
+  <script src="/srseiiportal/app.js?v=0.9.32"></script>
 </body>
 </html>

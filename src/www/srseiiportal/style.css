@@ -1345,3 +1345,13 @@ button.btn[disabled] {
 .icon-upload-results .err {
   color: #c0392b;
 }
+
+#s88-raw {
+  margin: 0.5rem 0 0;
+  overflow-x: auto;
+  font-size: 0.85rem;
+}
+
+#s88-ranges:empty {
+  display: none;
+}
