@@ -1355,3 +1355,16 @@ button.btn[disabled] {
 #s88-ranges:empty {
   display: none;
 }
+
+.s88-form {
+  margin-top: 1rem;
+}
+
+.s88-form h5 {
+  margin: 0 0 0.6rem;
+}
+
+.s88-form input[type="checkbox"] {
+  width: auto;
+  justify-self: start;
+}

@@ -383,18 +383,47 @@
             <p data-i18n="s88Intro">Current settings of the integrated SRSEII S88 gateway.</p>
             <div class="feature-actions">
               <button class="btn btn-secondary" id="s88-read" type="button" data-i18n="s88Read">Read configuration</button>
+              <button class="btn btn-secondary" id="s88-write" type="button" disabled data-i18n="s88Write">Write configuration</button>
             </div>
-            <p class="status-note" id="s88-note" data-i18n="s88Idle">Nothing is sent to the CAN bus until you click "Read configuration".</p>
+            <p class="status-note" id="s88-note" data-i18n="s88Idle">Nothing is sent to the CAN bus until you click "Read configuration" or "Write configuration".</p>
 
-            <div id="s88-result" class="is-hidden">
-              <div class="network-grid" id="s88-cards"></div>
-              <p class="status-note" id="s88-ranges"></p>
+            <form id="s88-form" class="s88-form" autocomplete="off">
+              <div class="wifi-grid">
+                <label for="s88-in-modules" data-i18n="s88Modules">Number of S88 modules</label>
+                <select id="s88-in-modules" disabled></select>
+
+                <label for="s88-in-firstid" data-i18n="s88FirstId">First feedback ID</label>
+                <input id="s88-in-firstid" type="number" min="1" max="65535" step="1" disabled />
+
+                <label for="s88-in-debounce" data-i18n="s88Debounce">Debounce</label>
+                <select id="s88-in-debounce" disabled>
+                  <option value="4">4</option>
+                  <option value="2">2</option>
+                </select>
+
+                <label for="s88-in-forced" data-i18n="s88Forced1">Send all states once after power-on</label>
+                <input id="s88-in-forced" type="checkbox" disabled />
+
+                <label for="s88-in-delay" data-i18n="s88Delay">Forced-event delay (ms)</label>
+                <input id="s88-in-delay" type="number" min="0" max="255" step="1" disabled />
+              </div>
+
               <details class="status-details">
-                <summary data-i18n="s88RawTitle">Raw CAN replies</summary>
-                <pre id="s88-raw"></pre>
+                <summary data-i18n="s88Advanced">Advanced diagnostics</summary>
+                <div class="wifi-grid">
+                  <label for="s88-in-forced2" data-i18n="s88Forced2">Forced events, second variant (bit 1)</label>
+                  <input id="s88-in-forced2" type="checkbox" disabled />
+
+                  <label for="s88-in-deviceid" data-i18n="s88DeviceId">S88 device ID</label>
+                  <input id="s88-in-deviceid" type="number" min="0" max="65534" step="1" disabled />
+                </div>
               </details>
-            </div>
-            <p class="status-note" data-i18n="s88Disclaimer">Read-only. Values are interpreted for the S88 gateway firmware v1.17; the firmware version is not detected. The module count is the configured chain length, not detected hardware.</p>
+
+              <p class="status-note" id="s88-ranges"></p>
+              <p class="status-note" data-i18n="s88WriteHint">Only changed values are sent. Empty fields (not set in the gateway) are left untouched. The gateway stores the values in its EEPROM.</p>
+              <ul class="icon-upload-results" id="s88-write-results" aria-live="polite"></ul>
+            </form>
+            <p class="status-note" data-i18n="s88Disclaimer">Values are interpreted for the S88 gateway firmware v1.17; the firmware version is not detected. The module count is the configured chain length, not detected hardware.</p>
           </div>
         </article>
       </div>
@@ -637,6 +666,6 @@
     </div>
   </dialog>
 
-  <script src="/srseiiportal/app.js?v=0.9.32"></script>
+  <script src="/srseiiportal/app.js?v=0.9.34"></script>
 </body>
 </html>

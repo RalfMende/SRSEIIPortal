@@ -284,9 +284,23 @@
       s88GatewayTitle: "Integriertes S88-Gateway",
       s88Intro: "Aktuelle Einstellungen des integrierten SRSEII-S88-Gateways.",
       s88Read: "Konfiguration auslesen",
-      s88Idle: "Es wird nichts an den CAN-Bus gesendet, bis du „Konfiguration auslesen“ klickst.",
-      s88Disclaimer: "Nur lesend. Die Werte werden für die S88-Gateway-Firmware v1.17 interpretiert; die Firmware-Version wird nicht erkannt. Die Modulanzahl ist die konfigurierte Kettenlänge, keine erkannte Hardware.",
-      s88RawTitle: "Rohe CAN-Antworten",
+      s88Idle: "Es wird nichts an den CAN-Bus gesendet, bis du „Konfiguration auslesen“ oder „Konfiguration schreiben“ klickst.",
+      s88Disclaimer: "Die Werte werden für die S88-Gateway-Firmware v1.17 interpretiert; die Firmware-Version wird nicht erkannt. Die Modulanzahl ist die konfigurierte Kettenlänge, keine erkannte Hardware.",
+      s88Forced1: "Alle Zustände nach dem Start einmal senden",
+      s88Forced2: "Forced Events, zweite Variante (Bit 1)",
+      s88Advanced: "Erweiterte Diagnose",
+      s88Write: "Konfiguration schreiben",
+      s88Writing: "Sende Konfiguration …",
+      s88WriteConfirm: "Die Konfiguration wird in das EEPROM des integrierten S88-Gateways geschrieben. Die Firmware-Version wird nicht geprüft. Fortfahren?",
+      s88NothingToWrite: "Keine Änderungen zum Senden.",
+      s88Invalid: "Ungültiger Wert – bitte die Eingaben prüfen.",
+      s88Verified: "gesendet und beim Zurücklesen bestätigt",
+      s88NotVerified: "gesendet, aber nicht bestätigt",
+      s88WriteVerified: "Befehle gesendet, alle Werte beim Zurücklesen bestätigt",
+      s88WriteSent: "Befehle gesendet, aber nicht alle Werte bestätigt",
+      s88WriteFailed: "Senden fehlgeschlagen",
+      s88WriteHint: "Es werden nur geänderte Werte gesendet. Leere Felder (im Gateway nicht gesetzt) bleiben unverändert. Das Gateway speichert die Werte im EEPROM.",
+      s88Delay: "Verzögerung Forced Events (ms)",
       s88Reading: "Lese CAN-Bus …",
       s88Done: "Konfiguration ausgelesen",
       s88Failed: "Auslesen fehlgeschlagen",
@@ -297,9 +311,6 @@
       s88Debounce: "Entprellung",
       s88DebounceN: "%n gleiche Messwerte",
       s88AllOnFirst: "Alle Zustände nach dem Start senden",
-      s88Delay: "Verzögerung (Forced Events)",
-      s88LedTest: "LED-Test beim Einschalten",
-      s88LedEeprom: "LED-Anzeige beim EEPROM-Schreiben",
       s88Flags: "Optionsflags (roh)",
       s88Off: "Aus (0 Module)",
       s88Yes: "Ja",
@@ -584,9 +595,23 @@
       s88GatewayTitle: "Passerelle S88 intégrée",
       s88Intro: "Réglages actuels de la passerelle S88 intégrée du SRSEII.",
       s88Read: "Lire la configuration",
-      s88Idle: "Rien n'est envoyé sur le bus CAN tant que vous ne cliquez pas sur « Lire la configuration ».",
-      s88Disclaimer: "Lecture seule. Les valeurs sont interprétées pour le firmware v1.17 de la passerelle S88 ; la version du firmware n'est pas détectée. Le nombre de modules est la longueur de chaîne configurée, pas du matériel détecté.",
-      s88RawTitle: "Réponses CAN brutes",
+      s88Idle: "Rien n'est envoyé sur le bus CAN tant que vous ne cliquez pas sur « Lire la configuration » ou « Écrire la configuration ».",
+      s88Disclaimer: "Les valeurs sont interprétées pour le firmware v1.17 de la passerelle S88 ; la version du firmware n'est pas détectée. Le nombre de modules est la longueur de chaîne configurée, pas du matériel détecté.",
+      s88Forced1: "Envoyer tous les états une fois après la mise sous tension",
+      s88Forced2: "Forced events, seconde variante (bit 1)",
+      s88Advanced: "Diagnostic avancé",
+      s88Write: "Écrire la configuration",
+      s88Writing: "Envoi de la configuration…",
+      s88WriteConfirm: "La configuration sera écrite dans l'EEPROM de la passerelle S88 intégrée. La version du firmware n'est pas vérifiée. Continuer ?",
+      s88NothingToWrite: "Aucune modification à envoyer.",
+      s88Invalid: "Valeur non valide – vérifiez la saisie.",
+      s88Verified: "envoyé et confirmé par relecture",
+      s88NotVerified: "envoyé, mais non confirmé",
+      s88WriteVerified: "Commandes envoyées, toutes les valeurs confirmées par relecture",
+      s88WriteSent: "Commandes envoyées, mais toutes les valeurs ne sont pas confirmées",
+      s88WriteFailed: "Échec de l'envoi",
+      s88WriteHint: "Seules les valeurs modifiées sont envoyées. Les champs vides (non définis dans la passerelle) restent inchangés. La passerelle enregistre les valeurs dans son EEPROM.",
+      s88Delay: "Délai des forced events (ms)",
       s88Reading: "Lecture du bus CAN…",
       s88Done: "Configuration lue",
       s88Failed: "Échec de la lecture",
@@ -597,9 +622,6 @@
       s88Debounce: "Antirebond",
       s88DebounceN: "%n mesures identiques",
       s88AllOnFirst: "Envoyer tous les états après la mise sous tension",
-      s88Delay: "Délai (forced events)",
-      s88LedTest: "Test des LED à la mise sous tension",
-      s88LedEeprom: "Affichage LED pendant l'écriture EEPROM",
       s88Flags: "Indicateurs d'option (bruts)",
       s88Off: "Désactivé (0 module)",
       s88Yes: "Oui",
@@ -884,9 +906,23 @@
       s88GatewayTitle: "Geïntegreerde S88-gateway",
       s88Intro: "Huidige instellingen van de geïntegreerde SRSEII S88-gateway.",
       s88Read: "Configuratie uitlezen",
-      s88Idle: "Er wordt niets naar de CAN-bus gestuurd totdat je op \"Configuratie uitlezen\" klikt.",
-      s88Disclaimer: "Alleen-lezen. Waarden worden geïnterpreteerd voor S88-gatewayfirmware v1.17; de firmwareversie wordt niet gedetecteerd. Het aantal modules is de ingestelde ketenlengte, geen gedetecteerde hardware.",
-      s88RawTitle: "Ruwe CAN-antwoorden",
+      s88Idle: "Er wordt niets naar de CAN-bus gestuurd totdat je op \"Configuratie uitlezen\" of \"Configuratie schrijven\" klikt.",
+      s88Disclaimer: "Waarden worden geïnterpreteerd voor S88-gatewayfirmware v1.17; de firmwareversie wordt niet gedetecteerd. Het aantal modules is de ingestelde ketenlengte, geen gedetecteerde hardware.",
+      s88Forced1: "Alle statussen eenmalig sturen na inschakelen",
+      s88Forced2: "Forced events, tweede variant (bit 1)",
+      s88Advanced: "Geavanceerde diagnose",
+      s88Write: "Configuratie schrijven",
+      s88Writing: "Configuratie wordt verstuurd…",
+      s88WriteConfirm: "De configuratie wordt naar het EEPROM van de geïntegreerde S88-gateway geschreven. De firmwareversie wordt niet gecontroleerd. Doorgaan?",
+      s88NothingToWrite: "Geen wijzigingen om te sturen.",
+      s88Invalid: "Ongeldige waarde – controleer de invoer.",
+      s88Verified: "verzonden en bevestigd door terug te lezen",
+      s88NotVerified: "verzonden, maar niet bevestigd",
+      s88WriteVerified: "Opdrachten verzonden, alle waarden bevestigd door terug te lezen",
+      s88WriteSent: "Opdrachten verzonden, maar niet alle waarden bevestigd",
+      s88WriteFailed: "Verzenden mislukt",
+      s88WriteHint: "Alleen gewijzigde waarden worden verzonden. Lege velden (niet ingesteld in de gateway) blijven ongewijzigd. De gateway slaat de waarden op in het EEPROM.",
+      s88Delay: "Vertraging forced events (ms)",
       s88Reading: "CAN-bus uitlezen…",
       s88Done: "Configuratie uitgelezen",
       s88Failed: "Uitlezen mislukt",
@@ -897,9 +933,6 @@
       s88Debounce: "Ontdendering",
       s88DebounceN: "%n gelijke metingen",
       s88AllOnFirst: "Alle statussen na inschakelen sturen",
-      s88Delay: "Vertraging (forced events)",
-      s88LedTest: "LED-test bij inschakelen",
-      s88LedEeprom: "LED-indicatie bij EEPROM-schrijven",
       s88Flags: "Optievlaggen (ruw)",
       s88Off: "Uit (0 modules)",
       s88Yes: "Ja",
@@ -1184,9 +1217,23 @@
       s88GatewayTitle: "Integrated S88 gateway",
       s88Intro: "Current settings of the integrated SRSEII S88 gateway.",
       s88Read: "Read configuration",
-      s88Idle: "Nothing is sent to the CAN bus until you click \"Read configuration\".",
-      s88Disclaimer: "Read-only. Values are interpreted for the S88 gateway firmware v1.17; the firmware version is not detected. The module count is the configured chain length, not detected hardware.",
-      s88RawTitle: "Raw CAN replies",
+      s88Idle: "Nothing is sent to the CAN bus until you click \"Read configuration\" or \"Write configuration\".",
+      s88Disclaimer: "Values are interpreted for the S88 gateway firmware v1.17; the firmware version is not detected. The module count is the configured chain length, not detected hardware.",
+      s88Forced1: "Send all states once after power-on",
+      s88Forced2: "Forced events, second variant (bit 1)",
+      s88Advanced: "Advanced diagnostics",
+      s88Write: "Write configuration",
+      s88Writing: "Sending configuration...",
+      s88WriteConfirm: "The configuration will be written to the EEPROM of the integrated S88 gateway. The firmware version is not checked. Continue?",
+      s88NothingToWrite: "No changes to send.",
+      s88Invalid: "Invalid value - please check your input.",
+      s88Verified: "sent and confirmed by readback",
+      s88NotVerified: "sent, but not confirmed",
+      s88WriteVerified: "Commands sent, all values confirmed by readback",
+      s88WriteSent: "Commands sent, but not all values confirmed",
+      s88WriteFailed: "Sending failed",
+      s88WriteHint: "Only changed values are sent. Empty fields (not set in the gateway) are left untouched. The gateway stores the values in its EEPROM.",
+      s88Delay: "Forced-event delay (ms)",
       s88Reading: "Reading CAN bus...",
       s88Done: "Configuration read",
       s88Failed: "Read failed",
@@ -1197,9 +1244,6 @@
       s88Debounce: "Debounce",
       s88DebounceN: "%n equal samples",
       s88AllOnFirst: "Send all states after power-on",
-      s88Delay: "Forced-event delay",
-      s88LedTest: "LED test at power-on",
-      s88LedEeprom: "LED indication on EEPROM write",
       s88Flags: "Option flags (raw)",
       s88Off: "Off (0 modules)",
       s88Yes: "Yes",
@@ -2920,141 +2964,221 @@
     return /^f+$/i.test(hex);
   }
 
-  function s88Hex(value, ch) {
-    return value ? "0x" + value : "-";
-  }
-
-  function s88Card(label, value) {
-    var card = document.createElement("article");
-    card.className = "network-card";
-    var heading = document.createElement("div");
-    heading.className = "network-card-heading";
-    var h = document.createElement("h3");
-    h.textContent = label;
-    heading.appendChild(h);
-    var p = document.createElement("p");
-    p.className = "network-address";
-    p.textContent = value;
-    card.appendChild(heading);
-    card.appendChild(p);
-    return card;
-  }
-
-  function s88Rendered(hex, text) {
-    return text === null ? t("s88Unknown") + " (" + s88Hex(hex) + ")" : text;
-  }
-
   function renderS88(channels) {
-    var cards = document.getElementById("s88-cards");
     var ranges = document.getElementById("s88-ranges");
-    var raw = document.getElementById("s88-raw");
-    var result = document.getElementById("s88-result");
-    if (!cards || !ranges || !raw || !result) {
+    if (!ranges) {
       return;
     }
-    cards.textContent = "";
-    ranges.textContent = "";
-    var lines = [];
-    var count = null;
-    var firstId = null;
-    var ch;
-    for (ch in channels) {
-      if (Object.prototype.hasOwnProperty.call(channels, ch)) {
-        lines.push(channels[ch].frame);
-      }
-    }
-    raw.textContent = lines.join("\n");
+    fillS88Form(channels);
+    updateS88Ranges();
+  }
 
-    function value(channel) {
-      return channels[channel] ? channels[channel].value : null;
-    }
-
-    var id = value("01");
-    if (id !== null) {
-      var idNum = s88Uint(id);
-      cards.appendChild(s88Card(t("s88DeviceId"), s88IsUnset(id) ? t("s88Unset") : s88Rendered(id, idNum === null ? null : String(idNum))));
-    }
-
-    var modules = value("03");
-    if (modules !== null) {
-      count = s88ModuleCount(modules);
-      cards.appendChild(s88Card(t("s88Modules"), s88Rendered(modules, count === null ? null : (count === 0 ? t("s88Off") : String(count)))));
-      if (count !== null) {
-        cards.appendChild(s88Card(t("s88Inputs"), count + " × 16 = " + count * 16));
-      }
-    }
-
-    var offset = value("04");
-    if (offset !== null) {
-      var offsetNum = s88Uint(offset);
-      // Convention from the firmware post: displayed first ID = offset + 1.
-      firstId = offsetNum === null || s88IsUnset(offset) ? null : offsetNum + 1;
-      cards.appendChild(s88Card(t("s88FirstId"), s88IsUnset(offset) ? t("s88Unset") : s88Rendered(offset, firstId === null ? null : String(firstId))));
-    }
-
-    var flagsHex = value("07");
-    var flags = null;
-    if (flagsHex !== null) {
-      var bytes = s88Bytes(flagsHex);
-      flags = bytes.length === 1 || bytes.length === 2 ? bytes[bytes.length - 1] : null;
-      if (s88IsUnset(flagsHex)) {
-        cards.appendChild(s88Card(t("s88Flags"), t("s88Unset")));
-      } else if (flags === null) {
-        cards.appendChild(s88Card(t("s88Flags"), s88Rendered(flagsHex, null)));
-      } else {
-        var yn = function (bit) { return (flags & bit) ? t("s88Yes") : t("s88No"); };
-        cards.appendChild(s88Card(t("s88Debounce"), t("s88DebounceN").replace("%n", (flags & 0x80) ? "2" : "4")));
-        cards.appendChild(s88Card(t("s88AllOnFirst"), yn(0x01) + " / " + yn(0x02)));
-        cards.appendChild(s88Card(t("s88LedTest"), yn(0x04)));
-        cards.appendChild(s88Card(t("s88LedEeprom"), yn(0x08)));
-        cards.appendChild(s88Card(t("s88Flags"), "0x" + ("0" + flags.toString(16).toUpperCase()).slice(-2)));
-      }
-    }
-
-    var delay = value("08");
-    if (delay !== null) {
-      var delayNum = s88Uint(delay);
-      cards.appendChild(s88Card(t("s88Delay"), s88IsUnset(delay) ? t("s88Unset") : s88Rendered(delay, delayNum === null || delayNum > 255 ? null : delayNum + " ms")));
-    }
-
-    if (count && firstId !== null) {
-      var parts = [];
+  function updateS88Ranges() {
+    var ranges = document.getElementById("s88-ranges");
+    var count = Number(s88El("s88-in-modules").value);
+    var first = s88FieldValue("s88-in-firstid", 1, 65535);
+    var parts = [];
+    if (s88El("s88-in-modules").value !== "" && count > 0 && first.value !== undefined) {
       for (var m = 0; m < count; m++) {
-        parts.push(t("s88Range").replace("%n", String(m + 1)).replace("%a", String(firstId + m * 16)).replace("%b", String(firstId + m * 16 + 15)));
+        parts.push(t("s88Range").replace("%n", String(m + 1)).replace("%a", String(first.value + m * 16)).replace("%b", String(first.value + m * 16 + 15)));
       }
-      ranges.textContent = parts.join("; ");
     }
-    result.classList.remove("is-hidden");
+    ranges.textContent = count > 0 && parts.length ? count + " × 16 = " + count * 16 + " — " + parts.join("; ") : "";
+  }
+
+  var s88FormFields = ["s88-in-modules", "s88-in-firstid", "s88-in-debounce", "s88-in-forced", "s88-in-delay", "s88-in-forced2", "s88-in-deviceid"];
+
+  // Values as read from the gateway; null = channel unset or not answered.
+  var s88Original = null;
+
+  function s88El(id) {
+    return document.getElementById(id);
+  }
+
+  function s88SetNumber(id, value) {
+    s88El(id).value = value === null ? "" : String(value);
+  }
+
+  function updateS88DelayState() {
+    var forced = s88El("s88-in-forced").checked || s88El("s88-in-forced2").checked;
+    s88El("s88-in-delay").disabled = !forced;
+  }
+
+  function fillS88Form(channels) {
+    function num(channel) {
+      var entry = channels[channel];
+      return entry && !s88IsUnset(entry.value) ? s88Uint(entry.value) : null;
+    }
+    var offset = num("04");
+    var flagsValue = num("07");
+    s88Original = {
+      id: num("01"),
+      modules: s88ModuleCount(channels["03"] ? channels["03"].value : "") !== null && !(channels["03"] && s88IsUnset(channels["03"].value)) ? num("03") : null,
+      firstId: offset === null ? null : offset + 1,
+      // Unset flags start from 0; unknown bits of a read value are preserved on write.
+      flags: flagsValue === null ? 0 : flagsValue & 0xff,
+      flagsKnown: flagsValue !== null,
+      delay: num("08")
+    };
+    s88SetNumber("s88-in-deviceid", s88Original.id);
+    s88El("s88-in-modules").value = s88Original.modules === null ? "" : String(s88Original.modules);
+    s88SetNumber("s88-in-firstid", s88Original.firstId);
+    s88SetNumber("s88-in-delay", s88Original.delay);
+    s88El("s88-in-debounce").value = (s88Original.flags & 0x80) ? "2" : "4";
+    s88El("s88-in-forced").checked = !!(s88Original.flags & 0x01);
+    s88El("s88-in-forced2").checked = !!(s88Original.flags & 0x02);
+    s88FormFields.forEach(function (id) { s88El(id).disabled = false; });
+    s88El("s88-write").disabled = false;
+    updateS88DelayState();
+  }
+
+  function s88FieldValue(id, min, max) {
+    var raw = s88El(id).value.trim();
+    if (raw === "") {
+      return { empty: true };
+    }
+    if (!/^\d+$/.test(raw) || Number(raw) < min || Number(raw) > max) {
+      return { invalid: true };
+    }
+    return { value: Number(raw) };
+  }
+
+  // Returns {query: "...", labels: [...]} for changed values only, or {error: key}.
+  function collectS88Changes() {
+    var parts = [];
+    var fields = [
+      { id: "s88-in-deviceid", param: "id", min: 0, max: 65534, orig: s88Original.id },
+      { id: "s88-in-modules", param: "modules", min: 0, max: 16, orig: s88Original.modules },
+      { id: "s88-in-firstid", param: "offset", min: 1, max: 65535, orig: s88Original.firstId, convert: function (v) { return v - 1; } },
+      { id: "s88-in-delay", param: "delay", min: 0, max: 255, orig: s88Original.delay }
+    ];
+    for (var i = 0; i < fields.length; i++) {
+      var f = fields[i];
+      if (f.id === "s88-in-delay" && s88El(f.id).disabled) {
+        continue;
+      }
+      var r = s88FieldValue(f.id, f.min, f.max);
+      if (r.invalid) {
+        return { error: "s88Invalid" };
+      }
+      if (r.empty || r.value === f.orig) {
+        continue;
+      }
+      parts.push(f.param + "=" + (f.convert ? f.convert(r.value) : r.value));
+    }
+    var flags = s88Original.flags & ~0x83;
+    flags |= s88El("s88-in-debounce").value === "2" ? 0x80 : 0;
+    flags |= s88El("s88-in-forced").checked ? 0x01 : 0;
+    flags |= s88El("s88-in-forced2").checked ? 0x02 : 0;
+    if (flags !== s88Original.flags) {
+      parts.push("flags=" + flags);
+    }
+    return { query: parts.join("&") };
+  }
+
+  var s88Channel2Label = { "01": "s88DeviceId", "03": "s88Modules", "04": "s88FirstId", "07": "s88Flags", "08": "s88Delay" };
+
+  function showS88WriteResults(results) {
+    var list = s88El("s88-write-results");
+    list.textContent = "";
+    Object.keys(results).forEach(function (channel) {
+      var li = document.createElement("li");
+      var label = t(s88Channel2Label[channel] || "s88Flags");
+      li.textContent = label + ": " + (results[channel].verified ? t("s88Verified") : t("s88NotVerified"));
+      list.appendChild(li);
+    });
+  }
+
+  function s88Request(query, busyButtons) {
+    busyButtons.forEach(function (b) { b.disabled = true; });
+    return fetch("/cgi-bin/srseiiportal/s88-config?" + query + (query ? "&" : "") + "ts=" + Date.now(), { method: "POST", cache: "no-store" })
+      .then(function (response) {
+        return response.text().then(function (body) {
+          try {
+            return JSON.parse(body);
+          } catch (parseError) {
+            throw new Error("HTTP " + response.status + ": " + (body.replace(/\s+/g, " ").trim().slice(0, 160) || "empty response"));
+          }
+        });
+      })
+      .then(function (data) {
+        if (!data || !data.ok) {
+          var message = data && (lang === "de" ? data.messageDe : data.message);
+          throw new Error(message || t("s88Failed"));
+        }
+        return data;
+      })
+      .then(function (data) {
+        busyButtons.forEach(function (b) { b.disabled = b === s88WriteButton && !s88Original; });
+        return data;
+      }, function (error) {
+        busyButtons.forEach(function (b) { b.disabled = b === s88WriteButton && !s88Original; });
+        throw error;
+      });
   }
 
   var s88ReadButton = document.getElementById("s88-read");
+  var s88WriteButton = document.getElementById("s88-write");
+  var s88Form = document.getElementById("s88-form");
   var s88Note = document.getElementById("s88-note");
-  if (s88ReadButton && s88Note) {
+  if (s88ReadButton && s88WriteButton && s88Form && s88Note) {
+    var s88Buttons = [s88ReadButton, s88WriteButton];
+    var s88ModuleSelect = s88El("s88-in-modules");
+    for (var mi = -1; mi <= 16; mi++) {
+      var option = document.createElement("option");
+      option.value = mi < 0 ? "" : String(mi);
+      option.textContent = mi < 0 ? "–" : (mi === 0 ? "0 (" + t("s88Off") + ")" : String(mi));
+      s88ModuleSelect.appendChild(option);
+    }
+    s88El("s88-in-forced").addEventListener("change", updateS88DelayState);
+    s88El("s88-in-forced2").addEventListener("change", updateS88DelayState);
+
     s88ReadButton.addEventListener("click", function () {
-      s88ReadButton.disabled = true;
       s88Note.textContent = t("s88Reading");
-      fetch("/cgi-bin/srseiiportal/s88-config?ts=" + Date.now(), { method: "POST", cache: "no-store" })
-        .then(function (response) {
-          return response.text().then(function (body) {
-            try {
-              return JSON.parse(body);
-            } catch (parseError) {
-              throw new Error("HTTP " + response.status + ": " + (body.replace(/\s+/g, " ").trim().slice(0, 160) || "empty response"));
-            }
-          });
-        })
+      s88El("s88-write-results").textContent = "";
+      s88Request("", s88Buttons)
         .then(function (data) {
-          if (!data || !data.ok) {
-            var message = data && (lang === "de" ? data.messageDe : data.message);
-            throw new Error(message || t("s88Failed"));
-          }
           renderS88(data.channels || {});
           s88Note.textContent = t("s88Done") + " (" + new Date().toLocaleTimeString() + ")";
         })
         .catch(function (error) {
           s88Note.textContent = t("s88Failed") + ": " + (error && error.message ? error.message : t("s88NoReply"));
+        });
+    });
+
+    ["s88-in-modules", "s88-in-firstid"].forEach(function (id) {
+      s88El(id).addEventListener("input", updateS88Ranges);
+      s88El(id).addEventListener("change", updateS88Ranges);
+    });
+    s88Form.addEventListener("submit", function (event) { event.preventDefault(); });
+
+    s88WriteButton.addEventListener("click", function () {
+      if (!s88Original) {
+        return;
+      }
+      var changes = collectS88Changes();
+      if (changes.error) {
+        s88Note.textContent = t(changes.error);
+        return;
+      }
+      if (!changes.query) {
+        s88Note.textContent = t("s88NothingToWrite");
+        return;
+      }
+      if (!window.confirm(t("s88WriteConfirm"))) {
+        return;
+      }
+      s88Note.textContent = t("s88Writing");
+      s88Request("action=write&" + changes.query, s88Buttons)
+        .then(function (data) {
+          renderS88(data.channels || {});
+          showS88WriteResults(data.results || {});
+          var all = Object.keys(data.results || {}).every(function (c) { return data.results[c].verified; });
+          s88Note.textContent = (all ? t("s88WriteVerified") : t("s88WriteSent")) + " (" + new Date().toLocaleTimeString() + ")";
         })
-        .then(function () { s88ReadButton.disabled = false; });
+        .catch(function (error) {
+          s88Note.textContent = t("s88WriteFailed") + ": " + (error && error.message ? error.message : t("s88NoReply"));
+        });
     });
   }
   applyTranslations();

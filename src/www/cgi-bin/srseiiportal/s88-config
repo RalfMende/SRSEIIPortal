@@ -1,7 +1,11 @@
 #!/bin/sh
-# Reads the configuration of the integrated SRSEII S88 gateway from the CAN bus.
-# Request-scoped: runs only when the portal triggers it, listens for a bounded
-# time window and exits. No daemon, no polling. Read-only (no CAN writes).
+# Reads (default) or writes the configuration of the integrated SRSEII S88
+# gateway over the CAN bus. Request-scoped: runs only when the portal triggers
+# it, listens for a bounded time window and exits. No daemon, no polling.
+#
+# Write mode: POST ...?action=write&id=N&modules=N&offset=N&flags=N&delay=N
+# (every parameter optional, decimal only). Each written channel is read back
+# and reported as "sent" and, only if the readback matches, as "verified".
 
 set -u
 
@@ -30,100 +34,188 @@ if [ "${REQUEST_METHOD:-GET}" != "POST" ]; then
 	fail "Only POST requests are supported." "Es werden nur POST-Anfragen unterstützt."
 fi
 
+# Parses and validates the write parameters into "<channel>=<4 hex digits>" pairs.
+mode="read"
+write_pairs=""
+param_value=""
+
+query_param() {
+	param_value=""
+	for pair in $(printf '%s' "${QUERY_STRING:-}" | tr '&' ' '); do
+		case "$pair" in
+		"$1="*) param_value="${pair#*=}" ;;
+		esac
+	done
+}
+
+# add_write <param> <channel> <min> <max>
+add_write() {
+	query_param "$1"
+	[ -n "$param_value" ] || return 0
+	case "$param_value" in
+	*[!0-9]*) fail "Invalid value for $1." "Ungültiger Wert für $1." ;;
+	esac
+	[ "${#param_value}" -le 5 ] || fail "Invalid value for $1." "Ungültiger Wert für $1."
+	if [ "$param_value" -lt "$3" ] || [ "$param_value" -gt "$4" ]; then
+		fail "Value for $1 must be between $3 and $4." "Wert für $1 muss zwischen $3 und $4 liegen."
+	fi
+	write_pairs="$write_pairs $2=$(printf '%04X' "$param_value")"
+}
+
+query_param action
+if [ "$param_value" = "write" ]; then
+	mode="write"
+	# 0xFFFF marks an unset channel, so it is not a valid value to write.
+	add_write id 01 0 65534
+	add_write modules 03 0 16
+	add_write offset 04 0 65534
+	add_write flags 07 0 255
+	add_write delay 08 0 255
+	[ -n "$write_pairs" ] || fail "No values to write." "Keine Werte zum Schreiben."
+elif [ -n "$param_value" ]; then
+	fail "Unknown action." "Unbekannte Aktion."
+fi
+
 command -v cansend >/dev/null 2>&1 && command -v candump >/dev/null 2>&1 ||
 	fail "can-utils (cansend/candump) are not installed." "can-utils (cansend/candump) sind nicht installiert."
 
 if ! mkdir "$LOCK_DIR" 2>/dev/null; then
-	fail "Another S88 read is already running." "Ein S88-Auslesevorgang läuft bereits."
+	fail "Another S88 operation is already running." "Ein S88-Vorgang läuft bereits."
 fi
 
 dump_file="$(mktemp /tmp/srseii-s88-dump.XXXXXX)" ||
 	fail "Cannot create a temporary file." "Temporäre Datei kann nicht angelegt werden."
 err_file="$dump_file.err"
+dump_pid=""
 cleanup() {
-	[ -n "${dump_pid:-}" ] && kill "$dump_pid" 2>/dev/null || true
+	[ -n "$dump_pid" ] && kill "$dump_pid" 2>/dev/null || true
 	rm -f "$dump_file" "$err_file"
 	rmdir "$LOCK_DIR" 2>/dev/null || true
 	if [ "$finished" -eq 0 ]; then
-		fail "The S88 read ended unexpectedly." "Das Auslesen wurde unerwartet beendet."
+		fail "The S88 operation ended unexpectedly." "Der S88-Vorgang wurde unerwartet beendet."
 	fi
 }
 trap cleanup EXIT
 trap 'exit 0' INT TERM
 
-# 1. Start the listener first so that no reply is missed.
-# Line-buffer the output where possible: a SIGTERM must not discard buffered frames.
-if command -v stdbuf >/dev/null 2>&1; then
-	stdbuf -oL candump -L "$CAN_IF" >"$dump_file" 2>"$err_file" &
-else
-	candump -L "$CAN_IF" >"$dump_file" 2>"$err_file" &
-fi
-dump_pid=$!
-sleep 1
-kill -0 "$dump_pid" 2>/dev/null || fail "candump could not listen on $CAN_IF (is the interface up?)." "candump kann $CAN_IF nicht abhören (ist die Schnittstelle aktiv?)."
-
-# 2. Request each config channel; the gateway answers on the CAN bus.
-send_failed=0
-for channel in $CHANNELS; do
-	cansend "$CAN_IF" "00000300#434255530B${channel}" >/dev/null 2>&1 || send_failed=1
-done
-[ "$send_failed" -eq 0 ] || fail "Sending the CAN requests failed (is $CAN_IF up?)." "Senden der CAN-Anfragen fehlgeschlagen (ist $CAN_IF aktiv?)."
-
-# 3. Collect replies for a bounded time, then stop the listener (SIGTERM flushes its output).
-sleep "$LISTEN_SECONDS"
-kill "$dump_pid" 2>/dev/null || true
-wait "$dump_pid" 2>/dev/null || true
-dump_pid=""
-
-# Parse "candump -L" lines "(timestamp) can0 ID#DATA" in plain POSIX shell
-# (busybox awk is not reliable here). A reply is "CBUS 0B <channel> <value>";
-# our own 6-byte requests (no value) are echoed by loopback and are skipped.
-channels_json=""
-seen_channels=" "
-while read -r _ts _if frame _rest; do
-	case "$frame" in
-	*#*) ;;
-	*) continue ;;
-	esac
-	can_id="${frame%%#*}"
-	data="$(printf '%s' "${frame#*#}" | tr 'a-f' 'A-F')"
-	case "$data" in
-	434255530B??*) ;;
-	*) continue ;;
-	esac
-	rest="${data#434255530B}"
-	channel="$(printf '%s' "$rest" | cut -c1-2)"
-	value="${rest#??}"
-	[ -n "$value" ] || continue
-	case "$value" in
-	*[!0-9A-F]*) continue ;;
-	esac
-	[ $(( ${#value} % 2 )) -eq 0 ] || continue
-	case " $CHANNELS " in
-	*" $channel "*) ;;
-	*) continue ;;
-	esac
-	case "$seen_channels" in
-	*" $channel "*) continue ;;
-	esac
-	seen_channels="$seen_channels$channel "
-	can_id="$(printf '%s' "$can_id" | tr 'a-f' 'A-F')"
-	entry="\"$channel\":{\"value\":\"$value\",\"id\":\"$can_id\",\"frame\":\"$can_id#$data\"}"
-	if [ -z "$channels_json" ]; then
-		channels_json="$entry"
+# read_channels <channel list>: sets channels_json and channel_values (" CH=VALUE ").
+read_channels() {
+	# 1. Start the listener first so that no reply is missed.
+	# Line-buffer the output where possible: a SIGTERM must not discard buffered frames.
+	if command -v stdbuf >/dev/null 2>&1; then
+		stdbuf -oL candump -L "$CAN_IF" >"$dump_file" 2>"$err_file" &
 	else
-		channels_json="$channels_json,$entry"
+		candump -L "$CAN_IF" >"$dump_file" 2>"$err_file" &
 	fi
-done <"$dump_file"
+	dump_pid=$!
+	sleep 1
+	kill -0 "$dump_pid" 2>/dev/null || fail "candump could not listen on $CAN_IF (is the interface up?)." "candump kann $CAN_IF nicht abhören (ist die Schnittstelle aktiv?)."
 
-if [ -z "$channels_json" ]; then
+	# 2. Request each config channel; the gateway answers on the CAN bus.
+	send_failed=0
+	for channel in $1; do
+		cansend "$CAN_IF" "00000300#434255530B${channel}" >/dev/null 2>&1 || send_failed=1
+	done
+	[ "$send_failed" -eq 0 ] || fail "Sending the CAN requests failed (is $CAN_IF up?)." "Senden der CAN-Anfragen fehlgeschlagen (ist $CAN_IF aktiv?)."
+
+	# 3. Collect replies for a bounded time, then stop the listener (SIGTERM flushes its output).
+	sleep "$LISTEN_SECONDS"
+	kill "$dump_pid" 2>/dev/null || true
+	wait "$dump_pid" 2>/dev/null || true
+	dump_pid=""
+
+	# Parse "candump -L" lines "(timestamp) can0 ID#DATA" in plain POSIX shell
+	# (busybox awk is not reliable here). A reply is "CBUS 0B <channel> <value>";
+	# our own 6-byte requests (no value) are echoed by loopback and are skipped.
+	channels_json=""
+	channel_values=" "
+	while read -r _ts _if frame _rest; do
+		case "$frame" in
+		*#*) ;;
+		*) continue ;;
+		esac
+		can_id="${frame%%#*}"
+		data="$(printf '%s' "${frame#*#}" | tr 'a-f' 'A-F')"
+		case "$data" in
+		434255530B??*) ;;
+		*) continue ;;
+		esac
+		rest="${data#434255530B}"
+		channel="$(printf '%s' "$rest" | cut -c1-2)"
+		value="${rest#??}"
+		[ -n "$value" ] || continue
+		case "$value" in
+		*[!0-9A-F]*) continue ;;
+		esac
+		[ $(( ${#value} % 2 )) -eq 0 ] || continue
+		case " $1 " in
+		*" $channel "*) ;;
+		*) continue ;;
+		esac
+		case "$channel_values" in
+		*" $channel="*) continue ;;
+		esac
+		channel_values="$channel_values$channel=$value "
+		can_id="$(printf '%s' "$can_id" | tr 'a-f' 'A-F')"
+		entry="\"$channel\":{\"value\":\"$value\",\"id\":\"$can_id\",\"frame\":\"$can_id#$data\"}"
+		if [ -z "$channels_json" ]; then
+			channels_json="$entry"
+		else
+			channels_json="$channels_json,$entry"
+		fi
+	done <"$dump_file"
+}
+
+no_reply_failure() {
 	seen_lines="$(wc -l <"$dump_file" 2>/dev/null | tr -d ' ')"
 	sample="$(head -n 3 "$dump_file" 2>/dev/null | tr '\n' '|')$(head -c 120 "$err_file" 2>/dev/null)"
 	fail "No S88 reply within ${LISTEN_SECONDS}s (captured frames: ${seen_lines:-0}; sample: ${sample})." "Keine S88-Antwort innerhalb von ${LISTEN_SECONDS} s (erfasste Frames: ${seen_lines:-0}; Beispiel: ${sample})."
+}
+
+results_json=""
+
+if [ "$mode" = "write" ]; then
+	# Sequential writes, one value per channel: CBUS 0B <channel> <16-bit big-endian value>.
+	written_channels=""
+	for pair in $write_pairs; do
+		channel="${pair%%=*}"
+		value="${pair#*=}"
+		cansend "$CAN_IF" "00000300#434255530B${channel}${value}" >/dev/null 2>&1 ||
+			fail "Sending the write to channel $channel failed (is $CAN_IF up?)." "Schreiben auf Kanal $channel fehlgeschlagen (ist $CAN_IF aktiv?)."
+		written_channels="$written_channels $channel"
+		# Give the gateway time to store the value (EEPROM) before the next frame.
+		sleep 1
+	done
+	read_channels "${written_channels# }"
+	[ -n "$channels_json" ] || no_reply_failure
+	for pair in $write_pairs; do
+		channel="${pair%%=*}"
+		value="${pair#*=}"
+		verified=false
+		case "$channel_values" in
+		*" $channel=$value "*) verified=true ;;
+		esac
+		entry="\"$channel\":{\"sent\":\"$value\",\"verified\":$verified}"
+		if [ -z "$results_json" ]; then
+			results_json="$entry"
+		else
+			results_json="$results_json,$entry"
+		fi
+	done
+	# Fresh values of all channels for the display.
+	read_channels "$CHANNELS"
+else
+	read_channels "$CHANNELS"
 fi
+
+[ -n "$channels_json" ] || no_reply_failure
 
 printf 'Content-Type: application/json\n'
 printf 'Cache-Control: no-store\n'
 printf '\n'
 finished=1
-printf '{"ok":true,"channels":{%s}}\n' "$channels_json"
+if [ "$mode" = "write" ]; then
+	printf '{"ok":true,"results":{%s},"channels":{%s}}\n' "$results_json" "$channels_json"
+else
+	printf '{"ok":true,"channels":{%s}}\n' "$channels_json"
+fi
