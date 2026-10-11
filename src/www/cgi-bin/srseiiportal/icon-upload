@@ -3,7 +3,7 @@
 set -u
 
 ICON_DIR="${SRSEII_ICON_DIR:-/www/icons}"
-MAX_BYTES=2097152
+MAX_BYTES=6144
 
 json_escape() {
 	printf '%s' "$1" | tr '\r\n' '  ' | sed 's/\\/\\\\/g; s/"/\\"/g'
@@ -58,7 +58,7 @@ if ! printf '%s' "$content_length" | grep -Eq '^[0-9]+$' || [ "$content_length" 
 	exit 0
 fi
 if [ "$content_length" -gt "$MAX_BYTES" ]; then
-	json_response false "The file is too large (max. 2 MB)." "Die Datei ist zu groß (max. 2 MB)." "$file_name"
+	json_response false "The file is too large (max. 6 KB)." "Die Datei ist zu groß (max. 6 KB)." "$file_name"
 	exit 0
 fi
 
