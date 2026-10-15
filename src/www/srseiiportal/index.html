@@ -382,53 +382,80 @@
           <div class="feature-copy">
             <h4 data-i18n="s88GatewayTitle">Integrated S88 gateway</h4>
             <p data-i18n="s88Intro">Current settings of the integrated SRSEII S88 gateway.</p>
+            <details class="status-details s88-configuration">
+              <summary data-i18n="s88ShowConfiguration">Show configuration</summary>
             <div class="feature-actions s88-actions">
               <button class="btn btn-secondary" id="s88-read" type="button" data-i18n="s88Read">Read configuration</button>
               <button class="btn btn-secondary" id="s88-write" type="button" disabled data-i18n="s88Write">Write configuration</button>
             </div>
-            <p class="status-note" id="s88-note" data-i18n="s88Idle">Nothing is sent to the CAN bus until you click "Read configuration" or "Write configuration".</p>
+            <p class="status-note" id="s88-note" data-i18n="s88Idle">Please read the gateway configuration first.</p>
 
             <form id="s88-form" class="s88-form" autocomplete="off">
               <div class="wifi-grid">
                 <label for="s88-in-modules" data-i18n="s88Modules">Number of S88 modules</label>
-                <select id="s88-in-modules" disabled></select>
+                <div class="input-with-info">
+                  <select id="s88-in-modules" required disabled></select>
+                  <button class="info-button" type="button" data-info-title-key="s88Modules" data-info-description-key="s88ModulesInfo" aria-haspopup="dialog" data-i18n-aria-label="parameterInfoButton" aria-label="Parameter information">i</button>
+                </div>
 
-                <label for="s88-in-firstid" data-i18n="s88FirstId">First feedback ID</label>
-                <input id="s88-in-firstid" type="number" min="1" max="65535" step="1" disabled />
-
-                <label for="s88-in-debounce" data-i18n="s88Debounce">Debounce</label>
-                <select id="s88-in-debounce" disabled>
-                  <option value="4">4</option>
-                  <option value="2">2</option>
-                </select>
-
-                <label for="s88-in-forced" data-i18n="s88Forced1">Send all states once after power-on</label>
-                <input id="s88-in-forced" type="checkbox" disabled />
-
-                <label for="s88-in-delay" data-i18n="s88Delay">Forced-event delay (ms)</label>
-                <input id="s88-in-delay" type="number" min="0" max="255" step="1" disabled />
+                <label for="s88-in-firstid" data-i18n="s88FirstId">First feedback ID (1-65535)</label>
+                <div class="input-with-info">
+                  <input id="s88-in-firstid" type="number" min="1" max="65535" step="1" disabled />
+                  <button class="info-button" type="button" data-info-title-key="s88FirstId" data-info-description-key="s88FirstIdInfo" aria-haspopup="dialog" data-i18n-aria-label="parameterInfoButton" aria-label="Parameter information">i</button>
+                </div>
               </div>
 
               <details class="status-details s88-advanced">
-                <summary data-i18n="s88Advanced">Advanced diagnostics</summary>
+                <summary data-i18n="s88Advanced">Advanced settings</summary>
                 <div class="wifi-grid">
+                  <label for="s88-in-debounce" data-i18n="s88Debounce">Debounce</label>
+                  <div class="input-with-info">
+                    <select id="s88-in-debounce" disabled>
+                      <option value="">–</option>
+                      <option value="2">2</option>
+                      <option value="4">4</option>
+                    </select>
+                    <button class="info-button" type="button" data-info-title-key="s88Debounce" data-info-description-key="s88DebounceInfo" aria-haspopup="dialog" data-i18n-aria-label="parameterInfoButton" aria-label="Parameter information">i</button>
+                  </div>
+
+                  <label for="s88-in-forced" data-i18n="s88Forced1">Send all states once after power-on</label>
+                  <div class="input-with-info">
+                    <input id="s88-in-forced" type="checkbox" disabled />
+                    <button class="info-button" type="button" data-info-title-key="s88Forced1" data-info-description-key="s88Forced1Info" aria-haspopup="dialog" data-i18n-aria-label="parameterInfoButton" aria-label="Parameter information">i</button>
+                  </div>
+
                   <label for="s88-in-forced2" data-i18n="s88Forced2">Forced events, second variant (bit 1)</label>
-                  <input id="s88-in-forced2" type="checkbox" disabled />
+                  <div class="input-with-info">
+                    <input id="s88-in-forced2" type="checkbox" disabled />
+                    <button class="info-button" type="button" data-info-title-key="s88Forced2" data-info-description-key="s88Forced2Info" aria-haspopup="dialog" data-i18n-aria-label="parameterInfoButton" aria-label="Parameter information">i</button>
+                  </div>
 
-                  <label for="s88-in-deviceid" data-i18n="s88DeviceId">S88 device ID</label>
-                  <input id="s88-in-deviceid" type="number" min="0" max="65534" step="1" disabled />
+                  <label for="s88-in-delay" data-i18n="s88Delay">Forced-event delay (ms)</label>
+                  <div class="input-with-info">
+                    <input id="s88-in-delay" type="number" min="0" max="255" step="1" disabled />
+                    <button class="info-button" type="button" data-info-title-key="s88Delay" data-info-description-key="s88DelayInfo" aria-haspopup="dialog" data-i18n-aria-label="parameterInfoButton" aria-label="Parameter information">i</button>
+                  </div>
 
-                  <label for="s88-in-uid" data-i18n="s88Uid">UID (two low bytes, hex)</label>
-                  <input id="s88-in-uid" type="text" maxlength="4" pattern="[0-9A-Fa-f]{4}" placeholder="3322" spellcheck="false" disabled />
+                  <label for="s88-in-deviceid" data-i18n="s88DeviceId">S88 device ID (decimal)</label>
+                  <div class="input-with-info">
+                    <input id="s88-in-deviceid" type="number" min="0" max="65534" step="1" disabled />
+                    <button class="info-button" type="button" data-info-title-key="s88DeviceId" data-info-description-key="s88DeviceIdInfo" aria-haspopup="dialog" data-i18n-aria-label="parameterInfoButton" aria-label="Parameter information">i</button>
+                  </div>
+
+                  <label for="s88-in-uid" data-i18n="s88Uid">UID (hex, 4 digits)</label>
+                  <div class="input-with-info">
+                    <input id="s88-in-uid" type="text" maxlength="4" pattern="[0-9A-Fa-f]{4}" placeholder="3322" spellcheck="false" disabled />
+                    <button class="info-button" type="button" data-info-title-key="s88Uid" data-info-description-key="s88UidInfo" aria-haspopup="dialog" data-i18n-aria-label="parameterInfoButton" aria-label="Parameter information">i</button>
+                  </div>
                 </div>
+                <p class="status-note" id="s88-options-defaults" data-i18n="s88OptionsDefaultsNotice" hidden>Option flags are unset. On write, defaults are saved: debounce 4, forced events off. Unknown option bits will be cleared.</p>
               </details>
 
-              <p class="status-note" id="s88-ranges"></p>
-              <p class="status-note" data-i18n="s88DebounceHint">With longer buses, debouncing on 2 equal samples is recommended; otherwise short events (e.g. a train passing a switch track) may be missed.</p>
               <p class="status-note" data-i18n="s88WriteHint">Only changed values are sent. Empty fields (not set in the gateway) are left untouched. The gateway stores the values in its EEPROM.</p>
               <ul class="icon-upload-results" id="s88-write-results" aria-live="polite"></ul>
             </form>
-            <p class="status-note" data-i18n="s88Disclaimer">Values are interpreted for the S88 gateway firmware v1.17; the firmware version is not detected. The module count is the configured chain length, not detected hardware.</p>
+            <p class="status-note" data-i18n="s88Disclaimer">Values are interpreted according to the documented ConfigChannel mapping. The firmware version is not detected. The module count is the configured bus length, not detected hardware.</p>
+            </details>
           </div>
         </article>
       </div>
@@ -668,6 +695,16 @@
       </section>
 
       <p class="about-version"><span data-i18n="aboutVersionLabel">Portal version</span>: <span id="about-version">-</span></p>
+    </div>
+  </dialog>
+
+  <dialog class="modal info-dialog" id="parameter-info-dialog" aria-labelledby="parameter-info-title" aria-describedby="parameter-info-description">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="parameter-info-title"></h2>
+        <button class="modal-close" id="parameter-info-close" type="button" aria-label="Close" data-i18n-aria-label="close">×</button>
+      </div>
+      <p id="parameter-info-description"></p>
     </div>
   </dialog>
 

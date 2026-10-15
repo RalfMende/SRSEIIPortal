@@ -27,13 +27,25 @@ def run(dump_lines, method="POST", with_tools=True, query=""):
         return out, sent.read_text().split() if sent.exists() else []
 
 
-out, sent = run(["(1.0) can0 00000300#434255530B03", "(1.1) can0 00010300#434255530B030001", "(1.2) can0 00010300#434255530B0403E8"])
+out, sent = run([
+    "(1.0) can0 00000300#434255530B03",
+    "(1.1) can0 00010300#434255530B010001",
+    "(1.2) can0 00010300#434255530B030001",
+    "(1.3) can0 00010300#434255530B0403E8",
+    "(1.4) can0 00010300#434255530B060011",
+    "(1.5) can0 00010300#434255530B070080",
+    "(1.6) can0 00010300#434255530B080004",
+])
 assert '"03":{"value":"0001"' in out and '"04":{"value":"03E8"' in out, out
-assert '"01"' not in out
+assert all(f'"{c}":' in out for c in ("01", "03", "04", "06", "07", "08")), out
 assert sent == [f"00000300#434255530B{c}" for c in ("01", "03", "04", "06", "07", "08")], sent
 
 out, _ = run([])
 assert '"ok":false' in out and "No S88 reply" in out, out
+
+out, sent = run([], query="action=write&modules=2")
+assert '"ok":false' in out and '"writeSent":true' in out, (out, sent)
+assert sent == ["00000300#434255530B030002", "00000300#434255530B03"], sent
 
 out, sent = run([], method="GET")
 assert "Only POST" in out and sent == [], out
@@ -42,9 +54,16 @@ out, _ = run([], with_tools=False)
 assert "can-utils" in out, out
 
 out, _ = run(["(1.0) can0 00000300#434255530B01", "(1.1) can0 0001B311#434255530B01FFFF", "(1.2) can0 0001b311#434255530b0400e8", "(1.3) can0 0001B311#434255530B0300ZZ"])
-assert '"01":{"value":"FFFF"' in out and '"04":{"value":"00E8"' in out and '"03"' not in out, out
+assert '"ok":false' in out and "Missing S88 replies" in out, out
 
-REPLY = ["(1.1) can0 0001B311#434255530B030002", "(1.2) can0 0001B311#434255530B04000A", "(1.3) can0 0001B311#434255530B070081"]
+REPLY = [
+    "(1.0) can0 0001B311#434255530B010001",
+    "(1.1) can0 0001B311#434255530B030002",
+    "(1.2) can0 0001B311#434255530B04000A",
+    "(1.3) can0 0001B311#434255530B063322",
+    "(1.4) can0 0001B311#434255530B070081",
+    "(1.5) can0 0001B311#434255530B080004",
+]
 out, sent = run(REPLY, query="action=write&modules=2&offset=9&flags=129")
 assert sent[:3] == ["00000300#434255530B030002", "00000300#434255530B040009", "00000300#434255530B070081"], sent
 assert '"03":{"sent":"0002","verified":true}' in out, out
@@ -55,10 +74,10 @@ for bad in ("action=write&modules=17", "action=write&flags=256", "action=write&o
     out, sent = run(REPLY, query=bad)
     assert '"ok":false' in out and sent == [], (bad, out, sent)
 
-out, sent = run(["(1.1) can0 0001B311#434255530B063322"], query="action=write&uid=3322")
+out, sent = run(REPLY, query="action=write&uid=3322")
 assert sent[0] == "00000300#434255530B063322", sent
 assert '"06":{"sent":"3322","verified":true}' in out, out
-for bad in ("action=write&uid=332", "action=write&uid=33221", "action=write&uid=zzzz"):
+for bad in ("action=write&uid=332", "action=write&uid=33221", "action=write&uid=zzzz", "action=write&uid=FFFF"):
     out, sent = run([], query=bad)
     assert '"ok":false' in out and sent == [], (bad, out, sent)
 
@@ -97,8 +116,8 @@ for bad in ("modules=17", "delay=256", "flags=256", "offset=65536", "id=65536"):
     assert '"ok":false' in out and sent == [], (bad, out, sent)
 
 # Reading each documented channel returns the 16-bit value of the reply
-out, _ = run(["(1.1) can0 0001B311#434255530B010001", "(1.2) can0 0001B311#434255530B0403E8", "(1.3) can0 0001B311#434255530B063322",
-              "(1.4) can0 0001B311#434255530B070080", "(1.5) can0 0001B311#434255530B0800FF"])
+out, _ = run(["(1.1) can0 0001B311#434255530B010001", "(1.2) can0 0001B311#434255530B030002", "(1.3) can0 0001B311#434255530B0403E8", "(1.4) can0 0001B311#434255530B063322",
+              "(1.5) can0 0001B311#434255530B070080", "(1.6) can0 0001B311#434255530B0800FF"])
 for ch, val in (("01", "0001"), ("04", "03E8"), ("06", "3322"), ("07", "0080"), ("08", "00FF")):
     assert f'"{ch}":{{"value":"{val}"' in out, (ch, out)
 

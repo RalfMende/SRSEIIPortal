@@ -21,6 +21,10 @@
   var aboutButton = document.getElementById("about-button");
   var aboutDialog = document.getElementById("about-dialog");
   var aboutCloseButton = document.getElementById("about-close");
+  var parameterInfoDialog = document.getElementById("parameter-info-dialog");
+  var parameterInfoTitle = document.getElementById("parameter-info-title");
+  var parameterInfoDescription = document.getElementById("parameter-info-description");
+  var parameterInfoCloseButton = document.getElementById("parameter-info-close");
   var aboutVersionEl = document.getElementById("about-version");
   var luciLink = document.getElementById("luci-link");
   var terminalLink = document.getElementById("terminal-link");
@@ -285,35 +289,48 @@
       configurationIntro: "Konfiguriere und verwalte die Inhalte und Schnittstellen deines SRSEII.",
       s88GatewayTitle: "Integriertes S88-Gateway",
       s88Intro: "Aktuelle Einstellungen des integrierten SRSEII-S88-Gateways.",
+      s88ShowConfiguration: "Konfiguration anzeigen",
       s88Read: "Konfiguration auslesen",
-      s88Idle: "Es wird nichts an den CAN-Bus gesendet, bis du „Konfiguration auslesen“ oder „Konfiguration schreiben“ klickst.",
-      s88Disclaimer: "Die Werte werden für die S88-Gateway-Firmware v1.27 interpretiert; die Firmware-Version wird nicht erkannt. Die Modulanzahl ist die konfigurierte Kettenlänge, keine erkannte Hardware.",
+      s88Idle: "Bitte zuerst die Konfiguration des Gateways auslesen.",
+      s88Disclaimer: "Die Werte werden nach der dokumentierten ConfigChannel-Belegung interpretiert. Die Firmware-Version wird nicht erkannt. Die Modulanzahl ist die konfigurierte Buslänge, keine erkannte Hardwareanzahl.",
       s88Forced1: "Alle Zustände nach dem Start einmal senden",
       s88Forced2: "Forced Events, zweite Variante (Bit 1)",
-      s88Advanced: "Erweiterte Diagnose",
+      s88Advanced: "Erweiterte Einstellungen",
       s88Write: "Konfiguration schreiben",
-      s88Writing: "Sende Konfiguration …",
+      s88Writing: "Änderungen werden gesendet …",
       s88WriteConfirm: "Die Konfiguration wird in das EEPROM des integrierten S88-Gateways geschrieben. Die Firmware-Version wird nicht geprüft. Fortfahren?",
+      s88WriteDefaultsConfirm: "Im Gateway sind die Optionsflags nicht gesetzt. Beim Schreiben werden die Standardwerte gespeichert: Entprellung 4, Forced Events aus. Unbekannte Optionsbits werden dabei gelöscht. Fortfahren?",
+      s88ReadDiscardConfirm: "Nicht geschriebene Änderungen verwerfen und die Konfiguration erneut auslesen?",
       s88NothingToWrite: "Keine Änderungen zum Senden.",
       s88Invalid: "Ungültiger Wert – bitte die Eingaben prüfen.",
       s88Verified: "gesendet und beim Zurücklesen bestätigt",
       s88NotVerified: "gesendet, aber nicht bestätigt",
       s88WriteVerified: "Befehle gesendet, alle Werte beim Zurücklesen bestätigt",
       s88WriteSent: "Befehle gesendet, aber nicht alle Werte bestätigt",
-      s88WriteFailed: "Senden fehlgeschlagen",
+      s88WriteFailed: "Änderungen konnten nicht gesendet werden",
+      s88WriteUnknown: "Der Schreibstatus ist unbekannt. Bitte die Konfiguration erneut auslesen.",
+      s88OptionsDefaultsNotice: "Die Optionsflags sind nicht gesetzt. Beim Schreiben werden die Standardwerte gespeichert: Entprellung 4, Forced Events aus. Unbekannte Optionsbits werden dabei gelöscht.",
+      parameterInfoButton: "Parameterinformationen öffnen",
+      s88ModulesInfo: "Legt fest, wie viele S88-Module das Gateway am S88-Bus abfragt. Ein höherer Wert ermöglicht mehr Rückmeldekontakte, kann aber die Abfrage aller Kontakte verlängern. Dies ist die konfigurierte Buslänge, nicht die Zahl physisch erkannter Module.\n\nZulässige Werte: 0–16; 0 schaltet den S88-Bus aus.\nAbhängigkeiten: Bei 0 ist der S88-Bus deaktiviert, Rückmeldekontakte haben daher keine praktische Wirkung. Die erste Rückmelder-ID ändert nicht die Modulanzahl.",
+      s88FirstIdInfo: "Legt die ID des ersten S88-Rückmeldekontakts fest. Die folgenden Kontakte erhalten fortlaufende IDs. So lässt sich dem S88-Bus ein passender ID-Bereich in der Modellbahn-Steuerungssoftware zuweisen.\n\nZulässige Werte: 1–65535. Die Firmware speichert einen Offset; die erste ID wird als Offset + 1 berechnet.\nAbhängigkeiten: Die Anzahl der verfügbaren Rückmeldekontakte hängt von der Modulanzahl ab. Der ID-Bereich sollte sich nicht mit anderen Rückmeldegeräten überschneiden, wenn die Steuerungssoftware eindeutige IDs voraussetzt. Ein leeres Feld lässt den Wert unverändert.",
+      s88DebounceInfo: "Ein S88-Kontakt kann beim Wechsel zwischen „frei“ und „belegt“ kurz mehrfach umschalten. Die Entprellung legt fest, wie viele aufeinanderfolgende gleiche Messwerte nötig sind, bevor das Gateway eine Änderung meldet. Das hilft, falsche oder doppelte Rückmeldeereignisse zu vermeiden.\n\nZulässige Werte: 2 oder 4 aufeinanderfolgende Messwerte. 4 ist der empfohlene Standardwert.\nAbhängigkeiten: Die Firmware-Option „Zwei gleiche S88-Messwerte verwenden“ bestimmt das Verhalten. 2 Messwerte erkennen Änderungen schneller, filtern aber weniger; 4 Messwerte filtern stärker. Wenn die Optionsflags noch nicht gesetzt sind, wird 4 als Standard verwendet und beim Schreiben gespeichert.",
+      s88Forced1Info: "Wenn aktiviert, sendet das Gateway nach dem Start einmal den aktuellen Zustand aller S88-Rückmeldekontakte. Dadurch kann die Modellbahn-Steuerungssoftware den Anlagenzustand initialisieren, ohne auf eine Änderung jedes einzelnen Kontakts warten zu müssen.\n\nZulässige Werte: Ein oder Aus. Wenn die Optionsflags noch nicht gesetzt sind, ist Aus der Standardwert.\nAbhängigkeiten: Das Verhalten hängt von der Gateway-Firmware und davon ab, wie die Steuerungssoftware die gemeldeten Zustände verarbeitet. Spätere Zustandsänderungen werden weiterhin als normale Rückmeldeereignisse gesendet.",
+      s88Forced2Info: "Aktiviert die zweite, von der Firmware festgelegte Variante zur Verarbeitung erzwungener S88-Ereignisse. Dies ändert die Verarbeitung dieser Ereignisse und ist kein allgemeiner Schalter für alle Rückmeldungen.\n\nZulässige Werte: Ein oder Aus. Wenn die Optionsflags noch nicht gesetzt sind, ist Aus der Standardwert.\nAbhängigkeiten: Das genaue Verhalten ist in der Firmware definiert. Diese Option sollte zusammen mit der Verzögerung für Forced Events betrachtet werden. Laut Portal ist die Verzögerung bearbeitbar, wenn diese oder die erste Forced-Event-Option eingeschaltet ist.",
+      s88DelayInfo: "Legt die Verzögerung in Millisekunden fest, die bei der Verarbeitung erzwungener S88-Ereignisse verwendet wird. Sie beeinflusst das Timing dieser Ereignisse und ist keine allgemeine Verzögerung für jede Rückmeldung.\n\nZulässige Werte: 0–255 ms.\nAbhängigkeiten: Die genaue Wirkung hängt davon ab, wann die Firmware ein Ereignis als erzwungen behandelt. 0 bedeutet keine zusätzliche Verzögerung; dadurch werden andere Funktionen nicht automatisch deaktiviert. Das Feld ist nur bearbeitbar, wenn mindestens eine Forced-Event-Option eingeschaltet ist.",
+      s88DeviceIdInfo: "Identifiziert das S88-Gateway im CAN-System. Die Geräte-ID unterscheidet sich von der UID: Sie ist die konfigurierbare Gerätekennung; die UID ist eine separate Kennung.\n\nZulässige Werte: 0–65534 (Dezimaleingabe). Die Firmware speichert die Geräte-ID in zwei Bytes; 65535 (0xFFFF) ist als „nicht gesetzt“ reserviert und kann nicht geschrieben werden.\nAbhängigkeiten: Die ID muss zum CAN-System passen und darf nicht mit einem anderen Gerät kollidieren. Eine Änderung kann beeinflussen, wie das Gateway adressiert wird. Ein leeres Feld lässt die ID unverändert.",
       s88WriteHint: "Es werden nur geänderte Werte gesendet. Leere Felder (im Gateway nicht gesetzt) bleiben unverändert. Das Gateway speichert die Werte im EEPROM.",
-      s88Uid: "UID (untere zwei Bytes, hex)",
+      s88Uid: "UID (hexadezimal, 4 Stellen)",
+      s88UidInfo: "Die UID identifiziert das Gateway. Dieses Feld zeigt nur die unteren 16 Bits (zwei Bytes) der UID an. Die UID ist nicht mit der S88-Geräte-ID identisch.\n\nZulässige Werte: 0x0000–0xFFFE. Gib genau vier Hexadezimalstellen ohne 0x-Präfix ein, zum Beispiel 3322. 0xFFFF ist als „nicht gesetzt“ reserviert und kann nicht geschrieben werden.\nAbhängigkeiten: Die UID wird über ConfigChannel 6 gelesen und geschrieben. Sie beeinflusst weder die Modulanzahl noch den Rückmelde-ID-Bereich. Da sie zur Geräteidentifikation beiträgt, sollte sie nur bei Bedarf geändert werden. Eine Änderung kann die CAN-Identität des Gateways ändern; ein leeres Feld lässt die UID unverändert.",
       s88UidConfirm: "Achtung: Eine geänderte UID ändert die CAN-Kennung des Gateways. Steuerungen müssen es danach neu erkennen.",
       s88BusOffConfirm: "Achtung: Bei 0 Modulen wird der S88-Bus ausgeschaltet.",
-      s88DebounceHint: "Bei größerer Buslänge wird eine Entprellung mit 2 gleichen Messwerten empfohlen, sonst werden kurze Ereignisse (z. B. Überfahren eines Schaltgleises) ggf. nicht erkannt.",
       s88Delay: "Verzögerung Forced Events (ms)",
-      s88Reading: "Lese CAN-Bus …",
-      s88Done: "Konfiguration ausgelesen",
-      s88Failed: "Auslesen fehlgeschlagen",
-      s88DeviceId: "S88-Geräte-ID",
+      s88Reading: "Konfiguration wird ausgelesen …",
+      s88Done: "Konfiguration erfolgreich ausgelesen. Die Werte können jetzt bearbeitet werden.",
+      s88Failed: "Konfiguration konnte nicht vollständig und gültig ausgelesen werden. Prüfe Verbindung und Gateway und versuche es erneut.",
+      s88DeviceId: "S88-Geräte-ID (dezimal)",
       s88Modules: "Anzahl S88-Module",
       s88Inputs: "Rückmeldeeingänge gesamt",
-      s88FirstId: "Erste Rückmelder-ID",
+      s88FirstId: "Erste Rückmelder-ID (1-65535)",
       s88Debounce: "Entprellung",
       s88DebounceN: "%n gleiche Messwerte",
       s88AllOnFirst: "Alle Zustände nach dem Start senden",
@@ -322,11 +339,11 @@
       s88Yes: "Ja",
       s88No: "Nein",
       s88NoReply: "Keine Antwort",
+      s88InvalidResponse: "Gateway-Antwort fehlt, ist unvollständig oder ungültig.",
       s88RawValue: "Rohwert",
       s88Unknown: "Nicht interpretierbar",
       s88Unset: "Nicht gesetzt (Standardwert)",
       s88ModulesLabel: "Module",
-      s88Range: "Modul %n: IDs %a–%b",
       sshTerminalTitle: "SSH / Terminal",
       sshTerminalDesc: "Shell in a Box über Port 4200.",
       loading: "wird geladen",
@@ -602,35 +619,48 @@
       configurationIntro: "Configurez et gérez les contenus et les interfaces de votre SRSEII.",
       s88GatewayTitle: "Passerelle S88 intégrée",
       s88Intro: "Réglages actuels de la passerelle S88 intégrée du SRSEII.",
+      s88ShowConfiguration: "Afficher la configuration",
       s88Read: "Lire la configuration",
-      s88Idle: "Rien n'est envoyé sur le bus CAN tant que vous ne cliquez pas sur « Lire la configuration » ou « Écrire la configuration ».",
-      s88Disclaimer: "Les valeurs sont interprétées pour le firmware v1.27 de la passerelle S88 ; la version du firmware n'est pas détectée. Le nombre de modules est la longueur de chaîne configurée, pas du matériel détecté.",
+      s88Idle: "Veuillez d'abord lire la configuration de la passerelle.",
+      s88Disclaimer: "Les valeurs sont interprétées selon l'affectation ConfigChannel documentée. La version du firmware n'est pas détectée. Le nombre de modules correspond à la longueur configurée du bus, pas au matériel détecté.",
       s88Forced1: "Envoyer tous les états une fois après la mise sous tension",
       s88Forced2: "Forced events, seconde variante (bit 1)",
-      s88Advanced: "Diagnostic avancé",
+      s88Advanced: "Paramètres avancés",
       s88Write: "Écrire la configuration",
-      s88Writing: "Envoi de la configuration…",
+      s88Writing: "Envoi des modifications…",
       s88WriteConfirm: "La configuration sera écrite dans l'EEPROM de la passerelle S88 intégrée. La version du firmware n'est pas vérifiée. Continuer ?",
+      s88WriteDefaultsConfirm: "Les indicateurs d'option ne sont pas définis dans la passerelle. L'écriture enregistrera les valeurs par défaut : antirebond 4, Forced Events désactivés. Les bits d'option inconnus seront effacés. Continuer ?",
+      s88ReadDiscardConfirm: "Abandonner les modifications non envoyées et relire la configuration ?",
       s88NothingToWrite: "Aucune modification à envoyer.",
       s88Invalid: "Valeur non valide – vérifiez la saisie.",
       s88Verified: "envoyé et confirmé par relecture",
       s88NotVerified: "envoyé, mais non confirmé",
       s88WriteVerified: "Commandes envoyées, toutes les valeurs confirmées par relecture",
       s88WriteSent: "Commandes envoyées, mais toutes les valeurs ne sont pas confirmées",
-      s88WriteFailed: "Échec de l'envoi",
+      s88WriteFailed: "Échec de l'envoi des modifications",
+      s88WriteUnknown: "Le résultat de l'écriture est inconnu. Veuillez relire la configuration.",
+      s88OptionsDefaultsNotice: "Les indicateurs d'option ne sont pas définis. L'écriture enregistrera les valeurs par défaut : antirebond 4, Forced Events désactivés. Les bits d'option inconnus seront effacés.",
+      parameterInfoButton: "Ouvrir les informations du paramètre",
+      s88ModulesInfo: "Définit le nombre de modules S88 que la passerelle interroge sur le bus S88. Une valeur plus élevée permet davantage de contacts de rétrosignalisation, mais peut allonger leur interrogation. Il s'agit de la longueur configurée du bus, et non du nombre de modules détectés physiquement.\n\nValeurs autorisées : 0–16 ; 0 désactive le bus S88.\nDépendances : avec 0, le bus S88 est désactivé et les réglages des contacts n'ont donc aucun effet pratique. La première ID de rétrosignalisation ne modifie pas le nombre de modules.",
+      s88FirstIdInfo: "Définit l'ID attribuée au premier contact de rétrosignalisation S88. Les contacts suivants reçoivent des ID consécutives. Cela permet d'affecter au bus S88 une plage adaptée dans le logiciel de commande du réseau.\n\nValeurs autorisées : 1–65535. Le firmware stocke un offset ; la première ID est calculée comme offset + 1.\nDépendances : le nombre de contacts disponibles dépend du nombre de modules S88. La plage d'ID ne devrait pas chevaucher celle d'autres appareils de rétrosignalisation si le logiciel de commande exige des ID uniques. Un champ vide laisse la valeur inchangée.",
+      s88DebounceInfo: "Lors d'un changement d'état, un contact S88 peut brièvement alterner plusieurs fois entre « libre » et « occupé ». L'antirebond définit le nombre de mesures identiques consécutives requis avant que la passerelle signale un changement. Cela aide à éviter les événements de rétrosignalisation faux ou en double.\n\nValeurs autorisées : 2 ou 4 mesures consécutives. 4 est la valeur par défaut recommandée.\nDépendances : l'option du firmware « utiliser deux mesures S88 identiques » modifie ce comportement. 2 mesures détectent plus vite, mais filtrent moins ; 4 filtrent davantage. Si les indicateurs d'option ne sont pas encore définis, 4 est utilisé par défaut et enregistré lors de l'écriture.",
+      s88Forced1Info: "Lorsque cette option est activée, la passerelle envoie une fois après le démarrage l'état actuel de tous les contacts de rétrosignalisation S88. Le logiciel de commande peut ainsi initialiser sa représentation du réseau sans attendre un changement de chaque contact.\n\nValeurs autorisées : activé ou désactivé. Si les indicateurs d'option ne sont pas encore définis, désactivé est la valeur par défaut.\nDépendances : cette fonction dépend du firmware de la passerelle et de la manière dont le logiciel de commande traite les états signalés. Les changements d'état ultérieurs sont toujours envoyés comme événements de rétrosignalisation normaux.",
+      s88Forced2Info: "Active la seconde variante, définie par le firmware, de traitement des événements S88 forcés. Elle modifie le traitement de ces événements et n'est pas un interrupteur général pour tous les messages de rétrosignalisation.\n\nValeurs autorisées : activé ou désactivé. Si les indicateurs d'option ne sont pas encore définis, désactivé est la valeur par défaut.\nDépendances : le comportement exact est défini par le firmware. Cette option doit être considérée avec le délai des Forced Events. Selon le portail, le délai est modifiable si cette option ou la première option Forced Event est activée.",
+      s88DelayInfo: "Définit le délai, en millisecondes, utilisé lors du traitement des événements S88 forcés. Il ajuste leur timing et ne s'applique pas à tous les messages de rétrosignalisation.\n\nValeurs autorisées : 0–255 ms.\nDépendances : l'effet exact dépend du moment où le firmware considère un événement comme forcé. 0 signifie aucun délai supplémentaire ; cela ne désactive pas automatiquement les autres fonctions. Le champ n'est modifiable que si au moins une option Forced Event est activée.",
+      s88DeviceIdInfo: "Identifie la passerelle S88 dans le système CAN. L'ID de l'appareil est différente de l'UID : c'est l'identifiant configurable de l'appareil, tandis que l'UID est un identifiant distinct.\n\nValeurs autorisées : 0–65534 (saisie décimale). Le firmware stocke l'ID de l'appareil sur deux octets ; 65535 (0xFFFF) est réservé pour indiquer « non défini » et ne peut pas être écrit.\nDépendances : l'ID doit être compatible avec le système CAN et ne doit pas entrer en conflit avec un autre appareil. Sa modification peut affecter l'adressage de la passerelle. Un champ vide laisse l'ID inchangée.",
       s88WriteHint: "Seules les valeurs modifiées sont envoyées. Les champs vides (non définis dans la passerelle) restent inchangés. La passerelle enregistre les valeurs dans son EEPROM.",
-      s88Uid: "UID (deux octets de poids faible, hex)",
+      s88Uid: "UID (hexadécimal, 4 chiffres)",
+      s88UidInfo: "L'UID identifie la passerelle. Ce champ affiche uniquement les 16 bits de poids faible (deux octets) de l'UID. L'UID n'est pas identique à l'ID de l'appareil S88.\n\nValeurs autorisées : 0x0000–0xFFFE. Saisissez exactement quatre chiffres hexadécimaux sans préfixe 0x, par exemple 3322. 0xFFFF est réservé pour indiquer « non défini » et ne peut pas être écrit.\nDépendances : l'UID est lu et écrit via ConfigChannel 6. Il ne contrôle ni le nombre de modules ni la plage d'ID de rétrosignalisation. Comme il contribue à l'identification de l'appareil, ne le modifiez qu'en cas de nécessité. Une modification peut changer l'identité CAN de la passerelle ; un champ vide laisse l'UID inchangé.",
       s88UidConfirm: "Attention : modifier l'UID change l'identité CAN de la passerelle. Les logiciels de commande doivent la redétecter ensuite.",
       s88BusOffConfirm: "Attention : 0 module désactive le bus S88.",
-      s88DebounceHint: "Pour un bus plus long, un antirebond sur 2 mesures identiques est recommandé ; sinon des événements brefs (p. ex. passage sur une voie de commutation) peuvent être manqués.",
       s88Delay: "Délai des forced events (ms)",
-      s88Reading: "Lecture du bus CAN…",
-      s88Done: "Configuration lue",
-      s88Failed: "Échec de la lecture",
-      s88DeviceId: "ID de l'appareil S88",
+      s88Reading: "Lecture de la configuration…",
+      s88Done: "Configuration lue avec succès. Les valeurs peuvent maintenant être modifiées.",
+      s88Failed: "La configuration n'a pas pu être lue intégralement et correctement. Vérifiez la connexion et la passerelle, puis réessayez.",
+      s88DeviceId: "ID de l'appareil S88 (décimal)",
       s88Modules: "Nombre de modules S88",
       s88Inputs: "Entrées de rétrosignalisation au total",
-      s88FirstId: "Première ID de rétrosignalisation",
+      s88FirstId: "Première ID de rétrosignalisation (1-65535)",
       s88Debounce: "Antirebond",
       s88DebounceN: "%n mesures identiques",
       s88AllOnFirst: "Envoyer tous les états après la mise sous tension",
@@ -639,11 +669,11 @@
       s88Yes: "Oui",
       s88No: "Non",
       s88NoReply: "Pas de réponse",
+      s88InvalidResponse: "La réponse de la passerelle est absente, incomplète ou invalide.",
       s88RawValue: "Valeur brute",
       s88Unknown: "Non interprétable",
       s88Unset: "Non défini (valeur par défaut)",
       s88ModulesLabel: "Modules",
-      s88Range: "Module %n : IDs %a–%b",
       sshTerminalTitle: "SSH / Terminal",
       sshTerminalDesc: "Shell in a Box via le port 4200.",
       loading: "chargement",
@@ -919,35 +949,48 @@
       configurationIntro: "Configureer en beheer de inhoud en interfaces van je SRSEII.",
       s88GatewayTitle: "Geïntegreerde S88-gateway",
       s88Intro: "Huidige instellingen van de geïntegreerde SRSEII S88-gateway.",
+      s88ShowConfiguration: "Configuratie tonen",
       s88Read: "Configuratie uitlezen",
-      s88Idle: "Er wordt niets naar de CAN-bus gestuurd totdat je op \"Configuratie uitlezen\" of \"Configuratie schrijven\" klikt.",
-      s88Disclaimer: "Waarden worden geïnterpreteerd voor S88-gatewayfirmware v1.27; de firmwareversie wordt niet gedetecteerd. Het aantal modules is de ingestelde ketenlengte, geen gedetecteerde hardware.",
+      s88Idle: "Lees eerst de configuratie van de gateway uit.",
+      s88Disclaimer: "Waarden worden geïnterpreteerd volgens de gedocumenteerde ConfigChannel-indeling. De firmwareversie wordt niet gedetecteerd. Het aantal modules is de ingestelde buslengte, geen gedetecteerde hardware.",
       s88Forced1: "Alle statussen eenmalig sturen na inschakelen",
       s88Forced2: "Forced events, tweede variant (bit 1)",
-      s88Advanced: "Geavanceerde diagnose",
+      s88Advanced: "Geavanceerde instellingen",
       s88Write: "Configuratie schrijven",
-      s88Writing: "Configuratie wordt verstuurd…",
+      s88Writing: "Wijzigingen worden verstuurd…",
       s88WriteConfirm: "De configuratie wordt naar het EEPROM van de geïntegreerde S88-gateway geschreven. De firmwareversie wordt niet gecontroleerd. Doorgaan?",
+      s88WriteDefaultsConfirm: "De optievlaggen zijn niet ingesteld in de gateway. Bij het schrijven worden de standaardwaarden opgeslagen: ontdendering 4, Forced Events uit. Onbekende optiebits worden gewist. Doorgaan?",
+      s88ReadDiscardConfirm: "Niet-verzonden wijzigingen verwerpen en de configuratie opnieuw uitlezen?",
       s88NothingToWrite: "Geen wijzigingen om te sturen.",
       s88Invalid: "Ongeldige waarde – controleer de invoer.",
       s88Verified: "verzonden en bevestigd door terug te lezen",
       s88NotVerified: "verzonden, maar niet bevestigd",
       s88WriteVerified: "Opdrachten verzonden, alle waarden bevestigd door terug te lezen",
       s88WriteSent: "Opdrachten verzonden, maar niet alle waarden bevestigd",
-      s88WriteFailed: "Verzenden mislukt",
+      s88WriteFailed: "Wijzigingen konden niet worden verzonden",
+      s88WriteUnknown: "De schrijfstatus is onbekend. Lees de configuratie opnieuw uit.",
+      s88OptionsDefaultsNotice: "De optievlaggen zijn niet ingesteld. Bij het schrijven worden de standaardwaarden opgeslagen: ontdendering 4, Forced Events uit. Onbekende optiebits worden gewist.",
+      parameterInfoButton: "Parameterinformatie openen",
+      s88ModulesInfo: "Bepaalt hoeveel S88-modules de gateway op de S88-bus scant. Een hogere waarde biedt ruimte aan meer terugmeldcontacten, maar kan het scannen van alle contacten verlengen. Dit is de ingestelde buslengte, niet het aantal fysiek gedetecteerde modules.\n\nToegestane waarden: 0–16; 0 schakelt de S88-bus uit.\nAfhankelijkheden: bij 0 is de S88-bus uitgeschakeld en hebben instellingen voor terugmeldcontacten praktisch geen effect. De eerste terugmeld-ID verandert het aantal modules niet.",
+      s88FirstIdInfo: "Bepaalt de ID van het eerste S88-terugmeldcontact. De volgende contacten krijgen opeenvolgende ID's. Zo kun je de S88-bus een passend ID-bereik geven in de besturingssoftware van je modelspoorbaan.\n\nToegestane waarden: 1–65535. De firmware slaat een offset op; de eerste ID wordt berekend als offset + 1.\nAfhankelijkheden: het aantal beschikbare terugmeldcontacten hangt af van het aantal S88-modules. Het ID-bereik mag niet overlappen met andere terugmeldapparaten als de besturingssoftware unieke ID's vereist. Een leeg veld laat de waarde ongewijzigd.",
+      s88DebounceInfo: "Een S88-contact kan bij een toestandsverandering kort meerdere keren wisselen tussen ‘vrij’ en ‘bezet’. Ontdendering bepaalt hoeveel opeenvolgende gelijke metingen nodig zijn voordat de gateway een verandering meldt. Dit helpt onjuiste of dubbele terugmeldgebeurtenissen te voorkomen.\n\nToegestane waarden: 2 of 4 opeenvolgende metingen. 4 is de aanbevolen standaardwaarde.\nAfhankelijkheden: de firmwareoptie ‘twee gelijke S88-metingen gebruiken’ verandert dit gedrag. 2 metingen detecteren sneller maar filteren minder; 4 metingen filteren sterker. Als de optievlaggen nog niet zijn ingesteld, wordt 4 als standaard gebruikt en bij het schrijven opgeslagen.",
+      s88Forced1Info: "Als deze optie is ingeschakeld, verstuurt de gateway na het opstarten eenmaal de huidige status van alle S88-terugmeldcontacten. Zo kan de besturingssoftware de baanstatus initialiseren zonder te wachten tot elk contact verandert.\n\nToegestane waarden: aan of uit. Als de optievlaggen nog niet zijn ingesteld, is uit de standaardwaarde.\nAfhankelijkheden: deze functie hangt af van de gatewayfirmware en van hoe de besturingssoftware de gemelde statussen verwerkt. Latere toestandsveranderingen worden nog steeds als normale terugmeldgebeurtenissen verstuurd.",
+      s88Forced2Info: "Schakelt de tweede, door de firmware bepaalde variant in voor het verwerken van geforceerde S88-gebeurtenissen. Dit verandert hoe deze gebeurtenissen worden verwerkt; het is geen algemene schakelaar voor alle terugmeldberichten.\n\nToegestane waarden: aan of uit. Als de optievlaggen nog niet zijn ingesteld, is uit de standaardwaarde.\nAfhankelijkheden: het exacte gedrag wordt bepaald door de firmware. Gebruik deze optie in samenhang met de Forced Event-vertraging. Volgens de portal kan de vertraging worden gewijzigd als deze of de eerste Forced Event-optie is ingeschakeld.",
+      s88DelayInfo: "Stelt de vertraging in milliseconden in die wordt gebruikt bij het verwerken van geforceerde S88-gebeurtenissen. De vertraging past de timing van deze gebeurtenissen aan en geldt niet voor elk terugmeldbericht.\n\nToegestane waarden: 0–255 ms.\nAfhankelijkheden: het precieze effect hangt af van wanneer de firmware een gebeurtenis als geforceerd behandelt. 0 betekent geen extra vertraging; andere functies worden daardoor niet automatisch uitgeschakeld. Het veld kan alleen worden gewijzigd als ten minste één Forced Event-optie is ingeschakeld.",
+      s88DeviceIdInfo: "Identificeert de S88-gateway in het CAN-systeem. De apparaat-ID verschilt van de UID: de apparaat-ID is de instelbare apparaatidentificatie, terwijl de UID een aparte identificatie is.\n\nToegestane waarden: 0–65534 (invoer in decimalen). De firmware slaat de apparaat-ID op in twee bytes; 65535 (0xFFFF) is gereserveerd als ‘niet ingesteld’ en kan niet worden geschreven.\nAfhankelijkheden: de ID moet bij het CAN-systeem passen en mag niet botsen met een ander apparaat. Een wijziging kan invloed hebben op de adressering van de gateway. Een leeg veld laat de ID ongewijzigd.",
       s88WriteHint: "Alleen gewijzigde waarden worden verzonden. Lege velden (niet ingesteld in de gateway) blijven ongewijzigd. De gateway slaat de waarden op in het EEPROM.",
-      s88Uid: "UID (twee laagste bytes, hex)",
+      s88Uid: "UID (hexadecimaal, 4 cijfers)",
+      s88UidInfo: "De UID identificeert de gateway. Dit veld toont alleen de onderste 16 bits (twee bytes) van de UID. De UID is niet hetzelfde als de S88-apparaat-ID.\n\nToegestane waarden: 0x0000–0xFFFE. Voer precies vier hexadecimale cijfers in zonder 0x-prefix, bijvoorbeeld 3322. 0xFFFF is gereserveerd als ‘niet ingesteld’ en kan niet worden geschreven.\nAfhankelijkheden: de UID wordt gelezen en geschreven via ConfigChannel 6. De UID bepaalt niet het aantal modules of het terugmeld-ID-bereik. Omdat de UID bijdraagt aan de apparaatidentificatie, wijzig je deze alleen als dat nodig is. Een wijziging kan de CAN-identiteit van de gateway veranderen; een leeg veld laat de UID ongewijzigd.",
       s88UidConfirm: "Let op: een gewijzigde UID wijzigt de CAN-identiteit van de gateway. Besturingssoftware moet deze daarna opnieuw herkennen.",
       s88BusOffConfirm: "Let op: 0 modules schakelt de S88-bus uit.",
-      s88DebounceHint: "Bij een langere bus wordt ontdenderen op 2 gelijke metingen aanbevolen; anders kunnen korte gebeurtenissen (bijv. overrijden van een schakelrail) gemist worden.",
       s88Delay: "Vertraging forced events (ms)",
-      s88Reading: "CAN-bus uitlezen…",
-      s88Done: "Configuratie uitgelezen",
-      s88Failed: "Uitlezen mislukt",
-      s88DeviceId: "S88-apparaat-ID",
+      s88Reading: "Configuratie wordt uitgelezen…",
+      s88Done: "Configuratie succesvol uitgelezen. De waarden kunnen nu worden gewijzigd.",
+      s88Failed: "De configuratie kon niet volledig en geldig worden uitgelezen. Controleer de verbinding en gateway en probeer het opnieuw.",
+      s88DeviceId: "S88-apparaat-ID (decimaal)",
       s88Modules: "Aantal S88-modules",
       s88Inputs: "Totaal aantal terugmeldingingangen",
-      s88FirstId: "Eerste terugmeld-ID",
+      s88FirstId: "Eerste terugmeld-ID (1-65535)",
       s88Debounce: "Ontdendering",
       s88DebounceN: "%n gelijke metingen",
       s88AllOnFirst: "Alle statussen na inschakelen sturen",
@@ -956,11 +999,11 @@
       s88Yes: "Ja",
       s88No: "Nee",
       s88NoReply: "Geen antwoord",
+      s88InvalidResponse: "Gateway-antwoord ontbreekt, is onvolledig of ongeldig.",
       s88RawValue: "Ruwe waarde",
       s88Unknown: "Niet te interpreteren",
       s88Unset: "Niet ingesteld (standaardwaarde)",
       s88ModulesLabel: "Modules",
-      s88Range: "Module %n: ID's %a–%b",
       sshTerminalTitle: "SSH / Terminal",
       sshTerminalDesc: "Shell in a Box via poort 4200.",
       loading: "laden",
@@ -1236,35 +1279,48 @@
       configurationIntro: "Configure and manage the contents and interfaces of your SRSEII.",
       s88GatewayTitle: "Integrated S88 gateway",
       s88Intro: "Current settings of the integrated SRSEII S88 gateway.",
+      s88ShowConfiguration: "Show configuration",
       s88Read: "Read configuration",
-      s88Idle: "Nothing is sent to the CAN bus until you click \"Read configuration\" or \"Write configuration\".",
-      s88Disclaimer: "Values are interpreted for the S88 gateway firmware v1.27; the firmware version is not detected. The module count is the configured chain length, not detected hardware.",
+      s88Idle: "Please read the gateway configuration first.",
+      s88Disclaimer: "Values are interpreted according to the documented ConfigChannel mapping. The firmware version is not detected. The module count is the configured bus length, not detected hardware.",
       s88Forced1: "Send all states once after power-on",
       s88Forced2: "Forced events, second variant (bit 1)",
-      s88Advanced: "Advanced diagnostics",
+      s88Advanced: "Advanced settings",
       s88Write: "Write configuration",
-      s88Writing: "Sending configuration...",
+      s88Writing: "Sending changes...",
       s88WriteConfirm: "The configuration will be written to the EEPROM of the integrated S88 gateway. The firmware version is not checked. Continue?",
+      s88WriteDefaultsConfirm: "The gateway's option flags are unset. Writing will save the defaults: debounce 4, forced events off. Unknown option bits will be cleared. Continue?",
+      s88ReadDiscardConfirm: "Discard unsent changes and read the configuration again?",
       s88NothingToWrite: "No changes to send.",
       s88Invalid: "Invalid value - please check your input.",
       s88Verified: "sent and confirmed by readback",
       s88NotVerified: "sent, but not confirmed",
       s88WriteVerified: "Commands sent, all values confirmed by readback",
       s88WriteSent: "Commands sent, but not all values confirmed",
-      s88WriteFailed: "Sending failed",
+      s88WriteFailed: "Changes could not be sent",
+      s88WriteUnknown: "The write outcome is unknown. Please read the configuration again.",
+      s88OptionsDefaultsNotice: "Option flags are unset. Writing will save the defaults: debounce 4, forced events off. Unknown option bits will be cleared.",
+      parameterInfoButton: "Open parameter information",
+      s88ModulesInfo: "Defines how many S88 modules the gateway scans on the S88 bus. A higher value allows more feedback contacts but may increase the time required to scan them all. This is the configured bus length, not the number of physically detected modules.\n\nAllowed values: 0–16; 0 disables the S88 bus.\nDependencies: At 0, the S88 bus is disabled, so feedback contact settings have no practical effect. The first feedback ID does not change the number of modules.",
+      s88FirstIdInfo: "Defines the ID assigned to the first S88 feedback contact. Subsequent contacts receive consecutive IDs. This lets you assign the S88 bus a suitable feedback-ID range in your model railway control software.\n\nAllowed values: 1–65535. The firmware stores an offset; the first ID is calculated as offset + 1.\nDependencies: The number of available feedback contacts depends on the number of S88 modules. The ID range should not overlap with other feedback devices if the control system requires unique IDs. Leaving the field empty keeps the value unchanged.",
+      s88DebounceInfo: "An S88 contact may briefly switch several times between “free” and “occupied” as its state changes. Debouncing sets how many consecutive identical samples are required before the gateway reports a change. This helps prevent false or duplicate feedback events.\n\nAllowed values: Two or four consecutive samples. Four is the recommended default.\nDependencies: The firmware option “Use two identical S88 samples” changes this behaviour. Two samples detect changes faster but provide less filtering; four samples provide more filtering. If the option flags are unset, 4 is used as the default and saved when you write the configuration.",
+      s88Forced1Info: "When enabled, the gateway sends the current state of all S88 feedback contacts once after startup. This lets the model railway control system initialise its view of the layout without waiting for each contact to change state.\n\nAllowed values: On or Off. If the option flags are unset, Off is the default.\nDependencies: This feature depends on the gateway firmware and on how the control system processes the reported states. Later state changes are still sent as normal feedback events.",
+      s88Forced2Info: "Enables the second firmware-defined variant for handling forced S88 events. This changes how these events are processed; it is not a general switch for all feedback messages.\n\nAllowed values: On or Off. If the option flags are unset, Off is the default.\nDependencies: The exact behaviour is defined by the firmware. Consider this option together with the forced-event delay. In the portal, the delay is editable when this or the first forced-event option is enabled.",
+      s88DelayInfo: "Sets the delay, in milliseconds, used when processing forced S88 events. It adjusts the timing of these events and is not a general delay applied to every feedback message.\n\nAllowed values: 0–255 ms.\nDependencies: The exact effect depends on when the firmware treats an event as forced. 0 means no additional delay; it does not automatically disable other features. The field is editable only while at least one forced-event option is enabled.",
+      s88DeviceIdInfo: "Identifies the S88 gateway within the CAN system. The device ID is different from the UID: it is the configurable device identifier, while the UID is a separate identifier.\n\nAllowed values: 0–65534 (enter in decimal). The firmware stores the device ID in two bytes; 65535 (0xFFFF) is reserved to mean “unset” and cannot be written.\nDependencies: The ID must be compatible with the CAN system and must not conflict with another device. Changing it may affect how the gateway is addressed. Leaving the field empty keeps the device ID unchanged.",
       s88WriteHint: "Only changed values are sent. Empty fields (not set in the gateway) are left untouched. The gateway stores the values in its EEPROM.",
-      s88Uid: "UID (two low bytes, hex)",
+      s88Uid: "UID (hex, 4 digits)",
+      s88UidInfo: "The UID identifies the gateway. This field displays only the lower 16 bits (two bytes) of the UID. It is not the same as the S88 device ID.\n\nAllowed values: 0x0000–0xFFFE. Enter exactly four hexadecimal digits without the 0x prefix, for example, 3322. 0xFFFF is reserved to mean “unset” and cannot be written.\nDependencies: The UID is read and written using ConfigChannel 6. It does not control the number of modules or the feedback-ID range. Since it contributes to device identification, change it only when necessary. Changing it may change the gateway's CAN identity; leaving the field empty keeps the UID unchanged.",
       s88UidConfirm: "Warning: Changing the UID changes the gateway's CAN identity. Control software has to detect it again afterwards.",
       s88BusOffConfirm: "Warning: 0 modules switches the S88 bus off.",
-      s88DebounceHint: "With longer buses, debouncing on 2 equal samples is recommended; otherwise short events (e.g. a train passing a switch track) may be missed.",
       s88Delay: "Forced-event delay (ms)",
-      s88Reading: "Reading CAN bus...",
-      s88Done: "Configuration read",
-      s88Failed: "Read failed",
-      s88DeviceId: "S88 device ID",
+      s88Reading: "Reading configuration...",
+      s88Done: "Configuration read successfully. The values can now be edited.",
+      s88Failed: "The configuration could not be read completely and validly. Check the connection and gateway, then try again.",
+      s88DeviceId: "S88 device ID (decimal)",
       s88Modules: "Number of S88 modules",
       s88Inputs: "Total feedback inputs",
-      s88FirstId: "First feedback ID",
+      s88FirstId: "First feedback ID (1-65535)",
       s88Debounce: "Debounce",
       s88DebounceN: "%n equal samples",
       s88AllOnFirst: "Send all states after power-on",
@@ -1273,11 +1329,11 @@
       s88Yes: "Yes",
       s88No: "No",
       s88NoReply: "No reply",
+      s88InvalidResponse: "Gateway response is missing, incomplete, or invalid.",
       s88RawValue: "Raw value",
       s88Unknown: "Cannot be interpreted",
       s88Unset: "Not set (default)",
       s88ModulesLabel: "Modules",
-      s88Range: "Module %n: IDs %a-%b",
       sshTerminalTitle: "SSH / Terminal",
       sshTerminalDesc: "Shell in a Box via port 4200.",
       loading: "loading",
@@ -2861,6 +2917,26 @@
     });
   }
 
+  if (parameterInfoDialog && parameterInfoTitle && parameterInfoDescription) {
+    document.querySelectorAll("[data-info-title-key][data-info-description-key]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        parameterInfoTitle.textContent = t(button.getAttribute("data-info-title-key"));
+        parameterInfoDescription.textContent = t(button.getAttribute("data-info-description-key"));
+        parameterInfoDialog.showModal();
+      });
+    });
+    if (parameterInfoCloseButton) {
+      parameterInfoCloseButton.addEventListener("click", function () {
+        parameterInfoDialog.close();
+      });
+    }
+    parameterInfoDialog.addEventListener("click", function (event) {
+      if (event.target === parameterInfoDialog) {
+        parameterInfoDialog.close();
+      }
+    });
+  }
+
   if (centralStationGuideCloseButton && centralStationGuideDialog) {
     centralStationGuideCloseButton.addEventListener("click", function () {
       centralStationGuideDialog.close();
@@ -2993,7 +3069,7 @@
     });
   }
 
-  // S88 gateway (firmware v1.27) value decoding. Values arrive as hex strings.
+  // S88 gateway value decoding. Values arrive as hex strings.
   function s88Bytes(hex) {
     var bytes = [];
     for (var i = 0; i + 1 < hex.length; i += 2) {
@@ -3020,32 +3096,46 @@
     return /^f+$/i.test(hex);
   }
 
-  function renderS88(channels) {
-    var ranges = document.getElementById("s88-ranges");
-    if (!ranges) {
-      return;
+  function s88ChannelsValid(channels) {
+    var required = ["01", "03", "04", "06", "07", "08"];
+    if (!channels || typeof channels !== "object") {
+      return false;
     }
-    fillS88Form(channels);
-    updateS88Ranges();
-  }
-
-  function updateS88Ranges() {
-    var ranges = document.getElementById("s88-ranges");
-    var count = Number(s88El("s88-in-modules").value);
-    var first = s88FieldValue("s88-in-firstid", 1, 65535);
-    var parts = [];
-    if (s88El("s88-in-modules").value !== "" && count > 0 && first.value !== undefined) {
-      for (var m = 0; m < count; m++) {
-        parts.push(t("s88Range").replace("%n", String(m + 1)).replace("%a", String(first.value + m * 16)).replace("%b", String(first.value + m * 16 + 15)));
+    for (var i = 0; i < required.length; i++) {
+      var channel = required[i];
+      var entry = channels[channel];
+      if (!entry || typeof entry.value !== "string" || !/^[0-9A-F]{4}$/i.test(entry.value)) {
+        return false;
+      }
+      if (s88IsUnset(entry.value)) {
+        continue;
+      }
+      var value = s88Uint(entry.value);
+      if ((channel === "01" && value > 65534) ||
+          (channel === "03" && value > 16) ||
+          (channel === "04" && value > 65534) ||
+          ((channel === "07" || channel === "08") && value > 255)) {
+        return false;
       }
     }
-    ranges.textContent = count > 0 && parts.length ? count + " × 16 = " + count * 16 + " — " + parts.join("; ") : "";
+    return true;
+  }
+
+  function renderS88(channels) {
+    if (!s88ChannelsValid(channels)) {
+      throw new Error(t("s88InvalidResponse"));
+    }
+    fillS88Form(channels);
+    s88Loaded = true;
+    s88SetAvailability();
   }
 
   var s88FormFields = ["s88-in-modules", "s88-in-firstid", "s88-in-debounce", "s88-in-forced", "s88-in-delay", "s88-in-forced2", "s88-in-deviceid", "s88-in-uid"];
 
-  // Values as read from the gateway; null = channel unset or not answered.
+  // Values as read from the gateway; null = channel unset.
   var s88Original = null;
+  var s88Loaded = false;
+  var s88Busy = false;
 
   function s88El(id) {
     return document.getElementById(id);
@@ -3056,8 +3146,25 @@
   }
 
   function updateS88DelayState() {
-    var forced = s88El("s88-in-forced").checked || s88El("s88-in-forced2").checked;
-    s88El("s88-in-delay").disabled = !forced;
+    var forcedEventsEnabled = s88El("s88-in-forced").checked || s88El("s88-in-forced2").checked;
+    var delayEnabled = s88Loaded && !s88Busy && forcedEventsEnabled;
+    s88El("s88-in-delay").disabled = !delayEnabled;
+  }
+
+  function s88SetAvailability() {
+    s88FormFields.forEach(function (id) {
+      s88El(id).disabled = !s88Loaded || s88Busy;
+    });
+    var showOptionsDefaults = s88Loaded && !!s88Original && !s88Original.flagsKnown;
+    s88El("s88-options-defaults").hidden = !showOptionsDefaults;
+    updateS88DelayState();
+    s88WriteButton.disabled = !s88Loaded || s88Busy;
+    s88ReadButton.disabled = s88Busy;
+  }
+
+  function s88SetBusy(busy) {
+    s88Busy = busy;
+    s88SetAvailability();
   }
 
   function fillS88Form(channels) {
@@ -3071,33 +3178,36 @@
       id: num("01"),
       modules: s88ModuleCount(channels["03"] ? channels["03"].value : "") !== null && !(channels["03"] && s88IsUnset(channels["03"].value)) ? num("03") : null,
       firstId: offset === null ? null : offset + 1,
-      // Unset flags start from 0; unknown bits of a read value are preserved on write.
+      // Only read option flags may be changed; unrecognized bits are preserved.
       flags: flagsValue === null ? 0 : flagsValue & 0xff,
       flagsKnown: flagsValue !== null,
       delay: num("08")
     };
     s88SetNumber("s88-in-deviceid", s88Original.id);
-    s88Original.uid = channels["06"] && /^[0-9A-F]{4}$/i.test(channels["06"].value) ? channels["06"].value.toUpperCase() : null;
+    s88Original.uid = channels["06"] && !s88IsUnset(channels["06"].value) ? channels["06"].value.toUpperCase() : null;
     s88El("s88-in-uid").value = s88Original.uid === null ? "" : s88Original.uid;
+    s88El("s88-in-uid").placeholder = s88Original.uid === null ? t("s88Unset") : "3322";
     s88El("s88-in-modules").value = s88Original.modules === null ? "" : String(s88Original.modules);
     s88SetNumber("s88-in-firstid", s88Original.firstId);
     s88SetNumber("s88-in-delay", s88Original.delay);
-    s88El("s88-in-debounce").value = (s88Original.flags & 0x80) ? "2" : "4";
+    s88El("s88-in-debounce").value = !s88Original.flagsKnown ? "4" : ((s88Original.flags & 0x80) ? "2" : "4");
     s88El("s88-in-forced").checked = !!(s88Original.flags & 0x01);
     s88El("s88-in-forced2").checked = !!(s88Original.flags & 0x02);
+    s88El("s88-in-forced").indeterminate = false;
+    s88El("s88-in-forced2").indeterminate = false;
     // Show 0xFFFF ("not set") explicitly instead of leaving the field blank.
     [["s88-in-deviceid", "01"], ["s88-in-modules", "03"], ["s88-in-firstid", "04"], ["s88-in-delay", "08"]].forEach(function (pair) {
       var entry = channels[pair[1]];
       var unset = !entry ? t("s88NoReply") : (s88IsUnset(entry.value) ? "0xFFFF – " + t("s88Unset") : "");
       var el = s88El(pair[0]);
+      if (pair[0] === "s88-in-deviceid" && entry && s88IsUnset(entry.value)) {
+        unset = t("s88Unset");
+      }
       el.placeholder = el.tagName === "INPUT" ? unset : "";
       if (el.tagName === "SELECT" && el.options.length) {
         el.options[0].textContent = unset || "–";
       }
     });
-    s88FormFields.forEach(function (id) { s88El(id).disabled = false; });
-    s88El("s88-write").disabled = false;
-    updateS88DelayState();
   }
 
   function s88FieldValue(id, min, max) {
@@ -3109,6 +3219,27 @@
       return { invalid: true };
     }
     return { value: Number(raw) };
+  }
+
+  function s88InputIsInvalid(id) {
+    var el = s88El(id);
+    if (id === "s88-in-uid") {
+      var uid = el.value.trim().toUpperCase();
+      return uid !== "" && (!/^[0-9A-F]{4}$/.test(uid) || uid === "FFFF");
+    }
+    if (id === "s88-in-firstid") {
+      var firstId = s88FieldValue(id, 1, 65535);
+      return firstId.empty || firstId.invalid;
+    }
+    if (id === "s88-in-delay" || id === "s88-in-deviceid") {
+      if (el.validity.badInput) {
+        return true;
+      }
+      var bounds = id === "s88-in-delay" ? [0, 255] : [0, 65534];
+      var value = s88FieldValue(id, bounds[0], bounds[1]);
+      return !value.empty && !!value.invalid;
+    }
+    return false;
   }
 
   // Returns {query: "...", labels: [...]} for changed values only, or {error: key}.
@@ -3125,29 +3256,44 @@
       if (f.id === "s88-in-delay" && s88El(f.id).disabled) {
         continue;
       }
-      var r = s88FieldValue(f.id, f.min, f.max);
+      var r = f.id === "s88-in-modules"
+        ? (s88El(f.id).value === "" ? { empty: true } : { value: Number(s88El(f.id).value) })
+        : s88FieldValue(f.id, f.min, f.max);
       if (r.invalid) {
-        return { error: "s88Invalid" };
+        return { error: "s88Invalid", field: f.id };
+      }
+      if (r.empty && f.id === "s88-in-modules") {
+        return { error: "s88Invalid", field: f.id };
       }
       if (r.empty || r.value === f.orig) {
         continue;
       }
       parts.push(f.param + "=" + (f.convert ? f.convert(r.value) : r.value));
     }
-    var uid = s88El("s88-in-uid").value.trim().toUpperCase();
-    if (uid !== "") {
-      if (!/^[0-9A-F]{4}$/.test(uid)) {
-        return { error: "s88Invalid" };
+    var uidInput = s88El("s88-in-uid").value.trim().toUpperCase();
+    if (uidInput !== "") {
+      if (!/^[0-9A-F]{4}$/.test(uidInput) || uidInput === "FFFF") {
+        return { error: "s88Invalid", field: "s88-in-uid" };
       }
+      var uid = uidInput;
       if (uid !== s88Original.uid) {
         parts.push("uid=" + uid);
       }
     }
-    var flags = s88Original.flags & ~0x83;
-    flags |= s88El("s88-in-debounce").value === "2" ? 0x80 : 0;
+    var debounce = s88El("s88-in-debounce").value;
+    if (!s88Original.flagsKnown && debounce !== "2" && debounce !== "4") {
+      return { error: "s88Invalid", field: "s88-in-debounce" };
+    }
+    var flags = s88Original.flagsKnown ? s88Original.flags & ~0x83 : 0;
+    if (debounce === "2") {
+      flags |= 0x80;
+    } else if (debounce !== "4" && s88Original.flagsKnown) {
+      flags |= s88Original.flags & 0x80;
+    }
     flags |= s88El("s88-in-forced").checked ? 0x01 : 0;
     flags |= s88El("s88-in-forced2").checked ? 0x02 : 0;
-    if (flags !== s88Original.flags) {
+    // Missing option flags are initialized with the displayed defaults on the first write.
+    if (!s88Original.flagsKnown || flags !== s88Original.flags) {
       parts.push("flags=" + flags);
     }
     return { query: parts.join("&") };
@@ -3166,30 +3312,41 @@
     });
   }
 
-  function s88Request(query, busyButtons) {
-    busyButtons.forEach(function (b) { b.disabled = true; });
+  function s88Request(query) {
+    var isWrite = query.indexOf("action=write") !== -1;
+    s88SetBusy(true);
     return fetch("/cgi-bin/srseiiportal/s88-config?" + query + (query ? "&" : "") + "ts=" + Date.now(), { method: "POST", cache: "no-store" })
       .then(function (response) {
         return response.text().then(function (body) {
           try {
             return JSON.parse(body);
           } catch (parseError) {
-            throw new Error("HTTP " + response.status + ": " + (body.replace(/\s+/g, " ").trim().slice(0, 160) || "empty response"));
+            var error = new Error("HTTP " + response.status + ": " + (body.replace(/\s+/g, " ").trim().slice(0, 160) || "empty response"));
+            error.writeSent = isWrite ? null : false;
+            throw error;
           }
         });
       })
       .then(function (data) {
         if (!data || !data.ok) {
           var message = data && (lang === "de" ? data.messageDe : data.message);
-          throw new Error(message || t("s88Failed"));
+          var error = new Error(message || t("s88Failed"));
+          error.writeSent = data && typeof data.writeSent === "boolean" ? data.writeSent : (isWrite ? null : false);
+          throw error;
+        }
+        if (isWrite) {
+          data.writeSent = true;
         }
         return data;
       })
       .then(function (data) {
-        busyButtons.forEach(function (b) { b.disabled = b === s88WriteButton && !s88Original; });
+        s88SetBusy(false);
         return data;
       }, function (error) {
-        busyButtons.forEach(function (b) { b.disabled = b === s88WriteButton && !s88Original; });
+        if (typeof error.writeSent === "undefined") {
+          error.writeSent = isWrite ? null : false;
+        }
+        s88SetBusy(false);
         throw error;
       });
   }
@@ -3199,23 +3356,60 @@
   var s88Form = document.getElementById("s88-form");
   var s88Note = document.getElementById("s88-note");
   if (s88ReadButton && s88WriteButton && s88Form && s88Note) {
-    var s88Buttons = [s88ReadButton, s88WriteButton];
     var s88ModuleSelect = s88El("s88-in-modules");
-    for (var mi = -1; mi <= 16; mi++) {
+    var modulePlaceholder = document.createElement("option");
+    modulePlaceholder.value = "";
+    modulePlaceholder.textContent = "–";
+    modulePlaceholder.disabled = true;
+    modulePlaceholder.hidden = true;
+    s88ModuleSelect.appendChild(modulePlaceholder);
+    s88ModuleSelect.value = "";
+    for (var mi = 0; mi <= 16; mi++) {
       var option = document.createElement("option");
-      option.value = mi < 0 ? "" : String(mi);
-      option.textContent = mi < 0 ? "–" : (mi === 0 ? "0 (" + t("s88Off") + ")" : String(mi));
+      option.value = String(mi);
+      option.textContent = mi === 0 ? "0 (" + t("s88Off") + ")" : String(mi);
       s88ModuleSelect.appendChild(option);
     }
+
     s88El("s88-in-forced").addEventListener("change", updateS88DelayState);
     s88El("s88-in-forced2").addEventListener("change", updateS88DelayState);
+    s88SetAvailability();
+
+    s88FormFields.forEach(function (id) {
+      ["input", "change"].forEach(function (eventName) {
+        s88El(id).addEventListener(eventName, function () {
+          if (s88InputIsInvalid(id)) {
+            s88El(id).setAttribute("aria-invalid", "true");
+          } else {
+            s88El(id).removeAttribute("aria-invalid");
+          }
+          if (id === "s88-in-forced" || id === "s88-in-forced2") {
+            updateS88DelayState();
+          }
+        });
+      });
+    });
+
+    function s88HasUnsavedChanges() {
+      if (!s88Loaded || !s88Original) {
+        return false;
+      }
+      var changes = collectS88Changes();
+      return !!changes.error || !!changes.query;
+    }
 
     s88ReadButton.addEventListener("click", function () {
+      if (s88HasUnsavedChanges() && !window.confirm(t("s88ReadDiscardConfirm"))) {
+        return;
+      }
+      s88Loaded = false;
+      s88Original = null;
+      s88SetAvailability();
       s88Note.textContent = t("s88Reading");
       s88El("s88-write-results").textContent = "";
-      s88Request("", s88Buttons)
+      s88Request("")
         .then(function (data) {
-          renderS88(data.channels || {});
+          renderS88(data.channels);
           s88Note.textContent = t("s88Done") + " (" + new Date().toLocaleTimeString() + ")";
         })
         .catch(function (error) {
@@ -3223,10 +3417,6 @@
         });
     });
 
-    ["s88-in-modules", "s88-in-firstid"].forEach(function (id) {
-      s88El(id).addEventListener("input", updateS88Ranges);
-      s88El(id).addEventListener("change", updateS88Ranges);
-    });
     s88Form.addEventListener("submit", function (event) { event.preventDefault(); });
 
     s88WriteButton.addEventListener("click", function () {
@@ -3235,6 +3425,11 @@
       }
       var changes = collectS88Changes();
       if (changes.error) {
+        var invalidField = changes.field && s88El(changes.field);
+        if (invalidField) {
+          invalidField.setAttribute("aria-invalid", "true");
+          invalidField.focus();
+        }
         s88Note.textContent = t(changes.error);
         return;
       }
@@ -3244,20 +3439,47 @@
       }
       var busOff = /(^|&)modules=0(&|$)/.test(changes.query);
       var uidChange = /(^|&)uid=/.test(changes.query);
-      var warnings = (busOff ? t("s88BusOffConfirm") + "\n\n" : "") + (uidChange ? t("s88UidConfirm") + "\n\n" : "");
+      var optionsDefaults = !s88Original.flagsKnown;
+      var warnings = (busOff ? t("s88BusOffConfirm") + "\n\n" : "") +
+        (uidChange ? t("s88UidConfirm") + "\n\n" : "") +
+        (optionsDefaults ? t("s88WriteDefaultsConfirm") + "\n\n" : "");
       if (!window.confirm(warnings + t("s88WriteConfirm"))) {
         return;
       }
       s88Note.textContent = t("s88Writing");
-      s88Request("action=write&" + changes.query, s88Buttons)
+      s88Request("action=write&" + changes.query)
         .then(function (data) {
-          renderS88(data.channels || {});
-          showS88WriteResults(data.results || {});
-          var all = Object.keys(data.results || {}).every(function (c) { return data.results[c].verified; });
+          var results = data.results && typeof data.results === "object" ? data.results : {};
+          if (!s88ChannelsValid(data.channels)) {
+            s88Loaded = false;
+            s88Original = null;
+            s88SetAvailability();
+            showS88WriteResults(results);
+            s88Note.textContent = t("s88WriteSent");
+            return;
+          }
+          renderS88(data.channels);
+          showS88WriteResults(results);
+          var resultChannels = Object.keys(results);
+          var all = resultChannels.length === changes.query.split("&").length &&
+            resultChannels.every(function (channel) { return results[channel] && results[channel].verified === true; });
           s88Note.textContent = (all ? t("s88WriteVerified") : t("s88WriteSent")) + " (" + new Date().toLocaleTimeString() + ")";
         })
         .catch(function (error) {
-          s88Note.textContent = t("s88WriteFailed") + ": " + (error && error.message ? error.message : t("s88NoReply"));
+          var message = error && error.message ? error.message : t("s88NoReply");
+          if (error && error.writeSent === true) {
+            s88Loaded = false;
+            s88Original = null;
+            s88SetAvailability();
+            s88Note.textContent = t("s88WriteSent") + ": " + message;
+          } else if (error && error.writeSent === false) {
+            s88Note.textContent = t("s88WriteFailed") + ": " + message;
+          } else {
+            s88Loaded = false;
+            s88Original = null;
+            s88SetAvailability();
+            s88Note.textContent = t("s88WriteUnknown") + ": " + message;
+          }
         });
     });
   }

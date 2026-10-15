@@ -530,6 +530,16 @@ body {
   font-size: 1.3rem;
 }
 
+.info-dialog {
+  width: min(420px, calc(100vw - 2rem));
+}
+
+.info-dialog #parameter-info-description {
+  margin: 1rem 0 0;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
 .modal-close {
   width: 2.25rem;
   height: 2.25rem;
@@ -904,6 +914,12 @@ body {
   border-top: none;
 }
 
+.s88-configuration {
+  margin-top: 0;
+  border-top: none;
+  padding-top: 0.7rem;
+}
+
 .wifi-details {
   border-top-color: rgba(30, 58, 95, 0.4);
 }
@@ -1188,11 +1204,17 @@ body {
   }
 
   .modal-close,
+  .info-button,
   .wifi-grid select,
   .wifi-grid input {
     color: var(--ink);
     background: #202b39;
     border-color: var(--line);
+  }
+
+  .info-button:hover {
+    color: #fff;
+    background: var(--brand);
   }
 
   .loco-list-delete {
@@ -1352,12 +1374,59 @@ button.btn[disabled] {
   font-size: 0.85rem;
 }
 
-#s88-ranges:empty {
+.s88-form {
+  margin-top: 1rem;
+}
+
+.input-with-info {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2.25rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.input-with-info[hidden] {
   display: none;
 }
 
-.s88-form {
-  margin-top: 1rem;
+.input-with-info input {
+  min-width: 0;
+}
+
+.info-button {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+  color: var(--brand-dark);
+  background: transparent;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.info-button:hover {
+  color: #fff;
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.info-button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.s88-form [aria-invalid="true"] {
+  border-color: #c0392b !important;
+  background-color: #fff0f0 !important;
+  color: #8a1c13 !important;
+  outline: 2px solid #c0392b;
+  outline-offset: 2px;
 }
 
 .s88-form h5 {

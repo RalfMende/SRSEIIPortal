@@ -17,6 +17,7 @@ LISTEN_SECONDS=2
 CHANNELS="01 03 04 06 07 08"
 LOCK_DIR="/tmp/srseii-s88-config.lock"
 finished=0
+write_sent=false
 
 json_escape() {
 	printf '%s' "$1" | tr '\r\n' '  ' | sed 's/\\/\\\\/g; s/"/\\"/g'
@@ -27,8 +28,8 @@ fail() {
 	printf 'Content-Type: application/json\n'
 	printf 'Cache-Control: no-store\n'
 	printf '\n'
-	printf '{"ok":false,"message":"%s","messageDe":"%s"}\n' \
-		"$(json_escape "$1")" "$(json_escape "$2")"
+	printf '{"ok":false,"writeSent":%s,"message":"%s","messageDe":"%s"}\n' \
+		"$write_sent" "$(json_escape "$1")" "$(json_escape "$2")"
 	exit 0
 }
 
@@ -72,7 +73,9 @@ add_write_hex() {
 	[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]) ;;
 	*) fail "Invalid value for $1." "Ungültiger Wert für $1." ;;
 	esac
-	write_pairs="$write_pairs $2=$(printf '%s' "$param_value" | tr 'a-f' 'A-F')"
+	param_value="$(printf '%s' "$param_value" | tr 'a-f' 'A-F')"
+	[ "$param_value" != "FFFF" ] || fail "Value for $1 is reserved and cannot be written." "Der Wert für $1 ist reserviert und kann nicht geschrieben werden."
+	write_pairs="$write_pairs $2=$param_value"
 }
 
 query_param action
@@ -180,6 +183,18 @@ read_channels() {
 	done <"$dump_file"
 }
 
+require_channels() {
+	missing=""
+	for channel in $1; do
+		case "$channel_values" in
+		*" $channel="*) ;;
+		*) missing="$missing $channel" ;;
+		esac
+	done
+	[ -z "$missing" ] ||
+		fail "Missing S88 replies for channel(s):${missing}." "Fehlende S88-Antwort(en) für Kanal/Kanäle:${missing}."
+}
+
 no_reply_failure() {
 	seen_lines="$(wc -l <"$dump_file" 2>/dev/null | tr -d ' ')"
 	sample="$(head -n 3 "$dump_file" 2>/dev/null | tr '\n' '|')$(head -c 120 "$err_file" 2>/dev/null)"
@@ -196,6 +211,7 @@ if [ "$mode" = "write" ]; then
 		value="${pair#*=}"
 		cansend "$CAN_IF" "00000300#434255530B${channel}${value}" >/dev/null 2>&1 ||
 			fail "Sending the write to channel $channel failed (is $CAN_IF up?)." "Schreiben auf Kanal $channel fehlgeschlagen (ist $CAN_IF aktiv?)."
+		write_sent=true
 		written_channels="$written_channels $channel"
 		# Give the gateway time to store the value (EEPROM) before the next frame.
 		sleep 1
@@ -218,8 +234,12 @@ if [ "$mode" = "write" ]; then
 	done
 	# Fresh values of all channels for the display.
 	read_channels "$CHANNELS"
+	[ -n "$channels_json" ] || no_reply_failure
+	require_channels "$CHANNELS"
 else
 	read_channels "$CHANNELS"
+	[ -n "$channels_json" ] || no_reply_failure
+	require_channels "$CHANNELS"
 fi
 
 [ -n "$channels_json" ] || no_reply_failure
