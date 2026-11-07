@@ -1,8 +1,15 @@
+import os
 from pathlib import Path
 
 setup_script = Path("src/usr/sbin/srseii-setup-usecase")
 if not setup_script.exists():
     raise AssertionError("Missing use-case setup script: src/usr/sbin/srseii-setup-usecase")
+
+cgi_script_path = Path("src/www/cgi-bin/srseiiportal/usecase-setup")
+if not cgi_script_path.exists():
+    raise AssertionError("Missing use-case setup CGI: src/www/cgi-bin/srseiiportal/usecase-setup")
+if not os.access(cgi_script_path, os.X_OK):
+    raise AssertionError("usecase-setup CGI must be executable for uhttpd")
 
 setup_text = setup_script.read_text(encoding="utf-8")
 app_js = Path("src/www/srseiiportal/app.js").read_text(encoding="utf-8")

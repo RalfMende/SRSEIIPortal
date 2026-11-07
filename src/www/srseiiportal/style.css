@@ -719,7 +719,7 @@ body {
   background: #e5e7eb;
   border-color: #c7cdd4;
   opacity: 1;
-  cursor: not-allowed;
+  cursor: pointer;
 }
 
 .btn.feature-state-error {
