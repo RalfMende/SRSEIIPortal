@@ -102,22 +102,24 @@ is_service_running() {
 		return 0
 	fi
 
+	# Legacy rc.common scripts (start()/stop() without procd) do not implement
+	# "running"/"status" and print a usage text instead. That usage text contains
+	# words like "Start", which a loose grep would misread as "running". Only an
+	# explicit "running" report counts; usage output must never match.
 	if [ -x "/etc/init.d/$service_name" ]; then
-		output="$('/etc/init.d/$service_name' running 2>&1 || true)"
-		if printf '%s' "$output" | grep -Eiq 'running|started|active|pid'; then
-			return 0
-		fi
-		if printf '%s' "$output" | grep -Eiq 'not running|stopped|inactive|failed|disabled'; then
-			return 1
-		fi
-
 		output="$('/etc/init.d/$service_name' status 2>&1 || true)"
-		if printf '%s' "$output" | grep -Eiq 'running|started|active|pid'; then
-			return 0
-		fi
-		if printf '%s' "$output" | grep -Eiq 'not running|stopped|inactive|failed|disabled'; then
-			return 1
-		fi
+		case "$output" in
+			*Syntax:*|*"Available commands"*)
+				;;
+			*)
+				if printf '%s' "$output" | grep -Eiq '\brunning\b'; then
+					return 0
+				fi
+				if printf '%s' "$output" | grep -Eiq 'not running|stopped|inactive|failed|disabled'; then
+					return 1
+				fi
+				;;
+		esac
 	fi
 
 	service_status_from_ubus "$service_name"
