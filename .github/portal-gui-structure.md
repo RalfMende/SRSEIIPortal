@@ -21,7 +21,7 @@ Das SRSEII Portal ist die einfache, zentrale Bedienoberfläche des **SRSEII (Sma
 - **Die bestehende Modellbahnsteuerung darf durch das Portal nicht beeinträchtigt werden.**
 - Nichts behaupten, was nicht belastbar festgestellt wurde (Erfolg, Kompatibilität, Gerätezustand).
 
-Nicht-Ziele: WPS, Setup-/Recovery-Access-Point, Diagnose-Assistent, Konfigurationsprofile und ein PIC-Status sind nicht implementiert (siehe Abschnitt 13). Sie dürfen nicht ohne ausdrückliche Anforderung ergänzt werden.
+Nicht-Ziele: WPS, Setup-/Recovery-Access-Point, Diagnose-Assistent, Konfigurationsprofile und ein PIC-Status sind nicht implementiert (siehe Abschnitt 15). Sie dürfen nicht ohne ausdrückliche Anforderung ergänzt werden.
 
 ---
 
@@ -287,7 +287,7 @@ Mehrere Endpunkte vereinen Aktionen bewusst in **einem** CGI (z. B. `loco-list`)
 - **Update** („von der Mobile Station aktualisieren“) und **Reset** („Lokliste neu einlesen“) senden je **einen fest einkodierten CAN-Frame** per `cansend` auf `can0` (überschreibbar über `SRSEII_CAN_INTERFACE`). Es gibt keinen frei zusammensetzbaren Befehl und keine Benutzereingabe im Frame. Es gibt dafür keinen zusätzlichen Dienst.
 - Das Frontend deaktiviert beide Buttons während des Vorgangs, fragt die Liste alle 3 s (maximal 60 s) ab und erkennt Erfolg an einer **geänderten Revision** (`updatedAt:fileSize`). Bleibt sie aus, meldet es nur „angefordert, keine Änderung festgestellt“, **nie** „erfolgreich“.
 - **Reset** erfordert vorher eine Bestätigung, weil die vorhandene Liste ersetzt wird.
-- Es gibt keine Anzeige eines PIC-Zustands (siehe Abschnitt 13).
+- Es gibt keine Anzeige eines PIC-Zustands (siehe Abschnitt 15).
 
 ### 6.3 Lokomotiv-Icons
 
@@ -442,7 +442,76 @@ ls -la /etc/init.d
 
 ---
 
-## 13. Bewusste Abgrenzungen (nicht implementiert)
+## 13. Erkenntnisse aus der Foren-Analyse (Stummiforum „Gleisbox als Zentrale“)
+
+Grundlage: Auswertung des Stummiforum-Threads „Gleisbox als Zentrale“ (52 Seiten, 1.261 Beiträge, 2018 bis heute). Die Analyse liegt unter `files/forum-analyse-gleisbox-als-zentrale.md` im Session-Ordner. Sie bestätigt die Portal-Zielsetzung und liefert die Begründung für die geplanten Checks in Abschnitt 14.
+
+Gewichtete Fehlerbilder (Häufigkeit im Thread):
+
+| Gewicht | Fehlerbild | ~Beiträge | Portal-Abdeckung heute |
+| ------- | ---------- | --------- | ---------------------- |
+| 🔴 1 | Netzwerk-, WLAN-, IP-Konfiguration (DHCP vs. statisch, AP/Client, parallele Verbindungen, verlorene IP) | 60+ | WiFi-Assistent, LAN/WLAN-Pills |
+| 🔴 2 | Architektur-Missverständnis („Wer ist die Zentrale?“, Schnittstellen verwechselt) | 70–80 | Leitprinzip „Komplexität kapseln“, Info-Dialoge |
+| 🔴 3 | App-Anbindung (welche App, welches Interface, welcher Port; konkurrierende Programme) | 50+ | Use-Case-Registry inkl. verbotener Dienste |
+| 🟠 4 | Dienste laufen nicht / Ports unbekannt (can2lan ohne TCP 15730/15731) | 35+ | Status-Modell (can2lan-Pflicht), Quick Links |
+| 🟠 5 | Installation (Image, Pakete, Reihenfolge, Feeds) | ~33 | Use-Case-Setup (opkg + Dienste) |
+| 🟠 6 | Update-Probleme und Update-Verwechslung (System vs. Märklin-Firmware) | ~36 | Update-Endpunkt |
+| 🟡 7 | Loklisten-Synchronisation (MS2 vs. `lokomotive.cs2` vs. Apps) | ~30 | Locomotive List + Icons |
+| 🟡 8 | S88-/Rückmelder-Verwirrung (direkt vs. LinkS88, Bus-Zuordnung) | ~13 | S88-Konfiguration |
+| ⚪ 9 | Kleinere Themen (MQTT/Mosquitto, Start/Stopp, Firmware-Angst, MFX/Decoder) | je 3–6 | teils nicht portal-lösbar |
+
+Zentrale Erkenntnis: Die häufigsten Fehler entstehen in der **Lücke zwischen „Prozess läuft“ und „Funktion ist da“** (z. B. can2lan-Prozess aktiv, aber kein offener TCP-Port; Interface up, aber keine DHCP-Lease). Die heutigen Checks prüfen Prozess/Paket/Link — nicht die tatsächliche Funktion.
+
+---
+
+## 14. Geplante Checks (Roadmap)
+
+Die folgenden Checks sind als Nächstes geplant und noch **nicht implementiert**. Sie schließen die in Abschnitt 13 beschriebene Lücke. Reihenfolge = Priorität aus der Foren-Analyse.
+
+### Hohe Priorität
+
+1. **Socket-/Port-Check statt nur Prozess-Check** (Fehlerbild 3+4)
+   - Prüfen, ob die relevanten Ports tatsächlich lauschen: TCP 15730/15731 (can2lan), UDP 21105/21106 (z21emu), 8082 (RailControl), 6020 (MS Web App).
+   - Umsetzung auf BusyBox über `/proc/net/tcp`/`udp` oder `netstat -ltn`.
+   - Nebeneffekt: liefert die im Forum gewünschte Port-Übersicht.
+
+2. **CAN-Interface-Zustand** (Fehlerbild 3+4)
+   - `ip link show can0` → up + Bitrate prüfen; Fehlermeldung „CAN-Interface inaktiv“ statt generischem „CAN connection inactive“.
+
+3. **Internet-/DNS- und opkg-Feed-Check** (Fehlerbild 5+6)
+   - Default-Gateway erreichbar? DNS-Auflösung funktioniert? Feed-URL erreichbar? Alter des letzten `opkg update`?
+   - Ziel: „Update fehlgeschlagen“ auflösen in „keine Internetverbindung“ / „Paketquelle nicht erreichbar“.
+
+### Mittlere Priorität
+
+4. **Warnung bei konkurrierenden Server-Apps** (Fehlerbild 3)
+   - Warn-Event, wenn z. B. RailControl **und** RocRail **und** maecanserver gleichzeitig laufen (Status liefert die Einzelwerte bereits — reine Auswertelogik).
+
+5. **WLAN-Modus und Doppelverbindung transparenter** (Fehlerbild 1)
+   - Aktiven Modus (AP/STA) je Funkgerät anzeigen; bei gleichzeitig aktivem LAN+WLAN Hinweis, welche IP für Apps relevant ist.
+   - „Verbunden, aber keine DHCP-Lease“ je Interface erkennen (heute nur global).
+
+6. **Loklisten-Datei-Check** (Fehlerbild 7)
+   - `lokomotive.cs2` vorhanden, Größe > 0, mtime → Anzeige „Lokliste vorhanden (Stand: …)“.
+
+### Niedrige Priorität
+
+7. **Speicherplatz auf /overlay** — `df /overlay` mit Schwellwert-Warnung (klassische Ursache für fehlschlagende opkg-Installationen).
+
+8. **MQTT/Mosquitto-Konfiguration für RocRail** — bekanntes `allow_anonymous`-Problem aus alten Images; nur im RocRail-Kontext prüfen.
+
+9. **Ausstehende Updates anzeigen** — `opkg list-upgradable | wc -l`; trennt „System aktuell“ vs. „Updates verfügbar“ klarer von Märklin-Firmware.
+
+### Randbedingungen für die Umsetzung
+
+- Der `status`-CGI muss schnell bleiben (bestehender opkg-Cache mit 60 s TTL beachten). Netzwerk-Checks (Ping/DNS) ggf. asynchron oder nur auf Abruf.
+- Neue Statusfelder nur **additiv** ergänzen (Vertragsfelder sind durch Tests abgesichert).
+- Neue Ereignisse im Backend per `add_event` ergänzen, nicht im Frontend erfinden.
+- Neue Texte in allen vier Sprachen (`de`, `en`, `fr`, `nl`).
+
+---
+
+## 15. Bewusste Abgrenzungen (nicht implementiert)
 
 Diese Punkte sind **nicht** Teil des Portals und dürfen nicht stillschweigend ergänzt werden:
 
