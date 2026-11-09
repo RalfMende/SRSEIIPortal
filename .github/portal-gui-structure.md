@@ -258,7 +258,8 @@ Mehrere Endpunkte vereinen Aktionen bewusst in **einem** CGI (z. B. `loco-list`)
 ```json
 {
   "hostname": "…", "model": "…",
-  "openwrt": { "ok": true },
+  "openwrt": { "ok": true, "memoryUsagePercent": 42, "flashUsagePercent": 68 },
+  "system": { "ok": true, "uhttpd": true },
   "network": {
     "available": true, "lan": true, "wifi": false,
     "ssid": "…", "ip": "…", "lanIp": "…", "wifiIp": "…", "wifiInterface": "…",
@@ -278,6 +279,8 @@ Mehrere Endpunkte vereinen Aktionen bewusst in **einem** CGI (z. B. `loco-list`)
 }
 ```
 
+- `openwrt` enthält `ok` (nur `ubus call system board`, **kein** Fallback auf `/etc/openwrt_release`), `memoryUsagePercent` (aus `/proc/meminfo`) und `flashUsagePercent` (aus `df /overlay`); nur für Technical details.
+- `system` enthält den **kombinierten Systemstatus** (`ok`): `true` nur wenn OpenWrt-Basis läuft, `uhttpd` läuft (für die Webinterfaces) **und** Speicher/Flash nicht kritisch voll sind (>90%). Wird in der Status-Karte „System" angezeigt. `uhttpd` ist der Einzelstatus des Webservers.
 - `apps` und `useCases` sind die **fachliche Bereitschaft**, `services` die **technischen Rohzustände** (nur für Technical details).
 - `ports` enthält die **Erreichbarkeit der Netzwerk-Ports** (lauschende Sockets via `/proc/net`, siehe Abschnitt 14 Check 1); nur für Technical details, fließt nicht in den Gesamtstatus ein. Enthält `can2lanTcp`, `can2lanUdp`, `z21emuUdp`, `railcontrolHttp`, `mswebappHttp`, `rocrailHttp`.
 - `canInterface` enthält den **Zustand des CAN-Interfaces** (`exists`, `up`, `bitrate`; Interface über `SRSEII_CAN_INTERFACE` überschreibbar, siehe Abschnitt 14 Check 2); nur für Technical details, fließt nicht in den Gesamtstatus ein.

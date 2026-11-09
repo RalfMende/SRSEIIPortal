@@ -217,6 +217,11 @@
       statusLabel: "Status",
       systemTitle: "System",
       systemDesc: "OpenWrt läuft sauber und stellt die Basisfunktionen bereit.",
+      systemDetailsTitle: "Details",
+      systemOpenwrtLabel: "OpenWrt-Basis läuft",
+      systemUhttpdLabel: "Webserver (uhttpd) läuft",
+      systemMemoryLabel: "Speicherauslastung (RAM)",
+      systemFlashLabel: "Flash-Auslastung",
       hostnameLabel: "Hostname",
       modelLabel: "Modell",
       networkTitle: "Netzwerk",
@@ -559,6 +564,11 @@
       statusLabel: "État",
       systemTitle: "Système",
       systemDesc: "OpenWrt fonctionne correctement et fournit les fonctions de base.",
+      systemDetailsTitle: "Détails",
+      systemOpenwrtLabel: "Base OpenWrt active",
+      systemUhttpdLabel: "Serveur web (uhttpd) actif",
+      systemMemoryLabel: "Utilisation mémoire (RAM)",
+      systemFlashLabel: "Utilisation flash",
       hostnameLabel: "Nom d'hôte",
       modelLabel: "Modèle",
       networkTitle: "Réseau",
@@ -901,6 +911,11 @@
       statusLabel: "Status",
       systemTitle: "Systeem",
       systemDesc: "OpenWrt werkt correct en levert de basisfuncties.",
+      systemDetailsTitle: "Details",
+      systemOpenwrtLabel: "OpenWrt-basis actief",
+      systemUhttpdLabel: "Webserver (uhttpd) actief",
+      systemMemoryLabel: "Geheugengebruik (RAM)",
+      systemFlashLabel: "Flash-gebruik",
       hostnameLabel: "Hostnaam",
       modelLabel: "Model",
       networkTitle: "Netwerk",
@@ -1243,6 +1258,11 @@
       statusLabel: "Status",
       systemTitle: "System",
       systemDesc: "OpenWrt is running correctly and provides the system foundation.",
+      systemDetailsTitle: "Details",
+      systemOpenwrtLabel: "OpenWrt base running",
+      systemUhttpdLabel: "Web server (uhttpd) running",
+      systemMemoryLabel: "Memory usage (RAM)",
+      systemFlashLabel: "Flash usage",
       hostnameLabel: "Hostname",
       modelLabel: "Model",
       networkTitle: "Network",
@@ -2487,7 +2507,37 @@
     setText("net-lan-ip", localizeStatusFallback(network.lanIp || t("notAvailable")));
     setText("net-wifi-ssid", localizeStatusFallback(network.ssid || t("unknown")));
     setText("net-wifi-ip", localizeStatusFallback(network.wifiIp || t("notAvailable")));
-    setPill("st-openwrt-state", !!openwrt.ok, t("ready"), t("notReady"));
+    // System status: ready only when OpenWrt base runs and memory/flash are
+    // not critically full (>90%).
+    var system = data.system || {};
+    var systemOk = typeof system.ok === "boolean" ? system.ok : !!openwrt.ok;
+    setPill("st-openwrt-state", systemOk, t("ready"), t("notReady"));
+
+    // System details: OpenWrt base, uhttpd, memory and flash usage.
+    setPill("st-sys-openwrt", !!openwrt.ok, t("ready"), t("notReady"));
+    setPill("st-sys-uhttpd", !!system.uhttpd, t("ready"), t("notReady"));
+    var sysMemoryPill = document.getElementById("st-sys-memory");
+    if (sysMemoryPill) {
+      sysMemoryPill.classList.remove("pending", "ok", "err", "warn", "service-inactive");
+      if (typeof openwrt.memoryUsagePercent === "number") {
+        sysMemoryPill.classList.add("pill", openwrt.memoryUsagePercent > 90 ? "err" : openwrt.memoryUsagePercent > 75 ? "warn" : "ok");
+        sysMemoryPill.textContent = openwrt.memoryUsagePercent + " %";
+      } else {
+        sysMemoryPill.classList.add("pill", "service-inactive");
+        sysMemoryPill.textContent = t("unknown");
+      }
+    }
+    var sysFlashPill = document.getElementById("st-sys-flash");
+    if (sysFlashPill) {
+      sysFlashPill.classList.remove("pending", "ok", "err", "warn", "service-inactive");
+      if (typeof openwrt.flashUsagePercent === "number") {
+        sysFlashPill.classList.add("pill", openwrt.flashUsagePercent > 90 ? "err" : openwrt.flashUsagePercent > 75 ? "warn" : "ok");
+        sysFlashPill.textContent = openwrt.flashUsagePercent + " %";
+      } else {
+        sysFlashPill.classList.add("pill", "service-inactive");
+        sysFlashPill.textContent = t("unknown");
+      }
+    }
 
     // Model railway connection: ready only when can2lan runs, CAN interface is
     // up, and at least one CAN/LAN port is listening. Show the specific reason

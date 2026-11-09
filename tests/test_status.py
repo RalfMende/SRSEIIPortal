@@ -10,6 +10,36 @@ missing = [item for item in required if item not in status_script]
 if missing:
     raise AssertionError(f'Missing required v0.6 status fields: {missing}')
 
+# --- System details -----------------------------------------------------------
+# The status CGI must expose memory and flash usage in the openwrt object and
+# combine them into a system.ok field. The /etc/openwrt_release fallback must
+# NOT be used for the system status (only ubus call system board). uhttpd is
+# required for the web interfaces and must be part of the system status.
+for needle in ['"memoryUsagePercent"', '"flashUsagePercent"', '"system"', '"uhttpd"',
+               'ubus call system board', '/proc/meminfo', 'df /overlay',
+               'is_service_running uhttpd']:
+    if needle not in status_script:
+        raise AssertionError(f'status CGI is missing system detail: {needle}')
+if 'if [ "$openwrt_ok" = false ] && [ -f /etc/openwrt_release ]' in status_script:
+    raise AssertionError('status CGI must not use /etc/openwrt_release as fallback for system status')
+if '"firmware"' in status_script:
+    raise AssertionError('status CGI must not expose firmware version')
+
+# Frontend: system details elements and translation keys in all four languages.
+for element_id in ['st-sys-openwrt', 'st-sys-uhttpd', 'st-sys-memory', 'st-sys-flash']:
+    if element_id not in index_html:
+        raise AssertionError(f'index.html is missing system detail element: {element_id}')
+    if element_id not in app_js:
+        raise AssertionError(f'app.js does not render system detail: {element_id}')
+if 'st-sys-firmware' in index_html or 'st-sys-firmware' in app_js:
+    raise AssertionError('firmware version must not be shown in system details')
+
+for key in ['systemDetailsTitle', 'systemOpenwrtLabel', 'systemUhttpdLabel',
+            'systemMemoryLabel', 'systemFlashLabel']:
+    occurrences = app_js.count(f'{key}:')
+    if occurrences != 4:
+        raise AssertionError(f'translation key "{key}" must exist in all 4 language blocks, found {occurrences}')
+
 # --- Listening-port checks --------------------------------------------------
 # Backend: the status CGI must check listening sockets via /proc/net and expose
 # the additive "ports" object with one entry per checked service. can2lan is

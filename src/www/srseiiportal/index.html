@@ -9,7 +9,7 @@
   <meta http-equiv="Expires" content="0" />
   <title>SRSEII Portal</title>
   <meta name="description" content="SRSEII Portal" />
-  <link rel="stylesheet" href="/srseiiportal/style.css?v=0.9.23" />
+  <link rel="stylesheet" href="/srseiiportal/style.css?v=0.9.24" />
 </head>
 <body>
   <main class="layout">
@@ -150,6 +150,15 @@
           <div class="feature-copy">
             <h4 data-i18n="systemTitle">System</h4>
             <p data-i18n="systemDesc">OpenWrt is running smoothly and provides the basic functions.</p>
+            <details class="status-details status-details-no-border">
+              <summary data-i18n="systemDetailsTitle">Details</summary>
+              <ul class="status-details-list">
+                <li><span class="label" data-i18n="systemOpenwrtLabel">OpenWrt base running</span><span id="st-sys-openwrt" class="pill pending" data-i18n="loading">loading</span></li>
+                <li><span class="label" data-i18n="systemUhttpdLabel">Web server (uhttpd) running</span><span id="st-sys-uhttpd" class="pill pending" data-i18n="loading">loading</span></li>
+                <li><span class="label" data-i18n="systemMemoryLabel">Memory usage (RAM)</span><span id="st-sys-memory" class="pill pending" data-i18n="loading">loading</span></li>
+                <li><span class="label" data-i18n="systemFlashLabel">Flash usage</span><span id="st-sys-flash" class="pill pending" data-i18n="loading">loading</span></li>
+              </ul>
+            </details>
           </div>
           <div class="feature-actions">
             <span id="st-openwrt-state" class="pill pending" data-i18n="loading">loading</span>
@@ -721,6 +730,6 @@
     </div>
   </dialog>
 
-  <script src="/srseiiportal/app.js?v=0.9.52"></script>
+  <script src="/srseiiportal/app.js?v=0.9.55"></script>
 </body>
 </html>

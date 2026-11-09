@@ -323,8 +323,42 @@ if command -v ubus >/dev/null 2>&1; then
 		openwrt_ok=true
 	fi
 fi
-if [ "$openwrt_ok" = false ] && [ -f /etc/openwrt_release ]; then
-	openwrt_ok=true
+
+# System details: memory and flash usage. Both feed into the system status.
+memory_usage_percent=""
+if [ -r /proc/meminfo ]; then
+	mem_total="$(awk '/^MemTotal:/ {print $2}' /proc/meminfo 2>/dev/null || true)"
+	mem_available="$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo 2>/dev/null || true)"
+	if [ -n "$mem_total" ] && [ -n "$mem_available" ] && [ "$mem_total" -gt 0 ]; then
+		memory_usage_percent=$(( (mem_total - mem_available) * 100 / mem_total ))
+	fi
+fi
+
+flash_usage_percent=""
+if command -v df >/dev/null 2>&1; then
+	flash_line="$(df /overlay 2>/dev/null | tail -n 1 || true)"
+	if [ -n "$flash_line" ]; then
+		flash_usage_percent="$(printf '%s' "$flash_line" | awk '{print $5}' | tr -d '%' || true)"
+	fi
+fi
+
+# uhttpd is required for the web interfaces (portal, LuCI, apps).
+uhttpd_running=false
+if is_service_running uhttpd; then
+	uhttpd_running=true
+fi
+
+# System status: ready only when OpenWrt base runs, uhttpd runs, and
+# memory/flash are not critically full (>90%).
+system_ok=false
+if [ "$openwrt_ok" = true ] && [ "$uhttpd_running" = true ]; then
+	system_ok=true
+	if [ -n "$memory_usage_percent" ] && [ "$memory_usage_percent" -gt 90 ]; then
+		system_ok=false
+	fi
+	if [ -n "$flash_usage_percent" ] && [ "$flash_usage_percent" -gt 90 ]; then
+		system_ok=false
+	fi
 fi
 
 mswebapp_pkg_rc=1
@@ -640,5 +674,5 @@ elif [ "$port_can2lan_tcp_rc" -ne 0 ] || [ "$port_can2lan_udp_rc" -ne 0 ]; then
 fi
 
 cat <<EOF
-{"hostname":"$(json_escape "$hostname_value")","model":"$(json_escape "$model_value")","openwrt":{"ok":$openwrt_ok},"network":{"available":$network_available,"lan":$lan_up,"wifi":$wifi_up,"ssid":"$(json_escape "$ssid_value")","ip":"$(json_escape "$primary_ip")","lanIp":"$(json_escape "$lan_ip")","wifiIp":"$(json_escape "$wifi_ip")","wifiInterface":"$(json_escape "$wifi_iface")","message":"$(json_escape "$status_message")","messageDe":"$(json_escape "$status_message_de")"},"can2lan":{"active":$can2lan_service_value},"canInterface":{"name":"$(json_escape "$can_interface")","exists":$can_if_exists,"up":$can_if_up,"bitrate":$can_bitrate_json},"modelRailway":{"ready":$model_railway_ready,"reason":"$(json_escape "$model_railway_reason")","reasonDe":"$(json_escape "$model_railway_reason_de")"},"overall":{"ready":$overall_ready,"status":"$(json_escape "$overall_status")","label":"$(json_escape "$overall_label")","labelDe":"$(json_escape "$overall_label_de")"},"events":[${events_json}],"apps":{"mswebapp":$mswebapp_ready_value,"railcontrol":$railcontrol_ready_value},"useCases":{"z21interface":$z21interface_ready_value,"cs2interface":$cs2interface_ready_value,"itrain":$itrain_ready_value,"windigipet":$windigipet_ready_value,"rocrail":$rocrail_ready_value},"services":{"mswebapp":$mswebapp_service_value,"railcontrol":$railcontrol_service_value,"z21emu":$z21emu_service_value,"can2lan":$can2lan_service_value,"clone-ms2-loco":$clone_ms2_loco_service_value,"maecanserver":$maecanserver_service_value,"ms2-loco-list":$ms2_loco_list_service_value,"wake-up-links88":$wake_up_links88_service_value,"rocrail":$rocrail_service_value},"ports":{"can2lanTcp":$port_can2lan_tcp_value,"can2lanUdp":$port_can2lan_udp_value,"z21emuUdp":$port_z21emu_udp_value,"railcontrolHttp":$port_railcontrol_http_value,"mswebappHttp":$port_mswebapp_http_value,"rocrailHttp":$port_rocrail_http_value}}
+{"hostname":"$(json_escape "$hostname_value")","model":"$(json_escape "$model_value")","openwrt":{"ok":$openwrt_ok,"memoryUsagePercent":${memory_usage_percent:-null},"flashUsagePercent":${flash_usage_percent:-null}},"system":{"ok":$system_ok,"uhttpd":$uhttpd_running},"network":{"available":$network_available,"lan":$lan_up,"wifi":$wifi_up,"ssid":"$(json_escape "$ssid_value")","ip":"$(json_escape "$primary_ip")","lanIp":"$(json_escape "$lan_ip")","wifiIp":"$(json_escape "$wifi_ip")","wifiInterface":"$(json_escape "$wifi_iface")","message":"$(json_escape "$status_message")","messageDe":"$(json_escape "$status_message_de")"},"can2lan":{"active":$can2lan_service_value},"canInterface":{"name":"$(json_escape "$can_interface")","exists":$can_if_exists,"up":$can_if_up,"bitrate":$can_bitrate_json},"modelRailway":{"ready":$model_railway_ready,"reason":"$(json_escape "$model_railway_reason")","reasonDe":"$(json_escape "$model_railway_reason_de")"},"overall":{"ready":$overall_ready,"status":"$(json_escape "$overall_status")","label":"$(json_escape "$overall_label")","labelDe":"$(json_escape "$overall_label_de")"},"events":[${events_json}],"apps":{"mswebapp":$mswebapp_ready_value,"railcontrol":$railcontrol_ready_value},"useCases":{"z21interface":$z21interface_ready_value,"cs2interface":$cs2interface_ready_value,"itrain":$itrain_ready_value,"windigipet":$windigipet_ready_value,"rocrail":$rocrail_ready_value},"services":{"mswebapp":$mswebapp_service_value,"railcontrol":$railcontrol_service_value,"z21emu":$z21emu_service_value,"can2lan":$can2lan_service_value,"clone-ms2-loco":$clone_ms2_loco_service_value,"maecanserver":$maecanserver_service_value,"ms2-loco-list":$ms2_loco_list_service_value,"wake-up-links88":$wake_up_links88_service_value,"rocrail":$rocrail_service_value},"ports":{"can2lanTcp":$port_can2lan_tcp_value,"can2lanUdp":$port_can2lan_udp_value,"z21emuUdp":$port_z21emu_udp_value,"railcontrolHttp":$port_railcontrol_http_value,"mswebappHttp":$port_mswebapp_http_value,"rocrailHttp":$port_rocrail_http_value}}
 EOF
