@@ -82,12 +82,17 @@ missing = [item for item in diagnosis if item not in script]
 if missing:
     raise AssertionError(f"Missing opkg failure diagnosis: {missing}")
 
-# Failed update attempts must be persisted for the activity log. The status CGI
-# reads the timestamp and detail as the newest event.
-if "record_update_failure" not in script or "/tmp/srseii-opkg-update-event" not in script:
-    raise AssertionError("Update failures are not persisted for the activity log")
+# Failed and successful update attempts must be persisted for the activity log.
+# The status CGI reads the timestamp, level and detail as the newest event.
+if "record_update_event" not in script or "/tmp/srseii-opkg-update-event" not in script:
+    raise AssertionError("Update events are not persisted for the activity log")
+if "record_update_failure" not in script:
+    raise AssertionError("Update failures must still use record_update_failure")
+for item in ['record_update_event "info" "Update check completed', 'record_update_event "info" "Package update completed']:
+    if item not in script:
+        raise AssertionError(f"Missing success event: {item}")
 status_script = Path("src/www/cgi-bin/srseiiportal/status").read_text(encoding="utf-8")
-for item in ['"/tmp/srseii-opkg-update-event"', 'add_event_at "warning" "$update_event_message" "$update_event_time"']:
+for item in ['"/tmp/srseii-opkg-update-event"', 'add_event_at "$update_event_level" "$update_event_message" "$update_event_time"']:
     if item not in status_script:
         raise AssertionError(f"Status API does not include the persisted update event: {item}")
 

@@ -582,10 +582,12 @@ add_event() {
 update_event_file="/tmp/srseii-opkg-update-event"
 if [ -r "$update_event_file" ]; then
 	update_event_time="$(sed -n '1p' "$update_event_file" 2>/dev/null || true)"
-	update_event_message="$(sed -n '2p' "$update_event_file" 2>/dev/null || true)"
+	update_event_level="$(sed -n '2p' "$update_event_file" 2>/dev/null || true)"
+	update_event_message="$(sed -n '3p' "$update_event_file" 2>/dev/null || true)"
 	if [ -n "$update_event_message" ]; then
 		[ -n "$update_event_time" ] || update_event_time="unknown"
-		add_event_at "warning" "$update_event_message" "$update_event_time"
+		[ -n "$update_event_level" ] || update_event_level="warning"
+		add_event_at "$update_event_level" "$update_event_message" "$update_event_time"
 	fi
 fi
 
