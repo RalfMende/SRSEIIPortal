@@ -95,6 +95,40 @@ service_status_from_ubus() {
 	return 2
 }
 
+# Listening-socket checks via /proc/net/{tcp,tcp6,udp,udp6} (BusyBox has no ss).
+# State 0A = LISTEN (TCP); UDP sockets are unconnected while waiting for datagrams.
+port_is_listening_tcp() {
+	port_hex="$(printf '%04X' "$1" 2>/dev/null || true)"
+	[ -n "$port_hex" ] || return 1
+
+	for proc_file in /proc/net/tcp /proc/net/tcp6; do
+		[ -r "$proc_file" ] || continue
+		if awk -v port="$port_hex" 'NR > 1 { split($2, a, ":"); if (a[2] == port && $4 == "0A") found = 1 } END { exit(found ? 0 : 1) }' "$proc_file" 2>/dev/null; then
+			return 0
+		fi
+	done
+
+	return 1
+}
+
+port_is_listening_udp() {
+	port_hex="$(printf '%04X' "$1" 2>/dev/null || true)"
+	[ -n "$port_hex" ] || return 1
+
+	for proc_file in /proc/net/udp /proc/net/udp6; do
+		[ -r "$proc_file" ] || continue
+		if awk -v port="$port_hex" 'NR > 1 { split($2, a, ":"); if (a[2] == port) found = 1 } END { exit(found ? 0 : 1) }' "$proc_file" 2>/dev/null; then
+			return 0
+		fi
+	done
+
+	return 1
+}
+
+port_is_listening() {
+	port_is_listening_tcp "$1" || port_is_listening_udp "$1"
+}
+
 is_service_running() {
 	service_name="$1"
 
@@ -401,6 +435,54 @@ if is_service_running rocrail; then
 	rocrail_service_rc=0
 fi
 
+# Listening-port checks: a running process alone does not prove the function is
+# reachable (e.g. can2lan started with a wrong interface opens no port).
+# can2lan speaks the Märklin CAN-over-Ethernet protocol via UDP broadcast
+# (15730/15731) and serves CS2-compatible clients via TCP (15730/15731).
+port_can2lan_tcp_rc=1
+if port_is_listening_tcp 15730 || port_is_listening_tcp 15731; then
+	port_can2lan_tcp_rc=0
+fi
+
+port_can2lan_udp_rc=1
+if port_is_listening_udp 15730 || port_is_listening_udp 15731; then
+	port_can2lan_udp_rc=0
+fi
+
+port_z21emu_udp_rc=1
+if port_is_listening_udp 21105; then
+	port_z21emu_udp_rc=0
+fi
+
+port_railcontrol_http_rc=1
+if port_is_listening_tcp 8082; then
+	port_railcontrol_http_rc=0
+fi
+
+port_mswebapp_http_rc=1
+if port_is_listening_tcp 6020; then
+	port_mswebapp_http_rc=0
+fi
+
+# CAN interface state: can2lan can run while can0 is down or misconfigured.
+# On the Omega2+ can0 is an slcan interface (slcand on /dev/ttyS1): it reports
+# no bitrate and operstate UNKNOWN, so the UP flag in the interface flags is
+# the only reliable indicator. BusyBox ip does not support "-details".
+can_interface="${SRSEII_CAN_INTERFACE:-can0}"
+can_if_exists=false
+can_if_up=false
+can_bitrate=""
+if ip link show "$can_interface" >/dev/null 2>&1; then
+	can_if_exists=true
+	can_link_info="$(ip -details link show "$can_interface" 2>/dev/null || true)"
+	[ -n "$can_link_info" ] || can_link_info="$(ip link show "$can_interface" 2>/dev/null || true)"
+	can_flags="$(printf '%s\n' "$can_link_info" | sed -n 's/.*<\([^>]*\)>.*/\1/p' | head -n 1)"
+	case ",$can_flags," in
+		*",UP,"*) can_if_up=true ;;
+	esac
+	can_bitrate="$(printf '%s\n' "$can_link_info" | sed -n 's/.*bitrate \([0-9][0-9]*\).*/\1/p' | head -n 1)"
+fi
+
 mswebapp_ready_rc=1
 if [ "$mswebapp_pkg_rc" -eq 0 ] && [ "$mswebapp_service_rc" -eq 0 ] && [ "$ms2_loco_list_service_rc" -ne 0 ]; then
 	mswebapp_ready_rc=0
@@ -455,6 +537,15 @@ maecanserver_service_value="$(bool_from_rc "$maecanserver_service_rc")"
 ms2_loco_list_service_value="$(bool_from_rc "$ms2_loco_list_service_rc")"
 wake_up_links88_service_value="$(bool_from_rc "$wake_up_links88_service_rc")"
 rocrail_service_value="$(bool_from_rc "$rocrail_service_rc")"
+port_can2lan_tcp_value="$(bool_from_rc "$port_can2lan_tcp_rc")"
+port_can2lan_udp_value="$(bool_from_rc "$port_can2lan_udp_rc")"
+port_z21emu_udp_value="$(bool_from_rc "$port_z21emu_udp_rc")"
+port_railcontrol_http_value="$(bool_from_rc "$port_railcontrol_http_rc")"
+port_mswebapp_http_value="$(bool_from_rc "$port_mswebapp_http_rc")"
+can_bitrate_json="null"
+if [ -n "$can_bitrate" ]; then
+	can_bitrate_json="$can_bitrate"
+fi
 
 overall_ready=false
 if [ "$openwrt_ok" = true ] && [ "$network_available" = true ] && [ "$can2lan_service_rc" -eq 0 ]; then
@@ -493,8 +584,14 @@ fi
 
 if [ "$can2lan_service_rc" -ne 0 ]; then
 	add_event "warning" "Track box CAN connection is inactive."
+elif [ "$can_if_exists" = false ]; then
+	add_event "warning" "CAN interface $can_interface does not exist."
+elif [ "$can_if_up" = false ]; then
+	add_event "warning" "CAN interface $can_interface is down."
+elif [ "$port_can2lan_tcp_rc" -ne 0 ] || [ "$port_can2lan_udp_rc" -ne 0 ]; then
+	add_event "warning" "CAN/LAN bridge is running but not reachable on TCP/UDP ports 15730/15731."
 fi
 
 cat <<EOF
-{"hostname":"$(json_escape "$hostname_value")","model":"$(json_escape "$model_value")","openwrt":{"ok":$openwrt_ok},"network":{"available":$network_available,"lan":$lan_up,"wifi":$wifi_up,"ssid":"$(json_escape "$ssid_value")","ip":"$(json_escape "$primary_ip")","lanIp":"$(json_escape "$lan_ip")","wifiIp":"$(json_escape "$wifi_ip")","wifiInterface":"$(json_escape "$wifi_iface")","message":"$(json_escape "$status_message")","messageDe":"$(json_escape "$status_message_de")"},"can2lan":{"active":$can2lan_service_value},"overall":{"ready":$overall_ready,"status":"$(json_escape "$overall_status")","label":"$(json_escape "$overall_label")","labelDe":"$(json_escape "$overall_label_de")"},"events":[${events_json}],"apps":{"mswebapp":$mswebapp_ready_value,"railcontrol":$railcontrol_ready_value},"useCases":{"z21interface":$z21interface_ready_value,"cs2interface":$cs2interface_ready_value,"itrain":$itrain_ready_value,"windigipet":$windigipet_ready_value,"rocrail":$rocrail_ready_value},"services":{"mswebapp":$mswebapp_service_value,"railcontrol":$railcontrol_service_value,"z21emu":$z21emu_service_value,"can2lan":$can2lan_service_value,"clone-ms2-loco":$clone_ms2_loco_service_value,"maecanserver":$maecanserver_service_value,"ms2-loco-list":$ms2_loco_list_service_value,"wake-up-links88":$wake_up_links88_service_value,"rocrail":$rocrail_service_value}}
+{"hostname":"$(json_escape "$hostname_value")","model":"$(json_escape "$model_value")","openwrt":{"ok":$openwrt_ok},"network":{"available":$network_available,"lan":$lan_up,"wifi":$wifi_up,"ssid":"$(json_escape "$ssid_value")","ip":"$(json_escape "$primary_ip")","lanIp":"$(json_escape "$lan_ip")","wifiIp":"$(json_escape "$wifi_ip")","wifiInterface":"$(json_escape "$wifi_iface")","message":"$(json_escape "$status_message")","messageDe":"$(json_escape "$status_message_de")"},"can2lan":{"active":$can2lan_service_value},"canInterface":{"name":"$(json_escape "$can_interface")","exists":$can_if_exists,"up":$can_if_up,"bitrate":$can_bitrate_json},"overall":{"ready":$overall_ready,"status":"$(json_escape "$overall_status")","label":"$(json_escape "$overall_label")","labelDe":"$(json_escape "$overall_label_de")"},"events":[${events_json}],"apps":{"mswebapp":$mswebapp_ready_value,"railcontrol":$railcontrol_ready_value},"useCases":{"z21interface":$z21interface_ready_value,"cs2interface":$cs2interface_ready_value,"itrain":$itrain_ready_value,"windigipet":$windigipet_ready_value,"rocrail":$rocrail_ready_value},"services":{"mswebapp":$mswebapp_service_value,"railcontrol":$railcontrol_service_value,"z21emu":$z21emu_service_value,"can2lan":$can2lan_service_value,"clone-ms2-loco":$clone_ms2_loco_service_value,"maecanserver":$maecanserver_service_value,"ms2-loco-list":$ms2_loco_list_service_value,"wake-up-links88":$wake_up_links88_service_value,"rocrail":$rocrail_service_value},"ports":{"can2lanTcp":$port_can2lan_tcp_value,"can2lanUdp":$port_can2lan_udp_value,"z21emuUdp":$port_z21emu_udp_value,"railcontrolHttp":$port_railcontrol_http_value,"mswebappHttp":$port_mswebapp_http_value}}
 EOF

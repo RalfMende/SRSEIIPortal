@@ -349,6 +349,17 @@
       loading: "wird geladen",
       active: "aktiv",
       inactive: "inaktiv",
+      listening: "erreichbar",
+      notListening: "nicht erreichbar",
+      networkPortsTitle: "Netzwerk-Ports",
+      canInterfaceTitle: "CAN-Interface",
+      canIfUp: "aktiv",
+      canIfDown: "inaktiv",
+      canIfMissing: "nicht vorhanden",
+      portCan2lanLabel: "CAN/LAN-Bridge (UDP+TCP Port 15730/15731)",
+      portZ21emuLabel: "Z21-Schnittstelle (UDP Port 21105)",
+      portRailcontrolLabel: "RailControl Webinterface (TCP Port 8082)",
+      portMswebappLabel: "Mobile Station Web App Webinterface (TCP Port 6020)",
       connected: "verbunden",
       notConnected: "nicht verbunden",
       ready: "Bereit",
@@ -679,6 +690,17 @@
       loading: "chargement",
       active: "actif",
       inactive: "inactif",
+      listening: "accessible",
+      notListening: "non accessible",
+      networkPortsTitle: "Ports réseau",
+      canInterfaceTitle: "Interface CAN",
+      canIfUp: "actif",
+      canIfDown: "inactif",
+      canIfMissing: "absent",
+      portCan2lanLabel: "Passerelle CAN/LAN (UDP+TCP port 15730/15731)",
+      portZ21emuLabel: "Interface Z21 (UDP port 21105)",
+      portRailcontrolLabel: "Interface web RailControl (TCP port 8082)",
+      portMswebappLabel: "Interface web Mobile Station Web App (TCP port 6020)",
       connected: "connecté",
       notConnected: "non connecté",
       ready: "Prêt",
@@ -1009,6 +1031,17 @@
       loading: "laden",
       active: "actief",
       inactive: "inactief",
+      listening: "bereikbaar",
+      notListening: "niet bereikbaar",
+      networkPortsTitle: "Netwerkpoorten",
+      canInterfaceTitle: "CAN-interface",
+      canIfUp: "actief",
+      canIfDown: "inactief",
+      canIfMissing: "niet aanwezig",
+      portCan2lanLabel: "CAN/LAN-brug (UDP+TCP-poort 15730/15731)",
+      portZ21emuLabel: "Z21-interface (UDP-poort 21105)",
+      portRailcontrolLabel: "RailControl-webinterface (TCP-poort 8082)",
+      portMswebappLabel: "Mobile Station Web App-webinterface (TCP-poort 6020)",
       connected: "verbonden",
       notConnected: "niet verbonden",
       ready: "Gereed",
@@ -1339,6 +1372,17 @@
       loading: "loading",
       active: "active",
       inactive: "inactive",
+      listening: "reachable",
+      notListening: "not reachable",
+      networkPortsTitle: "Network ports",
+      canInterfaceTitle: "CAN interface",
+      canIfUp: "up",
+      canIfDown: "down",
+      canIfMissing: "missing",
+      portCan2lanLabel: "CAN/LAN bridge (UDP+TCP port 15730/15731)",
+      portZ21emuLabel: "Z21 interface (UDP port 21105)",
+      portRailcontrolLabel: "RailControl web interface (TCP port 8082)",
+      portMswebappLabel: "Mobile Station Web App web interface (TCP port 6020)",
       connected: "connected",
       notConnected: "not connected",
       ready: "Ready",
@@ -1534,6 +1578,60 @@
 
     el.classList.add("pill", "service-inactive");
     el.textContent = t("inactive");
+  }
+
+  function setCanInterfaceState(canInterface) {
+    var pill = document.getElementById("st-can-if-state");
+    var label = document.getElementById("st-can-if-label");
+    if (!pill) {
+      return;
+    }
+
+    var info = canInterface || {};
+    if (label && info.name) {
+      label.textContent = info.bitrate ? info.name + " (" + info.bitrate + " bit/s)" : info.name;
+    }
+
+    pill.classList.remove("pending", "ok", "err", "warn", "network-disconnected", "service-not-required", "service-inactive");
+    if (!info.exists) {
+      pill.classList.add("pill", "err");
+      pill.textContent = t("canIfMissing");
+      return;
+    }
+
+    if (info.up) {
+      pill.classList.add("pill", "ok");
+      pill.textContent = t("canIfUp");
+      return;
+    }
+
+    pill.classList.add("pill", "err");
+    pill.textContent = t("canIfDown");
+  }
+
+  function setPortPill(id, isListening, serviceRunning) {
+    var el = document.getElementById(id);
+    if (!el) {
+      return;
+    }
+
+    el.classList.remove("pending", "ok", "err", "warn", "network-disconnected", "service-not-required", "service-inactive");
+    if (!serviceRunning) {
+      // Port state is only meaningful while the owning service runs; otherwise
+      // show a neutral "inactive" instead of a misleading "not reachable".
+      el.classList.add("pill", "service-inactive");
+      el.textContent = t("inactive");
+      return;
+    }
+
+    if (isListening) {
+      el.classList.add("pill", "ok");
+      el.textContent = t("listening");
+      return;
+    }
+
+    el.classList.add("pill", "err");
+    el.textContent = t("notListening");
   }
 
   function setNetworkPill(id, isConnected) {
@@ -2435,6 +2533,18 @@
     setServicePill("st-maecanserver", !!(data.services && data.services.maecanserver));
     setServicePill("st-ms2-loco-list", !!(data.services && data.services["ms2-loco-list"]));
     setServicePill("st-wake-up-links88", !!(data.services && data.services["wake-up-links88"]));
+
+    setCanInterfaceState(data.canInterface);
+
+    var ports = data.ports || {};
+    // can2lan serves CAN-over-Ethernet via UDP and CS2 clients via TCP; both
+    // must be reachable. Older status responses without can2lanUdp fall back
+    // to the TCP-only result.
+    var can2lanPortsReachable = !!ports.can2lanTcp && (typeof ports.can2lanUdp === "boolean" ? !!ports.can2lanUdp : true);
+    setPortPill("st-port-can2lan", can2lanPortsReachable, can2lanService);
+    setPortPill("st-port-z21emu", !!ports.z21emuUdp, z21Service);
+    setPortPill("st-port-railcontrol", !!ports.railcontrolHttp, railcontrolService);
+    setPortPill("st-port-mswebapp", !!ports.mswebappHttp, mswebappService);
 
     return network;
   }

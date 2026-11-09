@@ -936,6 +936,13 @@ body {
   list-style: none;
 }
 
+.status-details-subtitle {
+  margin: 0.9rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
 .status-details-list li {
   display: flex;
   align-items: center;

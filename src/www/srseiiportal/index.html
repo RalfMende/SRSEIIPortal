@@ -9,7 +9,7 @@
   <meta http-equiv="Expires" content="0" />
   <title>SRSEII Portal</title>
   <meta name="description" content="SRSEII Portal" />
-  <link rel="stylesheet" href="/srseiiportal/style.css?v=0.9.19" />
+  <link rel="stylesheet" href="/srseiiportal/style.css?v=0.9.20" />
 </head>
 <body>
   <main class="layout">
@@ -177,6 +177,17 @@
             <li><span class="label">maecanserver</span><span id="st-maecanserver" class="pill pending" data-i18n="loading">loading</span></li>
             <li><span class="label">ms2-loco-list</span><span id="st-ms2-loco-list" class="pill pending" data-i18n="loading">loading</span></li>
             <li><span class="label">wake-up-links88</span><span id="st-wake-up-links88" class="pill pending" data-i18n="loading">loading</span></li>
+          </ul>
+          <h5 class="status-details-subtitle" data-i18n="canInterfaceTitle">CAN interface</h5>
+          <ul class="status-details-list">
+            <li><span class="label" id="st-can-if-label">can0</span><span id="st-can-if-state" class="pill pending" data-i18n="loading">loading</span></li>
+          </ul>
+          <h5 class="status-details-subtitle" data-i18n="networkPortsTitle">Network ports</h5>
+          <ul class="status-details-list">
+            <li><span class="label" data-i18n="portCan2lanLabel">CAN/LAN bridge (UDP+TCP port 15730/15731)</span><span id="st-port-can2lan" class="pill pending" data-i18n="loading">loading</span></li>
+            <li><span class="label" data-i18n="portZ21emuLabel">Z21 interface (UDP port 21105)</span><span id="st-port-z21emu" class="pill pending" data-i18n="loading">loading</span></li>
+            <li><span class="label" data-i18n="portRailcontrolLabel">RailControl web interface (TCP port 8082)</span><span id="st-port-railcontrol" class="pill pending" data-i18n="loading">loading</span></li>
+            <li><span class="label" data-i18n="portMswebappLabel">Mobile Station Web App web interface (TCP port 6020)</span><span id="st-port-mswebapp" class="pill pending" data-i18n="loading">loading</span></li>
           </ul>
         </details>
       </div>
@@ -708,6 +719,6 @@
     </div>
   </dialog>
 
-  <script src="/srseiiportal/app.js?v=0.9.41"></script>
+  <script src="/srseiiportal/app.js?v=0.9.43"></script>
 </body>
 </html>

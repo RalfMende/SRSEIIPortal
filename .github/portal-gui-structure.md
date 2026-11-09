@@ -265,17 +265,21 @@ Mehrere Endpunkte vereinen Aktionen bewusst in **einem** CGI (z. B. `loco-list`)
     "message": "…", "messageDe": "…"
   },
   "can2lan": { "active": true },
+  "canInterface": { "name": "can0", "exists": true, "up": true, "bitrate": 250000 },
   "overall": { "ready": true, "status": "ready", "label": "…", "labelDe": "…" },
   "events": [ { "level": "warning", "message": "…", "time": "YYYY-MM-DD HH:MM:SS" } ],
   "apps": { "mswebapp": true, "railcontrol": true },
   "useCases": { "z21interface": true, "cs2interface": true, "itrain": true, "windigipet": true, "rocrail": false },
   "services": { "mswebapp": true, "railcontrol": true, "z21emu": true, "can2lan": true,
                 "clone-ms2-loco": true, "maecanserver": false, "ms2-loco-list": false,
-                "wake-up-links88": false, "rocrail": false }
+                "wake-up-links88": false, "rocrail": false },
+  "ports": { "can2lanTcp": true, "can2lanUdp": true, "z21emuUdp": false, "railcontrolHttp": true, "mswebappHttp": true }
 }
 ```
 
 - `apps` und `useCases` sind die **fachliche Bereitschaft**, `services` die **technischen Rohzustände** (nur für Technical details).
+- `ports` enthält die **Erreichbarkeit der Netzwerk-Ports** (lauschende Sockets via `/proc/net`, siehe Abschnitt 14 Check 1); nur für Technical details, fließt nicht in den Gesamtstatus ein.
+- `canInterface` enthält den **Zustand des CAN-Interfaces** (`exists`, `up`, `bitrate`; Interface über `SRSEII_CAN_INTERFACE` überschreibbar, siehe Abschnitt 14 Check 2); nur für Technical details, fließt nicht in den Gesamtstatus ein.
 - LAN-Status stammt aus `ubus network.interface dump` (Fallback `br-lan`), WLAN aus `iw`/`wwan`; beide werden getrennt ermittelt.
 - Der Status enthält **keine Zugangsdaten**.
 - Vertragsfelder (`openwrt`, `can2lan`, `network`, `overall`, `events`) sind durch Tests abgesichert; Felder nur additiv erweitern.
@@ -403,7 +407,7 @@ Tests liegen unter `tests/` als Python-Skripte mit Assertions auf Modulebene. Si
 
 | Testdatei | Sichert ab |
 | --------- | ---------- |
-| `test_status_api.py` | Pflichtfelder der Status-API |
+| `test_status.py` | Pflichtfelder der Status-API, Port-Checks im status-CGI, `ports`-Feld, Frontend-Pills, Übersetzungen |
 | `test_usecase_setup.py` | Use-Case-Registry, Readiness, Frontend-/Status-Anbindung |
 | `test_wifi_assistant.py` | Scan ruft `wifi up` nicht unbedingt auf |
 | `test_loco_list.py` | ein einziges CGI, Quellen, Sortierung, Frontend-Anbindung, Paket |
@@ -470,13 +474,18 @@ Die folgenden Checks sind als Nächstes geplant und noch **nicht implementiert**
 
 ### Hohe Priorität
 
-1. **Socket-/Port-Check statt nur Prozess-Check** (Fehlerbild 3+4)
-   - Prüfen, ob die relevanten Ports tatsächlich lauschen: TCP 15730/15731 (can2lan), UDP 21105/21106 (z21emu), 8082 (RailControl), 6020 (MS Web App).
-   - Umsetzung auf BusyBox über `/proc/net/tcp`/`udp` oder `netstat -ltn`.
-   - Nebeneffekt: liefert die im Forum gewünschte Port-Übersicht.
+1. ~~**Socket-/Port-Check statt nur Prozess-Check**~~ ✅ **Implementiert** (Fehlerbild 3+4)
+   - `port_is_listening_tcp()` / `port_is_listening_udp()` im `status`-CGI prüfen über `/proc/net/{tcp,tcp6,udp,udp6}` (State `0A` = LISTEN bei TCP), ob die relevanten Ports lauschen: **UDP+TCP** 15730/15731 (can2lan: CAN-over-Ethernet-Broadcast + CS2-Client-Server), UDP 21105 (z21emu), TCP 8082 (RailControl), TCP 6020 (MS Web App).
+   - Neues additives Statusfeld `ports: { can2lanTcp, can2lanUdp, z21emuUdp, railcontrolHttp, mswebappHttp }`.
+   - Ereignis, wenn can2lan läuft, aber TCP- oder UDP-Ports nicht lauschen („CAN/LAN bridge is running but not reachable on TCP/UDP ports 15730/15731").
+   - **Port-Zustand wird nur für laufende Dienste bewertet:** Läuft der Dienst nicht, zeigt die Port-Pill neutral „inaktiv" (nie „nicht erreichbar") und es wird kein Ereignis erzeugt.
+   - Frontend: eigene Untergruppe „Network ports" in den Technical details mit Pills (erreichbar/nicht erreichbar/inaktiv); die CAN/LAN-Bridge-Pill verlangt UDP **und** TCP (ältere Statusantworten ohne `can2lanUdp` fallen auf TCP-only zurück); Test `tests/test_status.py`.
 
-2. **CAN-Interface-Zustand** (Fehlerbild 3+4)
-   - `ip link show can0` → up + Bitrate prüfen; Fehlermeldung „CAN-Interface inaktiv“ statt generischem „CAN connection inactive“.
+2. ~~**CAN-Interface-Zustand**~~ ✅ **Implementiert** (Fehlerbild 3+4)
+   - Das `status`-CGI prüft `ip -details link show can0` mit Fallback auf `ip link show can0` (BusyBox `ip` kennt `-details` nicht) und liefert das additive Feld `canInterface: { name, exists, up, bitrate }` (Interface über `SRSEII_CAN_INTERFACE` überschreibbar).
+   - **Omega2+/slcan-Sonderfall:** `can0` wird per `slcand` auf `/dev/ttyS1` erzeugt. slcan-Interfaces melden **keine Bitrate** und operstate `UNKNOWN`; der UP-Zustand wird deshalb exakt aus den Interface-Flags gelesen (`,UP,` im Flag-Feld, kein Substring-Match — `LOWER_UP` allein zählt nicht). `bitrate` ist bei slcan `null`.
+   - Ereignisse nur bei laufendem can2lan: „CAN interface … does not exist." / „… is down." — vor der Port-Prüfung, damit die Ursache (Interface) vor dem Symptom (Port) gemeldet wird.
+   - Frontend: eigene Zeile „CAN interface" in den Technical details (Label = Interface-Name + Bitrate, Pill up/down/missing); Test `tests/test_status.py`.
 
 3. **Internet-/DNS- und opkg-Feed-Check** (Fehlerbild 5+6)
    - Default-Gateway erreichbar? DNS-Auflösung funktioniert? Feed-URL erreichbar? Alter des letzten `opkg update`?
