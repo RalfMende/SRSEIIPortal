@@ -170,6 +170,14 @@
             <h4 data-i18n="modelRailwayBaseFunctionsTitle">Model railway connection</h4>
             <p data-i18n="modelRailwayBaseFunctionsDesc">The connection to the track box is active and the CAN/LAN bridge base service is active.</p>
             <p class="status-note is-hidden" id="st-model-railway-note"></p>
+            <details class="status-details status-details-no-border">
+              <summary data-i18n="modelRailwayDetailsTitle">Details</summary>
+              <ul class="status-details-list">
+                <li><span class="label" data-i18n="modelRailwayCanIfLabel">CAN interface (can0) up</span><span id="st-mr-canif" class="pill pending" data-i18n="loading">loading</span></li>
+                <li><span class="label" data-i18n="modelRailwayCan2lanLabel">CAN/LAN bridge service (can2lan) running</span><span id="st-mr-can2lan" class="pill pending" data-i18n="loading">loading</span></li>
+                <li><span class="label" data-i18n="modelRailwayPortsLabel">CAN/LAN ports (15730/15731) reachable</span><span id="st-mr-ports" class="pill pending" data-i18n="loading">loading</span></li>
+              </ul>
+            </details>
           </div>
           <div class="feature-actions">
             <span id="st-can2lan-status" class="pill pending" data-i18n="loading">loading</span>
@@ -730,6 +738,6 @@
     </div>
   </dialog>
 
-  <script src="/srseiiportal/app.js?v=0.9.55"></script>
+  <script src="/srseiiportal/app.js?v=0.9.57"></script>
 </body>
 </html>

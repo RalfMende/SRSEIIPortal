@@ -233,6 +233,10 @@
       servicesTitle: "Dienste",
       modelRailwayBaseFunctionsTitle: "Modellbahn-Verbindung",
       modelRailwayBaseFunctionsDesc: "Die Verbindung zur Gleisbox ist aktiv und der Basisdienst CAN/LAN-Bridge ist aktiv.",
+      modelRailwayDetailsTitle: "Details",
+      modelRailwayCan2lanLabel: "CAN/LAN-Bridge-Dienst (can2lan) läuft",
+      modelRailwayCanIfLabel: "CAN-Interface (can0) aktiv",
+      modelRailwayPortsLabel: "CAN/LAN-Ports (15730/15731) erreichbar",
       overallStatus: "Gesamtstatus",
       technicalDetailsTitle: "Technische Details",
       modelRailwayFunctionsTitle: "Modellbahn steuern",
@@ -580,6 +584,10 @@
       servicesTitle: "Services",
       modelRailwayBaseFunctionsTitle: "Connexion au réseau miniature",
       modelRailwayBaseFunctionsDesc: "La connexion à la Gleisbox est active et le service de base CAN/LAN-Bridge est actif.",
+      modelRailwayDetailsTitle: "Détails",
+      modelRailwayCan2lanLabel: "Service CAN/LAN-Bridge (can2lan) actif",
+      modelRailwayCanIfLabel: "Interface CAN (can0) active",
+      modelRailwayPortsLabel: "Ports CAN/LAN (15730/15731) accessibles",
       overallStatus: "État général",
       technicalDetailsTitle: "Détails techniques",
       modelRailwayFunctionsTitle: "Piloter votre réseau miniature",
@@ -927,6 +935,10 @@
       servicesTitle: "Diensten",
       modelRailwayBaseFunctionsTitle: "Modelspoorverbinding",
       modelRailwayBaseFunctionsDesc: "De verbinding met de Gleisbox is actief en de basisdienst CAN/LAN-Bridge is actief.",
+      modelRailwayDetailsTitle: "Details",
+      modelRailwayCan2lanLabel: "CAN/LAN-Bridge-dienst (can2lan) actief",
+      modelRailwayCanIfLabel: "CAN-interface (can0) actief",
+      modelRailwayPortsLabel: "CAN/LAN-poorten (15730/15731) bereikbaar",
       overallStatus: "Algemene status",
       technicalDetailsTitle: "Technische details",
       modelRailwayFunctionsTitle: "Je modelspoorbaan besturen",
@@ -1274,6 +1286,10 @@
       servicesTitle: "Services",
       modelRailwayBaseFunctionsTitle: "Model railway connection",
       modelRailwayBaseFunctionsDesc: "The connection to the Gleisbox is active and the CAN/LAN bridge base service is active.",
+      modelRailwayDetailsTitle: "Details",
+      modelRailwayCan2lanLabel: "CAN/LAN bridge service (can2lan) running",
+      modelRailwayCanIfLabel: "CAN interface (can0) up",
+      modelRailwayPortsLabel: "CAN/LAN ports (15730/15731) reachable",
       overallStatus: "Overall status",
       technicalDetailsTitle: "Technical details",
       modelRailwayFunctionsTitle: "Control your model railway",
@@ -2555,6 +2571,14 @@
         modelRailwayNote.classList.add("is-hidden");
       }
     }
+
+    // Model railway details: individual checks that feed into the status.
+    var canInterface = data.canInterface || {};
+    var ports = data.ports || {};
+    setPill("st-mr-can2lan", !!can2lan.active, t("ready"), t("notReady"));
+    setPill("st-mr-canif", !!canInterface.up, t("ready"), t("notReady"));
+    var can2lanPortsReachable = !!ports.can2lanTcp || !!ports.can2lanUdp;
+    setPill("st-mr-ports", can2lanPortsReachable, t("ready"), t("notReady"));
 
     renderEventLog(Array.isArray(data.events) ? data.events : []);
 

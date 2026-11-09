@@ -86,11 +86,23 @@ for needle in ['"modelRailway"', '"ready"', '"reason"', '"reasonDe"',
     if needle not in status_script:
         raise AssertionError(f'status CGI is missing modelRailway piece: {needle}')
 
-# Frontend: the model railway card must show the reason when not ready.
+# Frontend: the model railway card must show the reason when not ready and
+# expose the individual checks in a details section.
 if 'st-model-railway-note' not in index_html:
     raise AssertionError('index.html is missing model railway note element')
 if 'modelRailway.reason' not in app_js and 'modelRailway.reasonDe' not in app_js:
     raise AssertionError('app.js does not render the model railway failure reason')
+for element_id in ['st-mr-can2lan', 'st-mr-canif', 'st-mr-ports']:
+    if element_id not in index_html:
+        raise AssertionError(f'index.html is missing model railway detail element: {element_id}')
+    if element_id not in app_js:
+        raise AssertionError(f'app.js does not render model railway detail: {element_id}')
+
+for key in ['modelRailwayDetailsTitle', 'modelRailwayCan2lanLabel',
+            'modelRailwayCanIfLabel', 'modelRailwayPortsLabel']:
+    occurrences = app_js.count(f'{key}:')
+    if occurrences != 4:
+        raise AssertionError(f'translation key "{key}" must exist in all 4 language blocks, found {occurrences}')
 
 # Events for a missing/down CAN interface, only evaluated while can2lan runs.
 for event in ['CAN interface $can_interface does not exist.', 'CAN interface $can_interface is down.']:
