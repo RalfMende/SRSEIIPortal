@@ -267,7 +267,7 @@ Mehrere Endpunkte vereinen Aktionen bewusst in **einem** CGI (z. B. `loco-list`)
   },
   "can2lan": { "active": true },
   "canInterface": { "name": "can0", "exists": true, "up": true, "bitrate": 250000 },
-  "modelRailway": { "ready": true, "reason": "", "reasonDe": "" },
+  "modelRailway": { "ready": true, "reason": "", "reasonDe": "", "configStructure": true },
   "overall": { "ready": true, "status": "ready", "label": "…", "labelDe": "…" },
   "events": [ { "level": "warning", "message": "…", "time": "YYYY-MM-DD HH:MM:SS" } ],
   "apps": { "mswebapp": true, "railcontrol": true },
@@ -284,7 +284,7 @@ Mehrere Endpunkte vereinen Aktionen bewusst in **einem** CGI (z. B. `loco-list`)
 - `apps` und `useCases` sind die **fachliche Bereitschaft**, `services` die **technischen Rohzustände** (nur für Technical details).
 - `ports` enthält die **Erreichbarkeit der Netzwerk-Ports** (lauschende Sockets via `/proc/net`, siehe Abschnitt 14 Check 1); nur für Technical details, fließt nicht in den Gesamtstatus ein. Enthält `can2lanTcp`, `can2lanUdp`, `z21emuUdp`, `railcontrolHttp`, `mswebappHttp`, `rocrailHttp`.
 - `canInterface` enthält den **Zustand des CAN-Interfaces** (`exists`, `up`, `bitrate`; Interface über `SRSEII_CAN_INTERFACE` überschreibbar, siehe Abschnitt 14 Check 2); nur für Technical details, fließt nicht in den Gesamtstatus ein.
-- `modelRailway` enthält die **kombinierte Modellbahn-Verbindungsbereitschaft** (`ready`, `reason`, `reasonDe`): `ready` nur wenn can2lan läuft, `can0` existiert und UP ist, und mindestens ein CAN/LAN-Port lauscht. Bei Fehler enthält `reason`/`reasonDe` die konkrete Ursache (Dienst läuft nicht / Interface fehlt / Interface down / Ports nicht erreichbar). Wird in der Status-Karte „Modellbahn-Verbindung" angezeigt. Die Einzelprüfungen (can2lan-Dienst, CAN-Interface, CAN/LAN-Ports) werden im aufklappbaren Details-Bereich der Karte angezeigt.
+- `modelRailway` enthält die **kombinierte Modellbahn-Verbindungsbereitschaft** (`ready`, `reason`, `reasonDe`, `configStructure`): `ready` nur wenn can2lan läuft, `can0` existiert und UP ist, mindestens ein CAN/LAN-Port lauscht, **und** die erwartete Konfigurationsdatei-Struktur vorhanden ist (`/www/icons`, `/www/fcticons`, `/www/magicons_`, `/www/config` + `lokomotive.cs2`, `magnetartikel.cs2`, `gleisbild.cs2`, `fahrstrassen.cs2`, `geraet.vrs`). Bei Fehler enthält `reason`/`reasonDe` die konkrete Ursache. Wird in der Status-Karte „Modellbahn-Verbindung" angezeigt. Die Einzelprüfungen (CAN-Interface, can2lan-Dienst, CAN/LAN-Ports, Config-Struktur) werden im aufklappbaren Details-Bereich der Karte angezeigt. **Jedes fehlende Config-Element erzeugt ein eigenes Warn-Event** unter „Letzte Aktivitäten" („Expected config item missing: <Pfad>").
 - LAN-Status stammt aus `ubus network.interface dump` (Fallback `br-lan`), WLAN aus `iw`/`wwan`; beide werden getrennt ermittelt.
 - Der Status enthält **keine Zugangsdaten**.
 - Vertragsfelder (`openwrt`, `can2lan`, `network`, `overall`, `events`) sind durch Tests abgesichert; Felder nur additiv erweitern.

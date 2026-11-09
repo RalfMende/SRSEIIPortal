@@ -79,10 +79,16 @@ for needle in ['"canInterface"', '"exists"', '"up"', '"bitrate"',
 
 # --- Model railway connection (combined readiness) ---------------------------
 # The status CGI must expose a combined modelRailway object that is ready only
-# when can2lan runs, the CAN interface exists and is up, and at least one
-# CAN/LAN port is listening. The reason string identifies the failing layer.
-for needle in ['"modelRailway"', '"ready"', '"reason"', '"reasonDe"',
-               'model_railway_ready', 'model_railway_reason']:
+# when can2lan runs, the CAN interface exists and is up, at least one CAN/LAN
+# port is listening, and the expected config file structure is present. The
+# reason string identifies the failing layer.
+for needle in ['"modelRailway"', '"ready"', '"reason"', '"reasonDe"', '"configStructure"',
+               'model_railway_ready', 'model_railway_reason',
+               '/www/icons', '/www/fcticons', '/www/magicons_', '/www/config',
+               '/www/config/lokomotive.cs2', '/www/config/magnetartikel.cs2',
+               '/www/config/gleisbild.cs2', '/www/config/fahrstrassen.cs2',
+               '/www/config/geraet.vrs',
+               'config_missing_items', 'Expected config item missing:']:
     if needle not in status_script:
         raise AssertionError(f'status CGI is missing modelRailway piece: {needle}')
 
@@ -92,14 +98,14 @@ if 'st-model-railway-note' not in index_html:
     raise AssertionError('index.html is missing model railway note element')
 if 'modelRailway.reason' not in app_js and 'modelRailway.reasonDe' not in app_js:
     raise AssertionError('app.js does not render the model railway failure reason')
-for element_id in ['st-mr-can2lan', 'st-mr-canif', 'st-mr-ports']:
+for element_id in ['st-mr-can2lan', 'st-mr-canif', 'st-mr-ports', 'st-mr-config']:
     if element_id not in index_html:
         raise AssertionError(f'index.html is missing model railway detail element: {element_id}')
     if element_id not in app_js:
         raise AssertionError(f'app.js does not render model railway detail: {element_id}')
 
 for key in ['modelRailwayDetailsTitle', 'modelRailwayCan2lanLabel',
-            'modelRailwayCanIfLabel', 'modelRailwayPortsLabel']:
+            'modelRailwayCanIfLabel', 'modelRailwayPortsLabel', 'modelRailwayConfigLabel']:
     occurrences = app_js.count(f'{key}:')
     if occurrences != 4:
         raise AssertionError(f'translation key "{key}" must exist in all 4 language blocks, found {occurrences}')

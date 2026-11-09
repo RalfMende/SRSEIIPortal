@@ -237,6 +237,7 @@
       modelRailwayCan2lanLabel: "CAN/LAN-Bridge-Dienst (can2lan) läuft",
       modelRailwayCanIfLabel: "CAN-Interface (can0) aktiv",
       modelRailwayPortsLabel: "CAN/LAN-Ports (15730/15731) erreichbar",
+      modelRailwayConfigLabel: "Konfigurationsdatei-Struktur vollständig",
       overallStatus: "Gesamtstatus",
       technicalDetailsTitle: "Technische Details",
       modelRailwayFunctionsTitle: "Modellbahn steuern",
@@ -588,6 +589,7 @@
       modelRailwayCan2lanLabel: "Service CAN/LAN-Bridge (can2lan) actif",
       modelRailwayCanIfLabel: "Interface CAN (can0) active",
       modelRailwayPortsLabel: "Ports CAN/LAN (15730/15731) accessibles",
+      modelRailwayConfigLabel: "Structure des fichiers de configuration complète",
       overallStatus: "État général",
       technicalDetailsTitle: "Détails techniques",
       modelRailwayFunctionsTitle: "Piloter votre réseau miniature",
@@ -939,6 +941,7 @@
       modelRailwayCan2lanLabel: "CAN/LAN-Bridge-dienst (can2lan) actief",
       modelRailwayCanIfLabel: "CAN-interface (can0) actief",
       modelRailwayPortsLabel: "CAN/LAN-poorten (15730/15731) bereikbaar",
+      modelRailwayConfigLabel: "Configuratiebestandstructuur compleet",
       overallStatus: "Algemene status",
       technicalDetailsTitle: "Technische details",
       modelRailwayFunctionsTitle: "Je modelspoorbaan besturen",
@@ -1290,6 +1293,7 @@
       modelRailwayCan2lanLabel: "CAN/LAN bridge service (can2lan) running",
       modelRailwayCanIfLabel: "CAN interface (can0) up",
       modelRailwayPortsLabel: "CAN/LAN ports (15730/15731) reachable",
+      modelRailwayConfigLabel: "Config file structure complete",
       overallStatus: "Overall status",
       technicalDetailsTitle: "Technical details",
       modelRailwayFunctionsTitle: "Control your model railway",
@@ -2579,6 +2583,7 @@
     setPill("st-mr-canif", !!canInterface.up, t("ready"), t("notReady"));
     var can2lanPortsReachable = !!ports.can2lanTcp || !!ports.can2lanUdp;
     setPill("st-mr-ports", can2lanPortsReachable, t("ready"), t("notReady"));
+    setPill("st-mr-config", !!modelRailway.configStructure, t("ready"), t("notReady"));
 
     renderEventLog(Array.isArray(data.events) ? data.events : []);
 
