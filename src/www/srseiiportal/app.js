@@ -227,7 +227,7 @@
       appsTitle: "Apps",
       servicesTitle: "Dienste",
       modelRailwayBaseFunctionsTitle: "Modellbahn-Verbindung",
-      modelRailwayBaseFunctionsDesc: "Die Verbindung zur Gleisbox ist aktiv.",
+      modelRailwayBaseFunctionsDesc: "Die Verbindung zur Gleisbox ist aktiv und der Basisdienst CAN/LAN-Bridge ist aktiv.",
       overallStatus: "Gesamtstatus",
       technicalDetailsTitle: "Technische Details",
       modelRailwayFunctionsTitle: "Modellbahn steuern",
@@ -568,7 +568,7 @@
       appsTitle: "Applications",
       servicesTitle: "Services",
       modelRailwayBaseFunctionsTitle: "Connexion au réseau miniature",
-      modelRailwayBaseFunctionsDesc: "La connexion à la Gleisbox est active.",
+      modelRailwayBaseFunctionsDesc: "La connexion à la Gleisbox est active et le service de base CAN/LAN-Bridge est actif.",
       overallStatus: "État général",
       technicalDetailsTitle: "Détails techniques",
       modelRailwayFunctionsTitle: "Piloter votre réseau miniature",
@@ -909,7 +909,7 @@
       appsTitle: "Apps",
       servicesTitle: "Diensten",
       modelRailwayBaseFunctionsTitle: "Modelspoorverbinding",
-      modelRailwayBaseFunctionsDesc: "De verbinding met de Gleisbox is actief.",
+      modelRailwayBaseFunctionsDesc: "De verbinding met de Gleisbox is actief en de basisdienst CAN/LAN-Bridge is actief.",
       overallStatus: "Algemene status",
       technicalDetailsTitle: "Technische details",
       modelRailwayFunctionsTitle: "Je modelspoorbaan besturen",
@@ -1250,7 +1250,7 @@
       appsTitle: "Apps",
       servicesTitle: "Services",
       modelRailwayBaseFunctionsTitle: "Model railway connection",
-      modelRailwayBaseFunctionsDesc: "The connection to the Gleisbox is active.",
+      modelRailwayBaseFunctionsDesc: "The connection to the Gleisbox is active and the CAN/LAN bridge base service is active.",
       overallStatus: "Overall status",
       technicalDetailsTitle: "Technical details",
       modelRailwayFunctionsTitle: "Control your model railway",
@@ -2484,7 +2484,23 @@
     setText("net-wifi-ssid", localizeStatusFallback(network.ssid || t("unknown")));
     setText("net-wifi-ip", localizeStatusFallback(network.wifiIp || t("notAvailable")));
     setPill("st-openwrt-state", !!openwrt.ok, t("ready"), t("notReady"));
-    setPill("st-can2lan-status", !!can2lan.active, t("ready"), t("notReady"));
+
+    // Model railway connection: ready only when can2lan runs, CAN interface is
+    // up, and at least one CAN/LAN port is listening. Show the specific reason
+    // when not ready.
+    var modelRailway = data.modelRailway || {};
+    var modelRailwayReady = !!modelRailway.ready;
+    setPill("st-can2lan-status", modelRailwayReady, t("ready"), t("notReady"));
+    var modelRailwayNote = document.getElementById("st-model-railway-note");
+    if (modelRailwayNote) {
+      if (!modelRailwayReady && (modelRailway.reason || modelRailway.reasonDe)) {
+        modelRailwayNote.textContent = getLocalizedStatusValue(modelRailway, "reason", "reasonDe");
+        modelRailwayNote.classList.remove("is-hidden");
+      } else {
+        modelRailwayNote.textContent = "";
+        modelRailwayNote.classList.add("is-hidden");
+      }
+    }
 
     renderEventLog(Array.isArray(data.events) ? data.events : []);
 

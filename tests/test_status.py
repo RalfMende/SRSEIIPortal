@@ -47,6 +47,21 @@ for needle in ['"canInterface"', '"exists"', '"up"', '"bitrate"',
     if needle not in status_script:
         raise AssertionError(f'status CGI is missing CAN interface piece: {needle}')
 
+# --- Model railway connection (combined readiness) ---------------------------
+# The status CGI must expose a combined modelRailway object that is ready only
+# when can2lan runs, the CAN interface exists and is up, and at least one
+# CAN/LAN port is listening. The reason string identifies the failing layer.
+for needle in ['"modelRailway"', '"ready"', '"reason"', '"reasonDe"',
+               'model_railway_ready', 'model_railway_reason']:
+    if needle not in status_script:
+        raise AssertionError(f'status CGI is missing modelRailway piece: {needle}')
+
+# Frontend: the model railway card must show the reason when not ready.
+if 'st-model-railway-note' not in index_html:
+    raise AssertionError('index.html is missing model railway note element')
+if 'modelRailway.reason' not in app_js and 'modelRailway.reasonDe' not in app_js:
+    raise AssertionError('app.js does not render the model railway failure reason')
+
 # Events for a missing/down CAN interface, only evaluated while can2lan runs.
 for event in ['CAN interface $can_interface does not exist.', 'CAN interface $can_interface is down.']:
     if event not in status_script:
