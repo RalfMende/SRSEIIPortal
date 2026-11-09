@@ -18,7 +18,7 @@ for needle in ['port_is_listening_tcp()', 'port_is_listening_udp()', '/proc/net/
     if needle not in status_script:
         raise AssertionError(f'status CGI is missing port-check piece: {needle}')
 
-for field in ['"can2lanTcp"', '"can2lanUdp"', '"z21emuUdp"', '"railcontrolHttp"', '"mswebappHttp"']:
+for field in ['"can2lanTcp"', '"can2lanUdp"', '"z21emuUdp"', '"railcontrolHttp"', '"mswebappHttp"', '"rocrailHttp"']:
     if field not in status_script:
         raise AssertionError(f'status CGI is missing ports field: {field}')
 
@@ -26,7 +26,7 @@ for port in ['15730', '15731']:
     for proto in ['tcp', 'udp']:
         if f'port_is_listening_{proto} {port}' not in status_script:
             raise AssertionError(f'status CGI does not check {proto} port {port}')
-for port, proto in [('21105', 'udp'), ('8082', 'tcp'), ('6020', 'tcp')]:
+for port, proto in [('21105', 'udp'), ('8082', 'tcp'), ('6020', 'tcp'), ('8080', 'tcp'), ('8051', 'tcp')]:
     if f'port_is_listening_{proto} {port}' not in status_script:
         raise AssertionError(f'status CGI does not check {proto} port {port}')
 
@@ -80,14 +80,14 @@ for key in ['canInterfaceTitle', 'canIfUp', 'canIfDown', 'canIfMissing']:
         raise AssertionError(f'translation key "{key}" must exist in all 4 language blocks, found {occurrences}')
 
 # Frontend: pills for each port and translation keys in all four languages.
-for element_id in ['st-port-can2lan', 'st-port-z21emu', 'st-port-railcontrol', 'st-port-mswebapp']:
+for element_id in ['st-port-can2lan', 'st-port-z21emu', 'st-port-railcontrol', 'st-port-mswebapp', 'st-port-rocrail']:
     if element_id not in index_html:
         raise AssertionError(f'index.html is missing port pill: {element_id}')
     if element_id not in app_js:
         raise AssertionError(f'app.js does not render port pill: {element_id}')
 
 for key in ['listening', 'notListening', 'networkPortsTitle',
-            'portCan2lanLabel', 'portZ21emuLabel', 'portRailcontrolLabel', 'portMswebappLabel']:
+            'portCan2lanLabel', 'portZ21emuLabel', 'portRailcontrolLabel', 'portMswebappLabel', 'portRocrailLabel']:
     occurrences = app_js.count(f'{key}:')
     if occurrences != 4:
         raise AssertionError(f'translation key "{key}" must exist in all 4 language blocks, found {occurrences}')
@@ -99,7 +99,8 @@ if 'function setPortPill(id, isListening, serviceRunning)' not in app_js:
 for call in ['setPortPill("st-port-can2lan", can2lanPortsReachable, can2lanService)',
              'setPortPill("st-port-z21emu", !!ports.z21emuUdp, z21Service)',
              'setPortPill("st-port-railcontrol", !!ports.railcontrolHttp, railcontrolService)',
-             'setPortPill("st-port-mswebapp", !!ports.mswebappHttp, mswebappService)']:
+             'setPortPill("st-port-mswebapp", !!ports.mswebappHttp, mswebappService)',
+             'setPortPill("st-port-rocrail", !!ports.rocrailHttp, rocrailService)']:
     if call not in app_js:
         raise AssertionError(f'app.js port pill call missing service state: {call}')
 

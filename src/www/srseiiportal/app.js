@@ -360,6 +360,7 @@
       portZ21emuLabel: "Z21-Schnittstelle (UDP Port 21105)",
       portRailcontrolLabel: "RailControl Webinterface (TCP Port 8082)",
       portMswebappLabel: "Mobile Station Web App Webinterface (TCP Port 6020)",
+      portRocrailLabel: "RocRail Webinterface (TCP Port 8080/8051)",
       connected: "verbunden",
       notConnected: "nicht verbunden",
       ready: "Bereit",
@@ -701,6 +702,7 @@
       portZ21emuLabel: "Interface Z21 (UDP port 21105)",
       portRailcontrolLabel: "Interface web RailControl (TCP port 8082)",
       portMswebappLabel: "Interface web Mobile Station Web App (TCP port 6020)",
+      portRocrailLabel: "Interface web RocRail (TCP port 8080/8051)",
       connected: "connecté",
       notConnected: "non connecté",
       ready: "Prêt",
@@ -1042,6 +1044,7 @@
       portZ21emuLabel: "Z21-interface (UDP-poort 21105)",
       portRailcontrolLabel: "RailControl-webinterface (TCP-poort 8082)",
       portMswebappLabel: "Mobile Station Web App-webinterface (TCP-poort 6020)",
+      portRocrailLabel: "RocRail-webinterface (TCP-poort 8080/8051)",
       connected: "verbonden",
       notConnected: "niet verbonden",
       ready: "Gereed",
@@ -1383,6 +1386,7 @@
       portZ21emuLabel: "Z21 interface (UDP port 21105)",
       portRailcontrolLabel: "RailControl web interface (TCP port 8082)",
       portMswebappLabel: "Mobile Station Web App web interface (TCP port 6020)",
+      portRocrailLabel: "RocRail web interface (TCP port 8080/8051)",
       connected: "connected",
       notConnected: "not connected",
       ready: "Ready",
@@ -2532,6 +2536,7 @@
     var railcontrolService = !!services.railcontrol;
     var z21Service = !!services.z21emu;
     var can2lanService = !!services.can2lan;
+    var rocrailService = !!services.rocrail;
 
     setFeatureButtonState(mswebappLink, mswebappReady ? "ready" : "setup", t("open"), "mswebapp");
     setFeatureButtonState(railcontrolLink, railcontrolReady ? "ready" : "setup", t("open"), "railcontrol");
@@ -2572,6 +2577,7 @@
     setPortPill("st-port-z21emu", !!ports.z21emuUdp, z21Service);
     setPortPill("st-port-railcontrol", !!ports.railcontrolHttp, railcontrolService);
     setPortPill("st-port-mswebapp", !!ports.mswebappHttp, mswebappService);
+    setPortPill("st-port-rocrail", !!ports.rocrailHttp, rocrailService);
 
     return network;
   }

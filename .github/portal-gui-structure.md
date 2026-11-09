@@ -203,13 +203,13 @@ Use Case → benötigte Pakete → benötigte Dienste → (verbotene Dienste) �
 
 | Use Case | Pakete | Dienste (laufen müssen) | Dienste (dürfen nicht laufen) | „Bereit“ laut Status |
 | -------- | ------ | ----------------------- | ----------------------------- | -------------------- |
-| `mswebapp` | can2udp, mswebapp | can2lan, clone-ms2-loco, mswebapp | ms2-loco-list | Pakete und Dienste ok, `ms2-loco-list` aus |
-| `railcontrol` | can2udp, railcontrol | can2lan, clone-ms2-loco, railcontrol | ms2-loco-list | wie `mswebapp` |
-| `z21interface` | can2udp, z21emu | can2lan, z21emu | – | alle Dienste laufen |
+| `mswebapp` | can2udp, mswebapp | can2lan, clone-ms2-loco, mswebapp | ms2-loco-list | Pakete und Dienste ok, `ms2-loco-list` aus, **TCP 6020 lauscht** |
+| `railcontrol` | can2udp, railcontrol | can2lan, clone-ms2-loco, railcontrol | ms2-loco-list | wie `mswebapp`, **TCP 8082 lauscht** |
+| `z21interface` | can2udp, z21emu | can2lan, z21emu | – | alle Dienste laufen, **UDP 21105 lauscht** |
 | `cs2interface` | can2udp | can2lan | – | `can2lan` läuft |
 | `itrain` | can2udp | can2lan | – | `can2lan` läuft |
 | `windigipet` | can2udp | can2lan | – | `can2lan` läuft |
-| `rocrail` | can2udp, rocrail | can2lan, rocrail | – | `can2lan` und `rocrail` laufen |
+| `rocrail` | can2udp, rocrail | can2lan, rocrail | – | `can2lan` und `rocrail` laufen, **TCP 8080 oder 8051 lauscht** |
 
 `srseii-setup-usecase <usecase|all>`:
 
@@ -274,12 +274,12 @@ Mehrere Endpunkte vereinen Aktionen bewusst in **einem** CGI (z. B. `loco-list`)
   "services": { "mswebapp": true, "railcontrol": true, "z21emu": true, "can2lan": true,
                 "clone-ms2-loco": true, "maecanserver": false, "ms2-loco-list": false,
                 "wake-up-links88": false, "rocrail": false },
-  "ports": { "can2lanTcp": true, "can2lanUdp": true, "z21emuUdp": false, "railcontrolHttp": true, "mswebappHttp": true }
+  "ports": { "can2lanTcp": true, "can2lanUdp": true, "z21emuUdp": false, "railcontrolHttp": true, "mswebappHttp": true, "rocrailHttp": false }
 }
 ```
 
 - `apps` und `useCases` sind die **fachliche Bereitschaft**, `services` die **technischen Rohzustände** (nur für Technical details).
-- `ports` enthält die **Erreichbarkeit der Netzwerk-Ports** (lauschende Sockets via `/proc/net`, siehe Abschnitt 14 Check 1); nur für Technical details, fließt nicht in den Gesamtstatus ein.
+- `ports` enthält die **Erreichbarkeit der Netzwerk-Ports** (lauschende Sockets via `/proc/net`, siehe Abschnitt 14 Check 1); nur für Technical details, fließt nicht in den Gesamtstatus ein. Enthält `can2lanTcp`, `can2lanUdp`, `z21emuUdp`, `railcontrolHttp`, `mswebappHttp`, `rocrailHttp`.
 - `canInterface` enthält den **Zustand des CAN-Interfaces** (`exists`, `up`, `bitrate`; Interface über `SRSEII_CAN_INTERFACE` überschreibbar, siehe Abschnitt 14 Check 2); nur für Technical details, fließt nicht in den Gesamtstatus ein.
 - `modelRailway` enthält die **kombinierte Modellbahn-Verbindungsbereitschaft** (`ready`, `reason`, `reasonDe`): `ready` nur wenn can2lan läuft, `can0` existiert und UP ist, und mindestens ein CAN/LAN-Port lauscht. Bei Fehler enthält `reason`/`reasonDe` die konkrete Ursache (Dienst läuft nicht / Interface fehlt / Interface down / Ports nicht erreichbar). Wird in der Status-Karte „Modellbahn-Verbindung" angezeigt.
 - LAN-Status stammt aus `ubus network.interface dump` (Fallback `br-lan`), WLAN aus `iw`/`wwan`; beide werden getrennt ermittelt.
