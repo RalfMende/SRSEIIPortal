@@ -127,7 +127,7 @@ Untergruppen in dieser Reihenfolge, oben ein **Refresh**-Button:
    - *Model railway connection* (`can2lan` aktiv; angezeigt als Verbindung zur Gleisbox, nicht als Prozessname).
    - Darunter `details` **Technical details** mit Pills je Dienst: `mswebapp`, `railcontrol`, `z21emu`, `can2lan`, `clone-ms2-loco`, `maecanserver`, `ms2-loco-list`, `wake-up-links88` (aktiv/inaktiv).
 2. **MAINTENANCE** – Karte *Updates*: ein Button durchläuft die Zustände *check* → (*updates available* → *install*) → *up to date* / *error* (siehe `update`-Endpunkt).
-3. **LAST ACTIVITIES** – Liste (`#event-log-list`) mit maximal 5 Einträgen aus `events` der Status-API; Eintrag = `level`, `message`, `time`.
+3. **LAST ACTIVITIES** – Liste (`#event-log-list`) mit maximal 5 Einträgen aus `events` der Status-API; Eintrag = `level`, `message`, `time`. Der letzte Fehler eines Update-Versuchs wird mit Zeitstempel und gekürzter opkg-Ausgabe in `/tmp/srseii-opkg-update-event` gespeichert und beim Statusabruf als neuester Eintrag ergänzt.
 
 Gesamtstatus: **bereit**, wenn OpenWrt-Basis ok **und** mindestens eine Netzwerkverbindung vorhanden **und** `can2lan` läuft. Alles andere ist „braucht Aufmerksamkeit“. Einzelne Apps und Use Cases fließen **nicht** in den Gesamtstatus ein und werden im Status nicht dupliziert.
 
@@ -336,7 +336,7 @@ Ereignisse entstehen im `status`-CGI (`add_event level message`), z. B. wenn Ope
 
 ### 7.4 Updates
 
-`update` führt `opkg update` und `opkg list-upgradable` aus; Namen werden gegen `[A-Za-z0-9._+:-]` gefiltert. Der Button-Zustand (`data-update-state`: `pending`, `ready`, `update`, `error`) bestimmt die Klickaktion. Parallele Läufe verhindert ein Lock-Verzeichnis `/tmp/srseii-opkg-update.lock` (inkl. PID-Prüfung). Nach erfolgreichem Update wird der Status neu geladen und erneut geprüft.
+`update` führt `opkg update` und `opkg list-upgradable` aus; Namen werden gegen `[A-Za-z0-9._+:-]` gefiltert. **Vor** `opkg update` laufen Pre-flight-Konnektivitätsprüfungen (siehe Abschnitt 14 Check 3), die bei fehlender Internetverbindung mit einer lokalisierten, schichtspezifischen Fehlermeldung abbrechen. Die Feedliste wird aus `/etc/opkg/customfeeds.conf`, `/etc/opkg/distfeeds.conf` und `/etc/opkg.conf` gelesen; damit wird insbesondere der Modellbahn-Feed `src/gz railroad http://lnxpps.de/openwrt/bin/packages/mipsel_24kc_2102/railroad` berücksichtigt. DNS wird für alle konfigurierten Feed-Hosts geprüft. **Feed-Erreichbarkeit wird nicht per Ping beurteilt:** `opkg update` lädt die tatsächlichen `Packages.gz`-Dateien per HTTP(S); bei Fehlern ordnet `find_failed_feed` die opkg-Fehlerausgabe dem betroffenen Feed zu. Scheitert `opkg update` selbst, bildet `diagnose_opkg_update_failure` bekannte Fehlermuster (Signatur, 404, Speicher voll, DNS, Timeout, wget-Return-Codes 1/3/4/5/6/7/8, …) auf konkrete Meldungen ab und ergänzt — soweit aus der Fehlerausgabe ermittelbar — Feedname und URL. Die lokalisierte Meldung steht in der Update-Karte; die opkg-Rohausgabe erscheint **nicht** mehr aufklappbar unter „Technische Details" (entfernt), sondern nur noch im Bereich „Letzte Aktivitäten". Für „Letzte Aktivitäten“ speichert das CGI den jüngsten Fehler mit Zeitstempel in `/tmp/srseii-opkg-update-event` (max. 1200 Zeichen Detailausgabe); der Status-Endpunkt fügt ihn als neuesten Eintrag ein. Die Update-Aktion lädt nach einem Fehler den Status erneut, damit das Ereignis sofort erscheint. Ereignismeldungen aus dynamischen Quellen immer mit `textContent` rendern, nie als HTML. Der Button-Zustand (`data-update-state`: `pending`, `ready`, `update`, `error`) bestimmt die Klickaktion. Parallele Läufe verhindert ein Lock-Verzeichnis `/tmp/srseii-opkg-update.lock` (inkl. PID-Prüfung). Nach erfolgreichem Update wird der Status neu geladen und erneut geprüft.
 
 ### 7.5 S88-Konfiguration
 
@@ -413,7 +413,7 @@ Tests liegen unter `tests/` als Python-Skripte mit Assertions auf Modulebene. Si
 | `test_loco_list.py` | ein einziges CGI, Quellen, Sortierung, Frontend-Anbindung, Paket |
 | `test_loco_icons.py` | Icon-Upload-Regeln (CGI wird simuliert ausgeführt) |
 | `test_s88_config.py` | S88-Kanäle, Validierung, Lock, Rücklesen (CGI wird simuliert ausgeführt) |
-| `test_update_api.py` | Update-Endpunkt |
+| `test_update.py` | Update-Endpunkt, Custom-Feeds und Fehlerdiagnose |
 
 Checkliste für Änderungen:
 
@@ -487,9 +487,12 @@ Die folgenden Checks sind als Nächstes geplant und noch **nicht implementiert**
    - Ereignisse nur bei laufendem can2lan: „CAN interface … does not exist." / „… is down." — vor der Port-Prüfung, damit die Ursache (Interface) vor dem Symptom (Port) gemeldet wird.
    - Frontend: eigene Zeile „CAN interface" in den Technical details (Label = Interface-Name + Bitrate, Pill up/down/missing); Test `tests/test_status.py`.
 
-3. **Internet-/DNS- und opkg-Feed-Check** (Fehlerbild 5+6)
-   - Default-Gateway erreichbar? DNS-Auflösung funktioniert? Feed-URL erreichbar? Alter des letzten `opkg update`?
-   - Ziel: „Update fehlgeschlagen“ auflösen in „keine Internetverbindung“ / „Paketquelle nicht erreichbar“.
+3. ~~**Internet-/DNS- und opkg-Feed-Check**~~ ✅ **Implementiert** (Fehlerbild 5+6)
+   - **Bewusst im Update-Endpunkt, nicht im Status:** Im Normalbetrieb braucht der SRSEII kein Internet; die Probes laufen daher nur beim Update-Check („Nach Updates suchen" / „Updates installieren"), nicht bei jeder Statusabfrage.
+   - Der `update`-Endpunkt führt **vor** `opkg update` Pre-flight-Checks durch (begrenzt, max. ~2 s pro Probe): keine Standard-Route → Gateway nicht erreichbar (`ping` aus `ip route`) → DNS je konfiguriertem Feed fehlgeschlagen (`nslookup`). Feed-Konfigurationen kommen aus `/etc/opkg/customfeeds.conf`, `/etc/opkg/distfeeds.conf` und `/etc/opkg.conf`, insbesondere der Modellbahn-Feed `railroad` unter `http://lnxpps.de/openwrt/bin/packages/mipsel_24kc_2102/railroad`.
+   - Feed-Erreichbarkeit wird **nicht per Ping** geprüft (ICMP-Filter kann HTTP fälschlich als unerreichbar erscheinen lassen). `opkg update` prüft die tatsächlichen Paketlisten-Downloads; wenn es fehlschlägt, ordnet die Diagnose den Fehler soweit möglich Feedname und URL zu.
+   - **Scheitert `opkg update` trotz bestandener Pre-flight-Checks**, analysiert `diagnose_opkg_update_failure` die opkg/wget-Ausgabe und bildet sie auf konkrete lokalisierte Meldungen ab: Signaturprüfung fehlgeschlagen, HTTP 404 für den betroffenen Feed, Speicher voll, DNS, Netzwerk unerreichbar, Timeout, Verbindung abgelehnt, Download-Fehler. Die Rohausgabe bleibt im `output`-Feld.
+   - Das Frontend zeigt die lokalisierte Backend-Meldung (`message`/`messageDe`) direkt in der Update-Karte an; die opkg-Rohausgabe erscheint **nicht** mehr aufklappbar unter „Technische Details" (entfernt), sondern nur noch im Bereich „Letzte Aktivitäten"; Test `tests/test_update.py`.
 
 ### Mittlere Priorität
 

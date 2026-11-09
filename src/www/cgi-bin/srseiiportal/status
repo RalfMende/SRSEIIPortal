@@ -562,15 +562,32 @@ if [ "$overall_ready" = true ]; then
 fi
 
 events_json=""
-add_event() {
+add_event_at() {
 	level="$1"
 	message="$2"
-	timestamp="$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo 'now')"
+	timestamp="$3"
 	if [ -n "$events_json" ]; then
 		events_json="${events_json},"
 	fi
 	events_json="${events_json}{\"level\":\"$(json_escape "$level")\",\"message\":\"$(json_escape "$message")\",\"time\":\"$(json_escape "$timestamp")\"}"
 }
+
+add_event() {
+	level="$1"
+	message="$2"
+	timestamp="$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo 'now')"
+	add_event_at "$level" "$message" "$timestamp"
+}
+
+update_event_file="/tmp/srseii-opkg-update-event"
+if [ -r "$update_event_file" ]; then
+	update_event_time="$(sed -n '1p' "$update_event_file" 2>/dev/null || true)"
+	update_event_message="$(sed -n '2p' "$update_event_file" 2>/dev/null || true)"
+	if [ -n "$update_event_message" ]; then
+		[ -n "$update_event_time" ] || update_event_time="unknown"
+		add_event_at "warning" "$update_event_message" "$update_event_time"
+	fi
+fi
 
 if [ "$openwrt_ok" = false ]; then
 	add_event "warning" "OpenWrt base status could not be verified."

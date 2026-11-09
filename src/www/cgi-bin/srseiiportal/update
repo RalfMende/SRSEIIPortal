@@ -26,7 +26,28 @@ json_response() {
 		"$(json_escape "$response_output")"
 }
 
+record_update_failure() {
+	failure_message="$1"
+	failure_output="$2"
+	event_file="/tmp/srseii-opkg-update-event"
+	event_tmp="${event_file}.$$"
+	failure_time="$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo 'now')"
+	failure_detail="$(printf '%s' "$failure_output" | tr '\r\n\t' '   ' | cut -c 1-1200)"
+	if [ -n "$failure_detail" ]; then
+		failure_message="$failure_message — $failure_detail"
+	fi
+
+	if printf '%s\n%s\n' "$failure_time" "$failure_message" > "$event_tmp" && mv "$event_tmp" "$event_file"; then
+		return 0
+	fi
+
+	rm -f "$event_tmp"
+	echo "Could not record update failure in the activity log." >&2
+	return 1
+}
+
 if ! command -v opkg >/dev/null 2>&1; then
+	record_update_failure "opkg is not available." ""
 	json_response false "error" "opkg is not available." "opkg ist nicht verfügbar." '[]' ""
 	exit 0
 fi
@@ -59,15 +80,155 @@ printf '%s\n' "$$" > "$lock_dir/pid"
 work_file="/tmp/srseii-opkg-update.$$"
 trap 'rm -f "$work_file" "$lock_dir/pid"; rmdir "$lock_dir" 2>/dev/null || true' EXIT
 
+# Pre-flight connectivity checks: most update failures in the field are not
+# opkg problems but missing internet access. Diagnose the route and DNS before
+# opkg tests the configured package feeds over HTTP.
+default_gateway="$(ip route 2>/dev/null | awk '$1 == "default" {print $3; exit}')"
+if [ -z "$default_gateway" ]; then
+	failure_message="No internet connection: no default route is configured. Check the network connection of the SRSEII."
+	failure_message_de="Keine Internetverbindung: keine Standard-Route konfiguriert. Prüfe die Netzwerkverbindung des SRSEII."
+	record_update_failure "$failure_message" ""
+	json_response false "error" "$failure_message" "$failure_message_de" '[]' ""
+	exit 0
+fi
+if command -v ping >/dev/null 2>&1 && ! ping -c 1 -W 2 "$default_gateway" >/dev/null 2>&1; then
+	failure_message="No internet connection: the default gateway $default_gateway is unreachable. Check the network connection of the SRSEII."
+	failure_message_de="Keine Internetverbindung: das Standard-Gateway $default_gateway ist nicht erreichbar. Prüfe die Netzwerkverbindung des SRSEII."
+	record_update_failure "$failure_message" ""
+	json_response false "error" "$failure_message" "$failure_message_de" '[]' ""
+	exit 0
+fi
+
+# Load every configured feed, including the SRSEII model-railway feed from
+# customfeeds.conf. opkg itself tests HTTP availability by downloading each
+# Packages.gz; do not ping feed hosts because ICMP may be blocked while HTTP
+# works. DNS is checked for each configured feed host before opkg runs.
+awk '
+	$1 == "src/gz" && $2 !~ /^#/ && $3 ~ /^https?:\/\// { print $2 "\t" $3 }
+	$1 == "src" && $2 !~ /^#/ && $3 ~ /^https?:\/\// { print $2 "\t" $3 }
+' /etc/opkg/customfeeds.conf /etc/opkg/distfeeds.conf /etc/opkg.conf 2>/dev/null | sort -u > "$work_file"
+
+if command -v nslookup >/dev/null 2>&1; then
+	while IFS="$(printf '\t')" read -r feed_name feed_url; do
+		[ -n "$feed_url" ] || continue
+		feed_host="$(printf '%s' "$feed_url" | sed -n 's|^[a-zA-Z][a-zA-Z0-9+.-]*://\([^/:]*\).*|\1|p' | head -n 1)"
+		[ -n "$feed_host" ] || continue
+		if ! nslookup "$feed_host" >/dev/null 2>&1; then
+			failure_message="DNS name resolution failed for package feed '$feed_name' ($feed_host). Check the DNS configuration of the SRSEII."
+			failure_message_de="Die DNS-Namensauflösung für die Paketquelle '$feed_name' ($feed_host) ist fehlgeschlagen. Prüfe die DNS-Konfiguration des SRSEII."
+			record_update_failure "$failure_message" ""
+			json_response false "error" "$failure_message" "$failure_message_de" '[]' ""
+			exit 0
+		fi
+	done < "$work_file"
+fi
+
+# Maps known opkg/wget failure patterns to actionable, localized messages.
+# Sets diag_message / diag_message_de; the raw output stays available in the
+# "output" field for the technical details view.
+diagnose_opkg_update_failure() {
+	diag_message="Package list refresh failed."
+	diag_message_de="Das Aktualisieren der Paketlisten ist fehlgeschlagen."
+	case "$1" in
+		*ignature*)
+			diag_message="The signature check of the package feed failed. The feed key is missing or outdated."
+			diag_message_de="Die Signaturprüfung der Paketquelle ist fehlgeschlagen. Der Signaturschlüssel fehlt oder ist veraltet."
+			;;
+		*404*|*"Not Found"*)
+			diag_message="The configured package feed returned 'not found' (HTTP 404). Check that feed's URL and whether it still provides packages for this SRSEII release."
+			diag_message_de="Die konfigurierte Paketquelle meldet „nicht gefunden“ (HTTP 404). Prüfe die URL dieses Feeds und ob er noch Pakete für diese SRSEII-Version bereitstellt."
+			;;
+		*"No space left"*)
+			diag_message="Not enough free storage for the package lists."
+			diag_message_de="Nicht genügend freier Speicher für die Paketlisten."
+			;;
+		*"name resolution"*|*"Temporary failure"*)
+			diag_message="DNS name resolution failed while downloading the package lists. Check the DNS configuration of the SRSEII."
+			diag_message_de="Die DNS-Namensauflösung ist beim Herunterladen der Paketlisten fehlgeschlagen. Prüfe die DNS-Konfiguration des SRSEII."
+			;;
+		*"Network is unreachable"*|*"Network unreachable"*)
+			diag_message="The network is unreachable. Check the network connection of the SRSEII."
+			diag_message_de="Das Netzwerk ist nicht erreichbar. Prüfe die Netzwerkverbindung des SRSEII."
+			;;
+		*"timed out"*|*"Timeout"*)
+			diag_message="The connection to the package feed timed out."
+			diag_message_de="Die Verbindung zur Paketquelle ist abgelaufen (Timeout)."
+			;;
+		*"Connection refused"*)
+			diag_message="The package feed refused the connection."
+			diag_message_de="Die Paketquelle hat die Verbindung abgelehnt."
+			;;
+		*"wget returned 4"*)
+			diag_message="No internet connection. Check the network connection of the SRSEII."
+			diag_message_de="Keine Internetverbindung. Prüfe die Netzwerkverbindung des SRSEII."
+			;;
+		*"wget returned 1"*)
+			diag_message="The package feed could not be reached (generic download error)."
+			diag_message_de="Die Paketquelle konnte nicht erreicht werden (allgemeiner Download-Fehler)."
+			;;
+		*"wget returned 3"*)
+			diag_message="The package feed could not be reached (I/O error)."
+			diag_message_de="Die Paketquelle konnte nicht erreicht werden (Ein-/Ausgabefehler)."
+			;;
+		*"wget returned 5"*)
+			diag_message="The package feed could not be reached (SSL verification failed)."
+			diag_message_de="Die Paketquelle konnte nicht erreicht werden (SSL-Prüfung fehlgeschlagen)."
+			;;
+		*"wget returned 6"*)
+			diag_message="The package feed could not be reached (authentication failed)."
+			diag_message_de="Die Paketquelle konnte nicht erreicht werden (Authentifizierung fehlgeschlagen)."
+			;;
+		*"wget returned 7"*)
+			diag_message="The package feed could not be reached (protocol error)."
+			diag_message_de="Die Paketquelle konnte nicht erreicht werden (Protokollfehler)."
+			;;
+		*"wget returned 8"*)
+			diag_message="The package feed could not be reached (server error)."
+			diag_message_de="Die Paketquelle konnte nicht erreicht werden (Serverfehler)."
+			;;
+		*"wget returned"*)
+			diag_message="Downloading the package lists failed."
+			diag_message_de="Das Herunterladen der Paketlisten ist fehlgeschlagen."
+			;;
+	esac
+}
+
+find_failed_feed() {
+	failed_feed_name=""
+	failed_feed_url=""
+	failure_lines="$(printf '%s\n' "$1" | grep -Ei 'error|failed|404|not found|signature|wget returned|cannot|refused|timed out|timeout' || true)"
+	[ -n "$failure_lines" ] || failure_lines="$1"
+
+	while IFS="$(printf '\t')" read -r candidate_name candidate_url; do
+		[ -n "$candidate_url" ] || continue
+		candidate_host="$(printf '%s' "$candidate_url" | sed -n 's|^[a-zA-Z][a-zA-Z0-9+.-]*://\([^/:]*\).*|\1|p' | head -n 1)"
+		case "$failure_lines" in
+			*"$candidate_url"*|*"$candidate_host"*)
+				failed_feed_name="$candidate_name"
+				failed_feed_url="$candidate_url"
+				return 0
+				;;
+		esac
+	done < "$work_file"
+	return 1
+}
+
 output=""
 if ! update_output="$(opkg update 2>&1)"; then
-	json_response false "error" "Package list refresh failed." "Das Aktualisieren der Paketlisten ist fehlgeschlagen." '[]' "$update_output"
+	diagnose_opkg_update_failure "$update_output"
+	if find_failed_feed "$update_output"; then
+		diag_message="$diag_message Failed feed: $failed_feed_name ($failed_feed_url)."
+		diag_message_de="$diag_message_de Betroffener Feed: $failed_feed_name ($failed_feed_url)."
+	fi
+	record_update_failure "$diag_message" "$update_output"
+	json_response false "error" "$diag_message" "$diag_message_de" '[]' "$update_output"
 	exit 0
 fi
 output="$update_output"
 
 upgradable_lines=""
 if ! upgradable_lines="$(opkg list-upgradable 2>&1)"; then
+	record_update_failure "Could not determine available package updates." "$upgradable_lines"
 	json_response false "error" "Could not determine available package updates." "Verfügbare Paket-Updates konnten nicht ermittelt werden." '[]' "$output\n$upgradable_lines"
 	exit 0
 fi
@@ -121,6 +282,7 @@ for package_name in $package_names; do
 done
 
 if [ "$upgrade_failed" = true ]; then
+	record_update_failure "One or more packages could not be updated." "$output"
 	json_response false "error" "One or more packages could not be updated." "Ein oder mehrere Pakete konnten nicht aktualisiert werden." "$updates_json" "$output"
 	exit 0
 fi

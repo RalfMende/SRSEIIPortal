@@ -1898,7 +1898,18 @@
       var message = eventItem && eventItem.message ? String(eventItem.message) : t("noEvents");
       var time = eventItem && eventItem.time ? String(eventItem.time) : "-";
       item.className = "event-item " + level;
-      item.innerHTML = '<span class="event-level">' + level + '</span><span class="event-message">' + message + '</span><span class="event-time">' + time + '</span>';
+      var levelElement = document.createElement("span");
+      var messageElement = document.createElement("span");
+      var timeElement = document.createElement("span");
+      levelElement.className = "event-level";
+      levelElement.textContent = level;
+      messageElement.className = "event-message";
+      messageElement.textContent = message;
+      timeElement.className = "event-time";
+      timeElement.textContent = time;
+      item.appendChild(levelElement);
+      item.appendChild(messageElement);
+      item.appendChild(timeElement);
       list.appendChild(item);
     });
   }
@@ -2611,7 +2622,7 @@
       setUpdatesNote(updateLabel, false);
     } else {
       setUpdateAction("error", t("updateCheckButton"), true);
-      setUpdatesNote(data.message || t("updateFailed"), true);
+      setUpdatesNote(getLocalizedStatusValue(data, "message", "messageDe") || t("updateFailed"), true);
     }
     return isAvailable;
   }
@@ -2630,12 +2641,20 @@
     updateCheckPromise = fetchUpdateData("GET")
       .then(function (data) {
         applyUpdateData(data);
+        if (!data.ok) {
+          return loadStatus().then(function () {
+            return data;
+          });
+        }
         return data;
       })
       .catch(function (error) {
         setUpdateAction("error", t("updateCheckButton"), true);
-        setUpdatesNote(t("updateFailed") + " " + error.message, true);
-        return null;
+        // fetch errors carry no backend message; only then prefix the generic label
+        setUpdatesNote(error && error.message ? error.message : t("updateFailed"), true);
+        return loadStatus().then(function () {
+          return null;
+        });
       })
       .finally(function () {
         updateCheckPromise = null;
@@ -2659,7 +2678,9 @@
     fetchUpdateData("POST")
       .then(function (data) {
         if (!data.ok) {
-          throw new Error(data.message || t("updateFailed"));
+          var updateError = new Error(getLocalizedStatusValue(data, "message", "messageDe") || t("updateFailed"));
+          updateError.output = data.output;
+          throw updateError;
         }
         setUpdatesNote(t("updateDone"), false);
         updateOperationInFlight = false;
@@ -2669,9 +2690,9 @@
       })
       .catch(function (error) {
         setUpdateAction("error", t("updateCheckButton"), true);
-        setUpdatesNote(t("updateFailed") + " " + error.message, true);
+        setUpdatesNote(error && error.message ? error.message : t("updateFailed"), true);
         updateOperationInFlight = false;
-        checkUpdates();
+        loadStatus();
       });
   }
 

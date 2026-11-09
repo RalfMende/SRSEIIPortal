@@ -943,6 +943,7 @@ body {
   color: var(--muted);
 }
 
+
 .status-details-list li {
   display: flex;
   align-items: center;
@@ -1088,6 +1089,8 @@ body {
 .event-message {
   color: var(--ink);
   line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .event-time {
