@@ -22,8 +22,20 @@ def run(dump_lines, method="POST", with_tools=True, query=""):
                 f = bindir / name
                 f.write_text(body)
                 f.chmod(f.stat().st_mode | stat.S_IEXEC)
-        env = dict(os.environ, REQUEST_METHOD=method, QUERY_STRING=query, PATH=f"{bindir}:/usr/bin:/bin")
+        env = dict(
+            os.environ,
+            REQUEST_METHOD=method,
+            QUERY_STRING=query,
+            PATH=f"{bindir}:/usr/bin:/bin",
+            SRSEII_ACTIVITY_DIR=str(bindir / "activity-log"),
+        )
         out = subprocess.run(["sh", str(SCRIPT)], env=env, capture_output=True, text=True).stdout
+        activity_files = list((bindir / "activity-log").glob("event.*"))
+        if "action=write" in query:
+            assert len(activity_files) == 1, (query, activity_files)
+            assert activity_files[0].read_text().splitlines()[1] in ("info", "warning")
+        else:
+            assert not activity_files, (query, activity_files)
         return out, sent.read_text().split() if sent.exists() else []
 
 

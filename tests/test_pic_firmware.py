@@ -63,6 +63,7 @@ def upload(payload, method="POST", p16_exit=0, missing_tool=None):
             SRSEII_GPIO_BB_DEV=str(directory / "gpio-bb"),
             SRSEII_PIC_LOCK_DIR=str(directory / "lock"),
             SRSEII_PIC_TMP_DIR=str(directory),
+            SRSEII_ACTIVITY_DIR=str(directory / "activity-log"),
         )
         result = subprocess.run(
             [str(ENDPOINT.resolve())], input=payload, capture_output=True, env=env, check=True
@@ -70,6 +71,10 @@ def upload(payload, method="POST", p16_exit=0, missing_tool=None):
         response = json.loads(result.stdout.split(b"\n\n", 1)[1])
         calls = log.read_text().splitlines() if log.exists() else []
         programmed = (directory / "programmed.hex").exists()
+        events = list((directory / "activity-log").glob("event.*"))
+        assert len(events) == (1 if method == "POST" else 0), (method, events)
+        if events:
+            assert events[0].read_text().splitlines()[1] in ("info", "warning")
         leftovers = [p.name for p in directory.glob("srseii-pic-firmware.*")]
         assert not leftovers and not (directory / "lock").exists()
         return response, calls, programmed

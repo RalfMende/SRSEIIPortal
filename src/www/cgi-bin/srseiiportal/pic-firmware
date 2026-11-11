@@ -2,6 +2,17 @@
 
 set -u
 
+activity_log="/usr/sbin/srseii-portal-activity-log"
+if [ ! -r "$activity_log" ]; then
+	activity_log="$(dirname "$0")/../../../../src/usr/sbin/srseii-portal-activity-log"
+fi
+. "$activity_log"
+
+SRSEII_ACTIVITY_ACTION=""
+if [ "${REQUEST_METHOD:-GET}" = "POST" ]; then
+	SRSEII_ACTIVITY_ACTION="PIC firmware programming"
+fi
+
 # Programs the PIC18F2xK80 (CAN <-> serial bridge to the Märklin Gleisbox) with an uploaded
 # Intel HEX file (srse2-slcan.hex). Needed once on first commissioning or for a firmware update.
 MAX_BYTES="${SRSEII_PIC_MAX_BYTES:-524288}"
@@ -18,6 +29,12 @@ json_response() {
 	response_message="$2"
 	response_message_de="$3"
 	response_output="${4:-}"
+
+	if [ "$response_ok" = true ]; then
+		srseii_activity_finish success
+	else
+		srseii_activity_finish failure
+	fi
 
 	printf 'Content-Type: application/json\n'
 	printf 'Cache-Control: no-store\n'

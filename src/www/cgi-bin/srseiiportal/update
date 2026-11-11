@@ -2,6 +2,12 @@
 
 set -u
 
+activity_log="/usr/sbin/srseii-portal-activity-log"
+if [ ! -r "$activity_log" ]; then
+	activity_log="$(dirname "$0")/../../../../src/usr/sbin/srseii-portal-activity-log"
+fi
+. "$activity_log"
+
 json_escape() {
 	printf '%s' "$1" | tr '\r\n' '  ' | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
@@ -30,21 +36,12 @@ record_update_event() {
 	event_level="$1"
 	event_message="$2"
 	event_output="$3"
-	event_file="/tmp/srseii-opkg-update-event"
-	event_tmp="${event_file}.$$"
-	event_time="$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo 'now')"
 	event_detail="$(printf '%s' "$event_output" | tr '\r\n\t' '   ' | cut -c 1-1200)"
 	if [ -n "$event_detail" ]; then
 		event_message="$event_message — $event_detail"
 	fi
 
-	if printf '%s\n%s\n%s\n' "$event_time" "$event_level" "$event_message" > "$event_tmp" && mv "$event_tmp" "$event_file"; then
-		return 0
-	fi
-
-	rm -f "$event_tmp"
-	echo "Could not record update event in the activity log." >&2
-	return 1
+	srseii_activity_record "$event_level" "$event_message"
 }
 
 record_update_failure() {
@@ -71,11 +68,13 @@ if ! mkdir "$lock_dir" 2>/dev/null; then
 		lock_pid="$(cat "$lock_dir/pid" 2>/dev/null || true)"
 	fi
 	if [ -n "$lock_pid" ] && kill -0 "$lock_pid" 2>/dev/null; then
+		record_update_event "warning" "Package operation was not started because another operation is already running." ""
 		json_response false "busy" "Another package operation is already running." "Eine andere Paketaktion läuft bereits." '[]' ""
 		exit 0
 	fi
 	rm -f "$lock_dir/pid"
 	if ! rmdir "$lock_dir" 2>/dev/null || ! mkdir "$lock_dir" 2>/dev/null; then
+		record_update_event "warning" "Package operation was not started because another operation is already running." ""
 		json_response false "busy" "Another package operation is already running." "Eine andere Paketaktion läuft bereits." '[]' ""
 		exit 0
 	fi

@@ -11,17 +11,21 @@ MAX_BYTES = 6 * 1024
 
 def request(icon_dir, method="GET", query=""):
     env = os.environ.copy()
-    env.update(
-        REQUEST_METHOD=method,
-        QUERY_STRING=query,
-        SRSEII_ICON_DIR=str(icon_dir),
-    )
-    result = subprocess.run(
-        [str(ENDPOINT.resolve())],
-        capture_output=True,
-        env=env,
-        check=True,
-    )
+    with tempfile.TemporaryDirectory() as activity_dir:
+        env.update(
+            REQUEST_METHOD=method,
+            QUERY_STRING=query,
+            SRSEII_ICON_DIR=str(icon_dir),
+            SRSEII_ACTIVITY_DIR=activity_dir,
+        )
+        result = subprocess.run(
+            [str(ENDPOINT.resolve())],
+            capture_output=True,
+            env=env,
+            check=True,
+        )
+        events = list(Path(activity_dir).glob("event.*"))
+        assert len(events) == (1 if method == "POST" else 0), (method, query, events)
     headers, body = result.stdout.split(b"\n\n", 1)
     return headers.decode("ascii"), json.loads(body)
 
@@ -34,21 +38,25 @@ def png(width=128, height=48, size=24):
 
 
 def upload(tmp_path, payload):
-    env = os.environ.copy()
-    env.update(
-        REQUEST_METHOD="POST",
-        QUERY_STRING="nameoct=151143157156056160156147",
-        CONTENT_LENGTH=str(len(payload)),
-        SRSEII_ICON_DIR=str(tmp_path),
-    )
-    result = subprocess.run(
-        [str(ENDPOINT.resolve())],
-        input=payload,
-        capture_output=True,
-        env=env,
-        check=True,
-    )
-    response = result.stdout.split(b"\n\n", 1)[1]
+    with tempfile.TemporaryDirectory() as activity_dir:
+        env = os.environ.copy()
+        env.update(
+            REQUEST_METHOD="POST",
+            QUERY_STRING="nameoct=151143157156056160156147",
+            CONTENT_LENGTH=str(len(payload)),
+            SRSEII_ICON_DIR=str(tmp_path),
+            SRSEII_ACTIVITY_DIR=activity_dir,
+        )
+        result = subprocess.run(
+            [str(ENDPOINT.resolve())],
+            input=payload,
+            capture_output=True,
+            env=env,
+            check=True,
+        )
+        events = list(Path(activity_dir).glob("event.*"))
+        assert len(events) == 1, events
+        response = result.stdout.split(b"\n\n", 1)[1]
     return json.loads(response)
 
 

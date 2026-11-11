@@ -2,6 +2,17 @@
 
 set -eu
 
+activity_log="/usr/sbin/srseii-portal-activity-log"
+if [ ! -r "$activity_log" ]; then
+	activity_log="$(dirname "$0")/../../../../src/usr/sbin/srseii-portal-activity-log"
+fi
+. "$activity_log"
+
+SRSEII_ACTIVITY_ACTION=""
+if [ "${REQUEST_METHOD:-GET}" = "POST" ]; then
+	SRSEII_ACTIVITY_ACTION="Use-case setup"
+fi
+
 echo "Content-Type: application/json"
 echo "Cache-Control: no-store"
 echo ""
@@ -12,6 +23,7 @@ json_escape() {
 
 json_error() {
 	message="$1"
+	srseii_activity_finish failure
 	printf '{"ok":false,"message":"%s"}\n' "$(json_escape "$message")"
 	exit 0
 }
@@ -19,6 +31,7 @@ json_error() {
 json_ok() {
 	message="$1"
 	usecase="$2"
+	srseii_activity_finish success
 	printf '{"ok":true,"message":"%s","usecase":"%s"}\n' "$(json_escape "$message")" "$(json_escape "$usecase")"
 }
 
@@ -78,6 +91,7 @@ case "$usecase" in
 		json_error "Missing usecase parameter."
 		;;
 	mswebapp|railcontrol|z21interface|cs2interface|itrain|windigipet|rocrail|all)
+			SRSEII_ACTIVITY_ACTION="Use-case setup: $usecase"
 		;;
 	*)
 		json_error "Unknown usecase: $usecase"

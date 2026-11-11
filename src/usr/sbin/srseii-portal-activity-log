@@ -1,0 +1,73 @@
+#!/bin/sh
+
+SRSEII_ACTIVITY_DIR="${SRSEII_ACTIVITY_DIR:-/tmp/srseii-portal-activity}"
+SRSEII_ACTIVITY_ACTION="${SRSEII_ACTIVITY_ACTION:-}"
+SRSEII_ACTIVITY_RECORDED="${SRSEII_ACTIVITY_RECORDED:-0}"
+
+srseii_activity_record() {
+	srseii_event_level="$1"
+	srseii_event_message="$2"
+	case "$srseii_event_level" in
+		info|warning) ;;
+		*)
+			echo "Invalid activity log level: $srseii_event_level" >&2
+			return 1
+			;;
+	esac
+
+	srseii_event_time="$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || printf 'unknown')"
+	srseii_event_order="$(date '+%s' 2>/dev/null || printf '0')"
+	srseii_event_message="$(printf '%s' "$srseii_event_message" | tr '\r\n\t' '   ' | cut -c 1-1200)"
+
+	if ! (umask 077 && mkdir -p "$SRSEII_ACTIVITY_DIR"); then
+		echo "Could not create the activity log directory." >&2
+		return 1
+	fi
+
+	srseii_event_tmp="$(mktemp "$SRSEII_ACTIVITY_DIR/.event.XXXXXX")" || {
+		echo "Could not create an activity log entry." >&2
+		return 1
+	}
+	srseii_event_suffix="${srseii_event_tmp##*.}"
+	srseii_event_file="$SRSEII_ACTIVITY_DIR/event.$srseii_event_order.$$.$srseii_event_suffix"
+	if printf '%s\n%s\n%s\n' "$srseii_event_time" "$srseii_event_level" "$srseii_event_message" > "$srseii_event_tmp" &&
+		mv "$srseii_event_tmp" "$srseii_event_file"; then
+		srseii_event_old_files="$(ls -1 "$SRSEII_ACTIVITY_DIR"/event.* 2>/dev/null | LC_ALL=C sort -r | sed -n '51,$p')"
+		for srseii_event_old_file in $srseii_event_old_files; do
+			if ! rm -f "$srseii_event_old_file"; then
+				echo "Could not prune an old activity log entry." >&2
+				return 1
+			fi
+		done
+		return 0
+	fi
+
+	rm -f "$srseii_event_tmp"
+	echo "Could not record an activity log entry." >&2
+	return 1
+}
+
+srseii_activity_finish() {
+	[ -n "$SRSEII_ACTIVITY_ACTION" ] || return 0
+	[ "$SRSEII_ACTIVITY_RECORDED" = "0" ] || return 0
+	SRSEII_ACTIVITY_RECORDED=1
+
+	srseii_activity_result="$1"
+	srseii_activity_message="${2:-}"
+	case "$srseii_activity_result" in
+		success)
+			srseii_activity_level="info"
+			[ -n "$srseii_activity_message" ] || srseii_activity_message="$SRSEII_ACTIVITY_ACTION completed."
+			;;
+		failure)
+			srseii_activity_level="warning"
+			[ -n "$srseii_activity_message" ] || srseii_activity_message="$SRSEII_ACTIVITY_ACTION failed."
+			;;
+		*)
+			echo "Invalid activity log result: $srseii_activity_result" >&2
+			return 1
+			;;
+	esac
+
+	srseii_activity_record "$srseii_activity_level" "$srseii_activity_message" || true
+}

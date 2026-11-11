@@ -1785,9 +1785,11 @@
       });
     }).catch(function (error) {
       var extra = error.rawResponse ? " Response: " + error.rawResponse : "";
-      setStatusNote("Setup fehlgeschlagen: " + error.message + extra);
-      setModelRailwayNote("Setup fehlgeschlagen: " + error.message + extra, true);
-      return null;
+      return loadStatus().then(function () {
+        setStatusNote("Setup fehlgeschlagen: " + error.message + extra);
+        setModelRailwayNote("Setup fehlgeschlagen: " + error.message + extra, true);
+        return null;
+      });
     });
   }
 
@@ -2104,6 +2106,7 @@
       })
       .then(function () {
         button.disabled = false;
+        return loadStatus();
       });
   }
 
@@ -2178,6 +2181,7 @@
           })
           .then(function (data) {
             if (data && data.ok) {
+              loadStatus();
               setLocoListRefreshNote(t("locoListSynchronizing").replace("%s", "0"), false);
               return waitForLocoListChange(previousRevision);
             }
@@ -2203,6 +2207,7 @@
         if (resetButton) {
           resetButton.disabled = false;
         }
+        return loadStatus();
       });
   }
 
@@ -2259,6 +2264,7 @@
         })
         .then(function () {
           button.disabled = false;
+          return loadStatus();
         });
     });
   }
@@ -2380,6 +2386,7 @@
             if (iconListDetails.open) {
               loadIconList();
             }
+            loadStatus();
           });
       });
     }
@@ -2423,6 +2430,7 @@
         if (iconListDetails.open && done > 0) {
           loadIconList();
         }
+        loadStatus();
       });
     });
   }
@@ -2735,12 +2743,9 @@
     updateCheckPromise = fetchUpdateData("GET")
       .then(function (data) {
         applyUpdateData(data);
-        if (!data.ok) {
-          return loadStatus().then(function () {
-            return data;
-          });
-        }
-        return data;
+        return loadStatus().then(function () {
+          return data;
+        });
       })
       .catch(function (error) {
         setUpdateAction("error", t("updateCheckButton"), true);
@@ -2971,6 +2976,7 @@
       })
       .finally(function () {
         toggleWifiActions(false, false);
+        loadStatus();
       });
   }
 
@@ -3705,6 +3711,9 @@
             s88SetAvailability();
             s88Note.textContent = t("s88WriteUnknown") + ": " + message;
           }
+        })
+        .then(function () {
+          return loadStatus();
         });
     });
   }

@@ -2,6 +2,14 @@
 
 set -eu
 
+activity_log="/usr/sbin/srseii-portal-activity-log"
+if [ ! -r "$activity_log" ]; then
+	activity_log="$(dirname "$0")/../../../../src/usr/sbin/srseii-portal-activity-log"
+fi
+. "$activity_log"
+
+SRSEII_ACTIVITY_ACTION=""
+
 json_escape() {
 	printf '%s' "$1" | tr '\r\n' '  ' | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
@@ -10,6 +18,12 @@ json_response() {
 	response_ok="$1"
 	response_message="$2"
 	response_message_de="$3"
+
+	if [ "$response_ok" = true ]; then
+		srseii_activity_finish success
+	else
+		srseii_activity_finish failure
+	fi
 
 	printf 'Content-Type: application/json\n'
 	printf 'Cache-Control: no-store\n'
@@ -26,6 +40,12 @@ refresh_json_response() {
 	response_message="$3"
 	response_message_de="$4"
 
+	if [ "$response_ok" = true ]; then
+		srseii_activity_finish success
+	else
+		srseii_activity_finish failure
+	fi
+
 	printf 'Content-Type: application/json\n'
 	printf 'Cache-Control: no-store\n'
 	printf '\n'
@@ -37,6 +57,9 @@ refresh_json_response() {
 }
 
 delete_locomotive() {
+	SRSEII_ACTIVITY_ACTION="Locomotive removal"
+	SRSEII_ACTIVITY_RECORDED=0
+
 	if [ "${REQUEST_METHOD:-GET}" != "POST" ]; then
 		json_response false "Only POST requests are supported." "Es werden nur POST-Anfragen unterstützt."
 		return
@@ -170,9 +193,19 @@ refresh_locomotive_list() {
 	esac
 
 	case "$action" in
-		update) can_frame="000C0300#000000010001" ;;
-		reset) can_frame="000C0300#000000010004" ;;
+		update)
+			can_frame="000C0300#000000010001"
+			SRSEII_ACTIVITY_ACTION="Locomotive list update request"
+			SRSEII_ACTIVITY_RECORDED=0
+			;;
+		reset)
+			can_frame="000C0300#000000010004"
+			SRSEII_ACTIVITY_ACTION="Locomotive list reset request"
+			SRSEII_ACTIVITY_RECORDED=0
+			;;
 		*)
+			SRSEII_ACTIVITY_ACTION="Locomotive list command"
+			SRSEII_ACTIVITY_RECORDED=0
 			refresh_json_response false "error" "Unknown or missing action." "Unbekannte oder fehlende Aktion."
 			return
 			;;

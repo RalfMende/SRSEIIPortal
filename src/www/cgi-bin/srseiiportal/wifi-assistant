@@ -7,6 +7,14 @@
 
 set -eu
 
+activity_log="/usr/sbin/srseii-portal-activity-log"
+if [ ! -r "$activity_log" ]; then
+	activity_log="$(dirname "$0")/../../../../src/usr/sbin/srseii-portal-activity-log"
+fi
+. "$activity_log"
+
+SRSEII_ACTIVITY_ACTION=""
+
 CLIENT_PREFIX="srseii_sta_"
 
 echo "Content-Type: application/json"
@@ -19,12 +27,14 @@ json_escape() {
 
 json_error() {
 	message="$1"
+	srseii_activity_finish failure
 	printf '{"ok":false,"message":"%s"}\n' "$(json_escape "$message")"
 	exit 0
 }
 
 json_ok_message() {
 	message="$1"
+	srseii_activity_finish success
 	printf '{"ok":true,"message":"%s"}\n' "$(json_escape "$message")"
 	exit 0
 }
@@ -262,6 +272,7 @@ scan_networks() {
 			printf "]"
 		}
 		' "$scan_file")"
+		srseii_activity_finish success
 		printf '{"ok":true,"networks":%s,"message":"scan complete"}\n' "$scan_json"
 		exit 0
 	fi
@@ -391,6 +402,7 @@ connect_network() {
 	fi
 	/etc/init.d/network reload >/dev/null 2>&1 || true
 
+	srseii_activity_finish success
 	printf '{"ok":true,"message":"Configuration applied in section %s for SSID %s. Run connection test.","requiresTest":true,"section":"%s","ssid":"%s"}\n' "$(json_escape "$sta_section")" "$(json_escape "$ssid")" "$(json_escape "$sta_section")" "$(json_escape "$ssid")"
 	exit 0
 }
@@ -410,6 +422,12 @@ action="$query_action"
 if [ -n "$post_action" ]; then
 	action="$post_action"
 fi
+
+case "$action" in
+	scan) SRSEII_ACTIVITY_ACTION="Wi-Fi network scan" ;;
+	connect) SRSEII_ACTIVITY_ACTION="Wi-Fi configuration" ;;
+	test) SRSEII_ACTIVITY_ACTION="Wi-Fi connection test" ;;
+esac
 
 case "$action" in
 	scan)

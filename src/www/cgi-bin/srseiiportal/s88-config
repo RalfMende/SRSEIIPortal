@@ -9,6 +9,12 @@
 
 set -u
 
+activity_log="/usr/sbin/srseii-portal-activity-log"
+if [ ! -r "$activity_log" ]; then
+	activity_log="$(dirname "$0")/../../../../src/usr/sbin/srseii-portal-activity-log"
+fi
+. "$activity_log"
+
 CAN_IF="can0"
 LISTEN_SECONDS=2
 # Allowlisted config channels. Channel 6 (UID, two low bytes) is addressed with
@@ -19,12 +25,22 @@ LOCK_DIR="/tmp/srseii-s88-config.lock"
 finished=0
 write_sent=false
 
+SRSEII_ACTIVITY_ACTION=""
+case "&${QUERY_STRING:-}&" in
+	*"&action=write&"*)
+		SRSEII_ACTIVITY_ACTION="S88 configuration write"
+		;;
+esac
+
 json_escape() {
 	printf '%s' "$1" | tr '\r\n' '  ' | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
 
 fail() {
 	finished=1
+	if [ -n "$SRSEII_ACTIVITY_ACTION" ]; then
+		srseii_activity_finish failure
+	fi
 	printf 'Content-Type: application/json\n'
 	printf 'Cache-Control: no-store\n'
 	printf '\n'
@@ -202,6 +218,7 @@ no_reply_failure() {
 }
 
 results_json=""
+write_verified=true
 
 if [ "$mode" = "write" ]; then
 	# Sequential writes, one value per channel: CBUS 0B <channel> <16-bit big-endian value>.
@@ -225,6 +242,9 @@ if [ "$mode" = "write" ]; then
 		case "$channel_values" in
 		*" $channel=$value "*) verified=true ;;
 		esac
+		if [ "$verified" != true ]; then
+			write_verified=false
+		fi
 		entry="\"$channel\":{\"sent\":\"$value\",\"verified\":$verified}"
 		if [ -z "$results_json" ]; then
 			results_json="$entry"
@@ -249,6 +269,11 @@ printf 'Cache-Control: no-store\n'
 printf '\n'
 finished=1
 if [ "$mode" = "write" ]; then
+	if [ "$write_verified" = true ]; then
+		srseii_activity_finish success
+	else
+		srseii_activity_finish failure "S88 configuration write was sent but not fully confirmed."
+	fi
 	printf '{"ok":true,"results":{%s},"channels":{%s}}\n' "$results_json" "$channels_json"
 else
 	printf '{"ok":true,"channels":{%s}}\n' "$channels_json"
