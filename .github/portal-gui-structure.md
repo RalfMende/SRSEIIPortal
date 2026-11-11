@@ -16,7 +16,7 @@ Das SRSEII Portal ist die einfache, zentrale Bedienoberfläche des **SRSEII (Sma
 
 - Das Portal bildet die **Aufgaben des Modellbahners** ab, nicht OpenWrt.
 - **Komplexität kapseln, nicht nur umbenennen.** Nutzer wählen eine Aufgabe („Ich möchte Win-Digipet verwenden“); Pakete, Dienste und Konfiguration leitet das Backend ab.
-- Technische Begriffe (`can2lan`, `clone-ms2-loco`, `ms2-loco-list`, `apcli0`, UCI, ubus, CAN-Frames, F0/F4, Dateipfade) sind **keine primären Bedienbegriffe**. Sie erscheinen nur in „Technische Details“, Diagnose und Expertenbereich.
+- Technische Begriffe (`can2lan`, `clone-ms2-loco`, `ms2-loco-list`, `apcli0`, UCI, ubus, CAN-Frames, F0/F4, Dateipfade) sind **keine primären Bedienbegriffe**. Sie erscheinen nicht als eigenständige Statusliste, sondern nur dort, wo sie eine konkrete Funktion erklären, sowie in Diagnose und Expertenbereich.
 - LuCI bleibt als Expertenmodus erhalten; das Portal ersetzt LuCI nicht.
 - **Die bestehende Modellbahnsteuerung darf durch das Portal nicht beeinträchtigt werden.**
 - Nichts behaupten, was nicht belastbar festgestellt wurde (Erfolg, Kompatibilität, Gerätezustand).
@@ -123,9 +123,8 @@ Untergruppen in dieser Reihenfolge, oben ein **Refresh**-Button:
 
 1. **READINESS** – drei Karten:
    - *Overall status* (Pill „bereit“ / „Aufmerksamkeit erforderlich“ plus Hinweistext),
-   - *System* (OpenWrt läuft),
-   - *Model railway connection* (`can2lan` aktiv; angezeigt als Verbindung zur Gleisbox, nicht als Prozessname).
-   - Darunter `details` **Technical details** mit Pills je Dienst: `mswebapp`, `railcontrol`, `z21emu`, `can2lan`, `clone-ms2-loco`, `maecanserver`, `ms2-loco-list`, `wake-up-links88` (aktiv/inaktiv).
+   - *System* (OpenWrt läuft; unter **Details** stehen Webserver-, Speicher- und Flash-Prüfung),
+   - *Model railway connection* (`can2lan` aktiv; angezeigt als Verbindung zur Gleisbox, nicht als Prozessname). Unter **Details** stehen CAN-Interface, CAN/LAN-Bridge, CAN/LAN-Ports und die Port-Erreichbarkeit von Z21, RailControl, Mobile Station Web App und Rocrail. Die Konfigurationsdatei-Struktur steht als letzter Eintrag; die CAN/LAN-Portprüfung wird nur in der bestehenden CAN/LAN-Zeile angezeigt.
 2. **MAINTENANCE** – Karte *Updates*: ein Button durchläuft die Zustände *check* → (*updates available* → *install*) → *up to date* / *error* (siehe `update`-Endpunkt).
 3. **LAST ACTIVITIES** – Liste (`#event-log-list`) mit maximal 5 Einträgen aus `events` der Status-API; Eintrag = `level`, `message`, `time`. Der letzte Update-Vorgang (Erfolg oder Fehler) wird mit Zeitstempel, Level (`info`/`warning`) und gekürzter opkg-Ausgabe in `/tmp/srseii-opkg-update-event` gespeichert und beim Statusabruf als neuester Eintrag ergänzt.
 
@@ -282,11 +281,11 @@ Mehrere Endpunkte vereinen Aktionen bewusst in **einem** CGI (z. B. `loco-list`)
 }
 ```
 
-- `openwrt` enthält `ok` (nur `ubus call system board`, **kein** Fallback auf `/etc/openwrt_release`), `memoryUsagePercent` (aus `/proc/meminfo`) und `flashUsagePercent` (aus `df /overlay`); nur für Technical details.
+- `openwrt` enthält `ok` (nur `ubus call system board`, **kein** Fallback auf `/etc/openwrt_release`), `memoryUsagePercent` (aus `/proc/meminfo`) und `flashUsagePercent` (aus `df /overlay`); Speicher- und Flash-Auslastung stehen unter „System“ → „Details“.
 - `system` enthält den **kombinierten Systemstatus** (`ok`): `true` nur wenn OpenWrt-Basis läuft, `uhttpd` läuft (für die Webinterfaces) **und** Speicher/Flash nicht kritisch voll sind (>90%). Wird in der Status-Karte „System" angezeigt. `uhttpd` ist der Einzelstatus des Webservers.
-- `apps` und `useCases` sind die **fachliche Bereitschaft**, `services` die **technischen Rohzustände** (nur für Technical details).
-- `ports` enthält die **Erreichbarkeit der Netzwerk-Ports** (lauschende Sockets via `/proc/net`, siehe Abschnitt 14 Check 1); nur für Technical details, fließt nicht in den Gesamtstatus ein. Enthält `can2lanTcp`, `can2lanUdp`, `z21emuUdp`, `railcontrolHttp`, `mswebappHttp`, `rocrailHttp`.
-- `canInterface` enthält den **Zustand des CAN-Interfaces** (`exists`, `up`, `bitrate`; Interface über `SRSEII_CAN_INTERFACE` überschreibbar, siehe Abschnitt 14 Check 2); nur für Technical details, fließt nicht in den Gesamtstatus ein.
+- `apps` und `useCases` sind die **fachliche Bereitschaft**, `services` die **technischen Rohzustände**. Das Frontend nutzt Dienstzustände für die Funktionsbereitschaft und zur Einordnung der Portprüfungen, listet sie aber nicht einzeln auf.
+- `ports` enthält die **Erreichbarkeit der Netzwerk-Ports** (lauschende Sockets via `/proc/net`, siehe Abschnitt 14 Check 1). Die CAN/LAN-Prüfung wird in der bestehenden Modellbahn-Detailzeile zusammengefasst; Z21, RailControl, Mobile Station Web App und Rocrail werden dort einzeln aufgeführt. Die Prüfergebnisse fließen in die jeweilige Funktionsbereitschaft ein, nicht in den Gesamtstatus. Enthält `can2lanTcp`, `can2lanUdp`, `z21emuUdp`, `railcontrolHttp`, `mswebappHttp`, `rocrailHttp`.
+- `canInterface` enthält den **Zustand des CAN-Interfaces** (`exists`, `up`, `bitrate`; Interface über `SRSEII_CAN_INTERFACE` überschreibbar, siehe Abschnitt 14 Check 2); das Interface wird unter „Modellbahn-Verbindung“ → „Details“ angezeigt und fließt in deren kombinierte Bereitschaft ein.
 - `modelRailway` enthält die **kombinierte Modellbahn-Verbindungsbereitschaft** (`ready`, `reason`, `reasonDe`, `configStructure`): `ready` nur wenn can2lan läuft, `can0` existiert und UP ist, mindestens ein CAN/LAN-Port lauscht, **und** die erwartete Konfigurationsdatei-Struktur vorhanden ist (`/www/icons`, `/www/fcticons`, `/www/magicons_`, `/www/config` + `lokomotive.cs2`, `magnetartikel.cs2`, `gleisbild.cs2`, `fahrstrassen.cs2`, `geraet.vrs`). Bei Fehler enthält `reason`/`reasonDe` die konkrete Ursache. Wird in der Status-Karte „Modellbahn-Verbindung" angezeigt. Die Einzelprüfungen (CAN-Interface, can2lan-Dienst, CAN/LAN-Ports, Config-Struktur) werden im aufklappbaren Details-Bereich der Karte angezeigt. **Jedes fehlende Config-Element erzeugt ein eigenes Warn-Event** unter „Letzte Aktivitäten" („Expected config item missing: <Pfad>").
 - LAN-Status stammt aus `ubus network.interface dump` (Fallback `br-lan`), WLAN aus `iw`/`wwan`; beide werden getrennt ermittelt.
 - Der Status enthält **keine Zugangsdaten**.
@@ -380,7 +379,7 @@ Besonders kritisch: WLAN-Zugangsdaten, Netzwerkänderungen, Paketinstallation, C
 
 ### Fehlermeldungen für Nutzer
 
-Fehler beantworten möglichst: Was ist passiert? Was bedeutet das? Wurde etwas verändert? Was kann der Nutzer jetzt tun? Technische Details sind optional (aufklappbar), nicht der Haupttext.
+Fehler beantworten möglichst: Was ist passiert? Was bedeutet das? Wurde etwas verändert? Was kann der Nutzer jetzt tun? Technische Diagnoseinformationen sind optional (aufklappbar), nicht der Haupttext.
 
 ---
 
@@ -390,7 +389,7 @@ Fehler beantworten möglichst: Was ist passiert? Was bedeutet das? Wurde etwas v
 - **Keine dekorativen Icons**; Struktur entsteht durch Typografie, Abstände, Gruppierung und dezente Trennlinien. (Funktionale Elemente wie der „i“-Button oder Schließen-Button sind keine Dekoration.)
 - Keine übergroßen Überschriften, keine dominanten Buttons, keine unnötig starken Kartenrahmen; Funktionen als ruhige Zeilen/kompakte Karten.
 - Aufgabenorientierte Benennung („Lokliste von der Mobile Station aktualisieren“), nicht prozessorientiert („clone-ms2-loco aktivieren“). Beispiele: „Mit einem WLAN verbinden“ statt „WLAN-Interface konfigurieren“; „Modellbahn-Verbindung aktiv“ statt „can2lan aktiv“.
-- Technische Dienste nur unter „Technical details“ bzw. im Expertenbereich.
+- Technische Dienste nicht als eigenständige Kacheln oder globale Liste anzeigen, sondern nur funktionsbezogen in den jeweiligen Details bzw. im Expertenbereich.
 - Zustände eindeutig und sparsam darstellen; Status darf nicht die wichtigste visuelle Ebene sein.
 - Neue Funktionen in den passenden vorhandenen Bereich einordnen (Abschnitt 4) und vorhandene Muster wiederverwenden (`details`-Aufklapper, `feature-group`, `feature-card`, `status-note`, Pill, Dialog).
 - Nach jeder Aktion eine Rückmeldung in `.status-note`-Elementen anzeigen (Bereitschaft, Läuft, Erfolg, Fehler).
@@ -488,13 +487,13 @@ Die folgenden Checks sind als Nächstes geplant und noch **nicht implementiert**
    - Neues additives Statusfeld `ports: { can2lanTcp, can2lanUdp, z21emuUdp, railcontrolHttp, mswebappHttp }`.
    - Ereignis, wenn can2lan läuft, aber TCP- oder UDP-Ports nicht lauschen („CAN/LAN bridge is running but not reachable on TCP/UDP ports 15730/15731").
    - **Port-Zustand wird nur für laufende Dienste bewertet:** Läuft der Dienst nicht, zeigt die Port-Pill neutral „inaktiv" (nie „nicht erreichbar") und es wird kein Ereignis erzeugt.
-   - Frontend: eigene Untergruppe „Network ports" in den Technical details mit Pills (erreichbar/nicht erreichbar/inaktiv); die CAN/LAN-Bridge-Pill verlangt UDP **und** TCP (ältere Statusantworten ohne `can2lanUdp` fallen auf TCP-only zurück); Test `tests/test_status.py`.
+   - Frontend: Portprüfungen für Z21, RailControl, Mobile Station Web App und Rocrail stehen unter „Modellbahn-Verbindung" → „Details"; CAN/LAN bleibt in der vorhandenen Detailzeile. Portstatus ist nur bei laufendem Dienst aussagekräftig; sonst neutral „inaktiv". Test `tests/test_status.py`.
 
 2. ~~**CAN-Interface-Zustand**~~ ✅ **Implementiert** (Fehlerbild 3+4)
    - Das `status`-CGI prüft `ip -details link show can0` mit Fallback auf `ip link show can0` (BusyBox `ip` kennt `-details` nicht) und liefert das additive Feld `canInterface: { name, exists, up, bitrate }` (Interface über `SRSEII_CAN_INTERFACE` überschreibbar).
    - **Omega2+/slcan-Sonderfall:** `can0` wird per `slcand` auf `/dev/ttyS1` erzeugt. slcan-Interfaces melden **keine Bitrate** und operstate `UNKNOWN`; der UP-Zustand wird deshalb exakt aus den Interface-Flags gelesen (`,UP,` im Flag-Feld, kein Substring-Match — `LOWER_UP` allein zählt nicht). `bitrate` ist bei slcan `null`.
    - Ereignisse nur bei laufendem can2lan: „CAN interface … does not exist." / „… is down." — vor der Port-Prüfung, damit die Ursache (Interface) vor dem Symptom (Port) gemeldet wird.
-   - Frontend: eigene Zeile „CAN interface" in den Technical details (Label = Interface-Name + Bitrate, Pill up/down/missing); Test `tests/test_status.py`.
+   - Frontend: CAN-Interface-Prüfung steht in „Modellbahn-Verbindung" → „Details" als bereit/nicht bereit; die technische Rohinformation wird nicht zusätzlich gelistet. Test `tests/test_status.py`.
 
 3. ~~**Internet-/DNS- und opkg-Feed-Check**~~ ✅ **Implementiert** (Fehlerbild 5+6)
    - **Bewusst im Update-Endpunkt, nicht im Status:** Im Normalbetrieb braucht der SRSEII kein Internet; die Probes laufen daher nur beim Update-Check („Nach Updates suchen" / „Updates installieren"), nicht bei jeder Statusabfrage.

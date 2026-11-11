@@ -239,7 +239,6 @@
       modelRailwayPortsLabel: "CAN/LAN-Ports (15730/15731) erreichbar",
       modelRailwayConfigLabel: "Konfigurationsdatei-Struktur vollständig",
       overallStatus: "Gesamtstatus",
-      technicalDetailsTitle: "Technische Details",
       modelRailwayFunctionsTitle: "Modellbahn steuern",
       modelRailwayFunctionsIntro: "Wähle, wie du deine Modellbahn steuern möchtest.",
       srseiiContentManagementTitle: "INHALTSVERWALTUNG",
@@ -368,12 +367,6 @@
       inactive: "inaktiv",
       listening: "erreichbar",
       notListening: "nicht erreichbar",
-      networkPortsTitle: "Netzwerk-Ports",
-      canInterfaceTitle: "CAN-Interface",
-      canIfUp: "aktiv",
-      canIfDown: "inaktiv",
-      canIfMissing: "nicht vorhanden",
-      portCan2lanLabel: "CAN/LAN-Bridge (UDP+TCP Port 15730/15731)",
       portZ21emuLabel: "Z21-Schnittstelle (UDP Port 21105)",
       portRailcontrolLabel: "RailControl Webinterface (TCP Port 8082)",
       portMswebappLabel: "Mobile Station Web App Webinterface (TCP Port 6020)",
@@ -598,7 +591,6 @@
       modelRailwayPortsLabel: "Ports CAN/LAN (15730/15731) accessibles",
       modelRailwayConfigLabel: "Structure des fichiers de configuration complète",
       overallStatus: "État général",
-      technicalDetailsTitle: "Détails techniques",
       modelRailwayFunctionsTitle: "Piloter votre réseau miniature",
       modelRailwayFunctionsIntro: "Choisissez comment prendre les commandes.",
       srseiiContentManagementTitle: "GESTION DU CONTENU",
@@ -727,12 +719,6 @@
       inactive: "inactif",
       listening: "accessible",
       notListening: "non accessible",
-      networkPortsTitle: "Ports réseau",
-      canInterfaceTitle: "Interface CAN",
-      canIfUp: "actif",
-      canIfDown: "inactif",
-      canIfMissing: "absent",
-      portCan2lanLabel: "Passerelle CAN/LAN (UDP+TCP port 15730/15731)",
       portZ21emuLabel: "Interface Z21 (UDP port 21105)",
       portRailcontrolLabel: "Interface web RailControl (TCP port 8082)",
       portMswebappLabel: "Interface web Mobile Station Web App (TCP port 6020)",
@@ -957,7 +943,6 @@
       modelRailwayPortsLabel: "CAN/LAN-poorten (15730/15731) bereikbaar",
       modelRailwayConfigLabel: "Configuratiebestandstructuur compleet",
       overallStatus: "Algemene status",
-      technicalDetailsTitle: "Technische details",
       modelRailwayFunctionsTitle: "Je modelspoorbaan besturen",
       modelRailwayFunctionsIntro: "Kies hoe je de besturing wilt gebruiken.",
       srseiiContentManagementTitle: "INHOUDSBEHEER",
@@ -1086,12 +1071,6 @@
       inactive: "inactief",
       listening: "bereikbaar",
       notListening: "niet bereikbaar",
-      networkPortsTitle: "Netwerkpoorten",
-      canInterfaceTitle: "CAN-interface",
-      canIfUp: "actief",
-      canIfDown: "inactief",
-      canIfMissing: "niet aanwezig",
-      portCan2lanLabel: "CAN/LAN-brug (UDP+TCP-poort 15730/15731)",
       portZ21emuLabel: "Z21-interface (UDP-poort 21105)",
       portRailcontrolLabel: "RailControl-webinterface (TCP-poort 8082)",
       portMswebappLabel: "Mobile Station Web App-webinterface (TCP-poort 6020)",
@@ -1316,7 +1295,6 @@
       modelRailwayPortsLabel: "CAN/LAN ports (15730/15731) reachable",
       modelRailwayConfigLabel: "Config file structure complete",
       overallStatus: "Overall status",
-      technicalDetailsTitle: "Technical details",
       modelRailwayFunctionsTitle: "Control your model railway",
       modelRailwayFunctionsIntro: "Choose how you'd like to control your model railway.",
       srseiiContentManagementTitle: "CONTENT MANAGEMENT",
@@ -1445,12 +1423,6 @@
       inactive: "inactive",
       listening: "reachable",
       notListening: "not reachable",
-      networkPortsTitle: "Network ports",
-      canInterfaceTitle: "CAN interface",
-      canIfUp: "up",
-      canIfDown: "down",
-      canIfMissing: "missing",
-      portCan2lanLabel: "CAN/LAN bridge (UDP+TCP port 15730/15731)",
       portZ21emuLabel: "Z21 interface (UDP port 21105)",
       portRailcontrolLabel: "RailControl web interface (TCP port 8082)",
       portMswebappLabel: "Mobile Station Web App web interface (TCP port 6020)",
@@ -1633,52 +1605,6 @@
       el.classList.add("pill", "err");
       el.textContent = failureText;
     }
-  }
-
-  function setServicePill(id, isRunning) {
-    var el = document.getElementById(id);
-    if (!el) {
-      return;
-    }
-
-    el.classList.remove("pending", "ok", "err", "warn", "network-disconnected", "service-not-required", "service-inactive");
-    if (isRunning) {
-      el.classList.add("pill", "ok");
-      el.textContent = t("active");
-      return;
-    }
-
-    el.classList.add("pill", "service-inactive");
-    el.textContent = t("inactive");
-  }
-
-  function setCanInterfaceState(canInterface) {
-    var pill = document.getElementById("st-can-if-state");
-    var label = document.getElementById("st-can-if-label");
-    if (!pill) {
-      return;
-    }
-
-    var info = canInterface || {};
-    if (label && info.name) {
-      label.textContent = info.bitrate ? info.name + " (" + info.bitrate + " bit/s)" : info.name;
-    }
-
-    pill.classList.remove("pending", "ok", "err", "warn", "network-disconnected", "service-not-required", "service-inactive");
-    if (!info.exists) {
-      pill.classList.add("pill", "err");
-      pill.textContent = t("canIfMissing");
-      return;
-    }
-
-    if (info.up) {
-      pill.classList.add("pill", "ok");
-      pill.textContent = t("canIfUp");
-      return;
-    }
-
-    pill.classList.add("pill", "err");
-    pill.textContent = t("canIfDown");
   }
 
   function setPortPill(id, isListening, serviceRunning) {
@@ -2695,11 +2621,10 @@
     var winDigipetReady = data.useCases ? !!data.useCases.windigipet : !!services.can2lan;
     var rocrailReady = data.useCases ? !!data.useCases.rocrail : !!(services.can2lan && services.rocrail);
 
-    // Technical services remain separate and are shown only in the diagnostics list.
+    // Keep service state for readiness and the contextual port checks below.
     var mswebappService = !!services.mswebapp;
     var railcontrolService = !!services.railcontrol;
     var z21Service = !!services.z21emu;
-    var can2lanService = !!services.can2lan;
     var rocrailService = !!services.rocrail;
 
     setFeatureButtonState(mswebappLink, mswebappReady ? "ready" : "setup", t("open"), "mswebapp");
@@ -2721,23 +2646,6 @@
     setWinDigipetGuideIp(network.ip);
     setRocrailGuideIp(network.ip);
 
-    setServicePill("st-mswebapp-svc", mswebappService);
-    setServicePill("st-railcontrol-svc", railcontrolService);
-    setServicePill("st-z21emu", z21Service);
-    setServicePill("st-can2lan", can2lanService);
-    setServicePill("st-clone-ms2-loco", !!(data.services && data.services["clone-ms2-loco"]));
-    setServicePill("st-maecanserver", !!(data.services && data.services.maecanserver));
-    setServicePill("st-ms2-loco-list", !!(data.services && data.services["ms2-loco-list"]));
-    setServicePill("st-wake-up-links88", !!(data.services && data.services["wake-up-links88"]));
-
-    setCanInterfaceState(data.canInterface);
-
-    var ports = data.ports || {};
-    // can2lan serves CAN-over-Ethernet via UDP and CS2 clients via TCP; both
-    // must be reachable. Older status responses without can2lanUdp fall back
-    // to the TCP-only result.
-    var can2lanPortsReachable = !!ports.can2lanTcp && (typeof ports.can2lanUdp === "boolean" ? !!ports.can2lanUdp : true);
-    setPortPill("st-port-can2lan", can2lanPortsReachable, can2lanService);
     setPortPill("st-port-z21emu", !!ports.z21emuUdp, z21Service);
     setPortPill("st-port-railcontrol", !!ports.railcontrolHttp, railcontrolService);
     setPortPill("st-port-mswebapp", !!ports.mswebappHttp, mswebappService);

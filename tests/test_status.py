@@ -115,45 +115,53 @@ for event in ['CAN interface $can_interface does not exist.', 'CAN interface $ca
     if event not in status_script:
         raise AssertionError(f'status CGI is missing CAN interface event: {event}')
 
-# Frontend: CAN interface row and translation keys in all four languages.
-for element_id in ['st-can-if-state', 'st-can-if-label']:
-    if element_id not in index_html:
-        raise AssertionError(f'index.html is missing CAN interface element: {element_id}')
-if 'setCanInterfaceState(data.canInterface)' not in app_js:
-    raise AssertionError('app.js does not render the CAN interface state')
-
-for key in ['canInterfaceTitle', 'canIfUp', 'canIfDown', 'canIfMissing']:
-    occurrences = app_js.count(f'{key}:')
-    if occurrences != 4:
-        raise AssertionError(f'translation key "{key}" must exist in all 4 language blocks, found {occurrences}')
-
 # Frontend: pills for each port and translation keys in all four languages.
-for element_id in ['st-port-can2lan', 'st-port-z21emu', 'st-port-railcontrol', 'st-port-mswebapp', 'st-port-rocrail']:
+port_detail_ids = ['st-port-z21emu', 'st-port-railcontrol', 'st-port-mswebapp', 'st-port-rocrail']
+details_start = index_html.index('<summary data-i18n="modelRailwayDetailsTitle">')
+details_end = index_html.index('</details>', details_start)
+details_list_end = index_html.index('</ul>', details_start, details_end)
+config_position = index_html.index('id="st-mr-config"', details_start, details_list_end)
+for element_id in port_detail_ids:
     if element_id not in index_html:
         raise AssertionError(f'index.html is missing port pill: {element_id}')
+    element_position = index_html.index(element_id)
+    if not details_start < element_position < config_position:
+        raise AssertionError(f'{element_id} is not in model railway details')
     if element_id not in app_js:
         raise AssertionError(f'app.js does not render port pill: {element_id}')
 
-for key in ['listening', 'notListening', 'networkPortsTitle',
-            'portCan2lanLabel', 'portZ21emuLabel', 'portRailcontrolLabel', 'portMswebappLabel', 'portRocrailLabel']:
+if 'networkPortsTitle' in app_js or 'networkPortsTitle' in index_html:
+    raise AssertionError('network ports subheading has not been removed')
+for key in ['listening', 'notListening', 'portZ21emuLabel',
+            'portRailcontrolLabel', 'portMswebappLabel', 'portRocrailLabel']:
     occurrences = app_js.count(f'{key}:')
     if occurrences != 4:
         raise AssertionError(f'translation key "{key}" must exist in all 4 language blocks, found {occurrences}')
+
+# The old technical details list is removed; CAN interface state remains in
+# the model railway card and CAN/LAN reachability remains in its existing row.
+for element_id in ['st-mswebapp-svc', 'st-railcontrol-svc', 'st-z21emu',
+                   'st-can2lan', 'st-clone-ms2-loco', 'st-maecanserver',
+                   'st-ms2-loco-list', 'st-wake-up-links88',
+                   'st-can-if-state', 'st-can-if-label', 'st-port-can2lan']:
+    if f'id="{element_id}"' in index_html:
+        raise AssertionError(f'index.html still contains removed technical detail: {element_id}')
+if 'setServicePill' in app_js or 'setCanInterfaceState' in app_js:
+    raise AssertionError('app.js still renders removed technical detail lists')
 
 # Port pills must stay neutral ("inactive") when the owning service is not
 # running, so a stopped service never raises a "not reachable" signal.
 if 'function setPortPill(id, isListening, serviceRunning)' not in app_js:
     raise AssertionError('setPortPill must take the service-running state into account')
-for call in ['setPortPill("st-port-can2lan", can2lanPortsReachable, can2lanService)',
-             'setPortPill("st-port-z21emu", !!ports.z21emuUdp, z21Service)',
+for call in ['setPortPill("st-port-z21emu", !!ports.z21emuUdp, z21Service)',
              'setPortPill("st-port-railcontrol", !!ports.railcontrolHttp, railcontrolService)',
              'setPortPill("st-port-mswebapp", !!ports.mswebappHttp, mswebappService)',
              'setPortPill("st-port-rocrail", !!ports.rocrailHttp, rocrailService)']:
     if call not in app_js:
         raise AssertionError(f'app.js port pill call missing service state: {call}')
 
-# The CAN/LAN bridge pill must consider the UDP ports as well (label says
-# UDP+TCP), while staying compatible with older responses without can2lanUdp.
+# The CAN/LAN reachability row must consider both UDP and TCP ports while
+# remaining compatible with older responses without can2lanUdp.
 if 'ports.can2lanUdp' not in app_js:
     raise AssertionError('app.js does not evaluate ports.can2lanUdp')
 
