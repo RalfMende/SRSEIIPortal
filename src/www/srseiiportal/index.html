@@ -525,6 +525,23 @@
             <a class="btn btn-secondary" id="terminal-link" href="http://127.0.0.1:4200/" data-i18n="open">Open</a>
           </div>
         </article>
+
+        <article class="feature-card">
+          <div class="feature-copy">
+            <h4 data-i18n="picFirmwareTitle">PIC firmware</h4>
+            <p data-i18n="picFirmwareIntro">The PIC connects the SRSEII to the Märklin Gleisbox. It needs to be programmed once on first use, or when a firmware update is available. Download the firmware file (srse2-slcan.hex) from the website below, then select it here.</p>
+            <p><a href="https://github.com/GBert/misc/raw/master/srse2/pic-firmware/firmware/srse2-slcan.hex" target="_blank" rel="noopener noreferrer" data-i18n="picFirmwareDownloadLink">Download firmware file (srse2-slcan.hex)</a></p>
+            <p class="status-note" id="pic-firmware-status" role="status" aria-live="polite"></p>
+            <details class="status-details is-hidden" id="pic-firmware-details">
+              <summary data-i18n="locoListDetails">Details</summary>
+              <p id="pic-firmware-output"></p>
+            </details>
+          </div>
+          <div class="feature-actions">
+            <button class="btn btn-secondary" id="pic-firmware-button" type="button" data-i18n="picFirmwareButton">Upload firmware</button>
+            <input type="file" id="pic-firmware-input" accept=".hex" hidden>
+          </div>
+        </article>
           </div>
         </div>
       </details>

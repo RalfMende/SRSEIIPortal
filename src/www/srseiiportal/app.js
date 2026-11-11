@@ -283,6 +283,13 @@
       iconUploadOnlyPng: "Nur PNG-Dateien sind erlaubt: %s",
       iconUploadDone: "%s von %s Dateien hochgeladen.",
       iconUploadFileError: "%s: Fehler: %s",
+      picFirmwareTitle: "PIC-Firmware",
+      picFirmwareIntro: "Der PIC verbindet den SRSEII mit der Märklin Gleisbox. Er muss bei der ersten Inbetriebnahme einmalig programmiert werden, oder wenn ein Firmware-Update verfügbar ist. Lade die Firmware-Datei (srse2-slcan.hex) von der Webseite unten herunter und wähle sie hier aus.",
+      picFirmwareDownloadLink: "Firmware-Datei herunterladen (srse2-slcan.hex)",
+      picFirmwareButton: "Firmware hochladen",
+      picFirmwareConfirm: "Den PIC jetzt programmieren? Die Verbindung zur Gleisbox ist währenddessen kurz unterbrochen. Das dauert nur wenige Sekunden. Bitte den SRSEII nicht vom Strom trennen.",
+      picFirmwareSelectHex: "Bitte eine .hex-Datei auswählen.",
+      picFirmwareRunning: "PIC wird programmiert, bitte warten...",
       browserDirectTitle: "DIREKT IM BROWSER",
       browserDirectIntro: " – ohne zusätzliche Steuer-App",
       smartphoneTabletTitle: "MIT MOBILEN STEUERGERÄTEN UND APPS",
@@ -635,6 +642,13 @@
       iconUploadOnlyPng: "Seuls les fichiers PNG sont autorisés : %s",
       iconUploadDone: "%s fichiers sur %s téléversés.",
       iconUploadFileError: "%s : erreur : %s",
+      picFirmwareTitle: "Firmware du PIC",
+      picFirmwareIntro: "Le PIC relie le SRSEII à la Gleisbox Märklin. Il doit être programmé une seule fois lors de la première mise en service ou en cas de mise à jour du firmware. Téléchargez le fichier du firmware (srse2-slcan.hex) depuis le site ci-dessous, puis sélectionnez-le ici.",
+      picFirmwareDownloadLink: "Télécharger le fichier du firmware (srse2-slcan.hex)",
+      picFirmwareButton: "Téléverser le firmware",
+      picFirmwareConfirm: "Programmer le PIC maintenant ? La connexion à la Gleisbox est brièvement interrompue. Cela ne prend que quelques secondes. Ne coupez pas l'alimentation du SRSEII.",
+      picFirmwareSelectHex: "Veuillez sélectionner un fichier .hex.",
+      picFirmwareRunning: "Programmation du PIC en cours, veuillez patienter...",
       browserDirectTitle: "DIRECTEMENT DANS LE NAVIGATEUR",
       browserDirectIntro: " – sans application de commande supplémentaire",
       smartphoneTabletTitle: "AVEC DES COMMANDES ET APPLICATIONS MOBILES",
@@ -987,6 +1001,13 @@
       iconUploadOnlyPng: "Alleen PNG-bestanden zijn toegestaan: %s",
       iconUploadDone: "%s van %s bestanden geüpload.",
       iconUploadFileError: "%s: fout: %s",
+      picFirmwareTitle: "PIC-firmware",
+      picFirmwareIntro: "De PIC verbindt de SRSEII met de Märklin Gleisbox. Hij moet bij de eerste ingebruikname eenmalig worden geprogrammeerd, of bij een beschikbare firmware-update. Download het firmwarebestand (srse2-slcan.hex) van de onderstaande website en selecteer het hier.",
+      picFirmwareDownloadLink: "Firmwarebestand downloaden (srse2-slcan.hex)",
+      picFirmwareButton: "Firmware uploaden",
+      picFirmwareConfirm: "De PIC nu programmeren? De verbinding met de Gleisbox wordt daarbij kort onderbroken. Dit duurt slechts enkele seconden. Haal de SRSEII niet van de stroom.",
+      picFirmwareSelectHex: "Kies een .hex-bestand.",
+      picFirmwareRunning: "PIC wordt geprogrammeerd, even geduld...",
       browserDirectTitle: "DIRECT IN DE BROWSER",
       browserDirectIntro: " - zonder extra besturingsapp",
       smartphoneTabletTitle: "MET MOBIELE BESTURING EN APPS",
@@ -1339,6 +1360,13 @@
       iconUploadOnlyPng: "Only PNG files are allowed: %s",
       iconUploadDone: "%s of %s files uploaded.",
       iconUploadFileError: "%s: error: %s",
+      picFirmwareTitle: "PIC firmware",
+      picFirmwareIntro: "The PIC connects the SRSEII to the Märklin Gleisbox. It needs to be programmed once on first use, or when a firmware update is available. Download the firmware file (srse2-slcan.hex) from the website below, then select it here.",
+      picFirmwareDownloadLink: "Download firmware file (srse2-slcan.hex)",
+      picFirmwareButton: "Upload firmware",
+      picFirmwareConfirm: "Program the PIC now? The connection to the Gleisbox is briefly interrupted. This only takes a few seconds. Do not disconnect the SRSEII from power.",
+      picFirmwareSelectHex: "Please select a .hex file.",
+      picFirmwareRunning: "Programming the PIC, please wait...",
       browserDirectTitle: "DIRECTLY IN THE BROWSER",
       browserDirectIntro: " - without an additional control app",
       smartphoneTabletTitle: "WITH MOBILE CONTROLLERS AND APPS",
@@ -2250,6 +2278,63 @@
           resetButton.disabled = false;
         }
       });
+  }
+
+  function bindPicFirmware() {
+    var button = document.getElementById("pic-firmware-button");
+    var input = document.getElementById("pic-firmware-input");
+    var status = document.getElementById("pic-firmware-status");
+    var details = document.getElementById("pic-firmware-details");
+    var outputText = document.getElementById("pic-firmware-output");
+    if (!button || !input || !status || !details || !outputText) {
+      return;
+    }
+
+    function showResult(text, isError, output) {
+      status.textContent = text;
+      status.classList.toggle("err", !!isError);
+      outputText.textContent = output || "";
+      details.classList.toggle("is-hidden", !output);
+    }
+
+    button.addEventListener("click", function () {
+      input.click();
+    });
+
+    input.addEventListener("change", function () {
+      var file = input.files && input.files[0];
+      input.value = "";
+      if (!file || !/\.hex$/i.test(file.name)) {
+        showResult(t("picFirmwareSelectHex"), true);
+        return;
+      }
+      if (!window.confirm(t("picFirmwareConfirm"))) {
+        return;
+      }
+      button.disabled = true;
+      showResult(t("picFirmwareRunning"), false);
+      fetch("/cgi-bin/srseiiportal/pic-firmware", {
+        method: "POST",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: file,
+        cache: "no-store"
+      })
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+          }
+          return response.json();
+        })
+        .then(function (data) {
+          showResult(getLocalizedStatusValue(data, "message", "messageDe") || "?", !(data && data.ok), data && data.output);
+        })
+        .catch(function (error) {
+          showResult(error.message || String(error), true);
+        })
+        .then(function () {
+          button.disabled = false;
+        });
+    });
   }
 
   function bindIconUpload() {
@@ -3721,5 +3806,6 @@
   bindSectionStatePersistence();
   bindQuickStartActions();
   bindIconUpload();
+  bindPicFirmware();
   loadStatus();
 })();

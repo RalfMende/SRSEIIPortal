@@ -1,0 +1,152 @@
+#!/bin/sh
+
+set -u
+
+# Programs the PIC18F2xK80 (CAN <-> serial bridge to the Märklin Gleisbox) with an uploaded
+# Intel HEX file (srse2-slcan.hex). Needed once on first commissioning or for a firmware update.
+MAX_BYTES="${SRSEII_PIC_MAX_BYTES:-524288}"
+GPIO_BB_DEV="${SRSEII_GPIO_BB_DEV:-/dev/gpio-bb}"
+LOCK_DIR="${SRSEII_PIC_LOCK_DIR:-/tmp/srseii-pic-firmware.lock}"
+TMP_DIR="${SRSEII_PIC_TMP_DIR:-/tmp}"
+
+json_escape() {
+	printf '%s' "$1" | tr '\r\n' '  ' | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+json_response() {
+	response_ok="$1"
+	response_message="$2"
+	response_message_de="$3"
+	response_output="${4:-}"
+
+	printf 'Content-Type: application/json\n'
+	printf 'Cache-Control: no-store\n'
+	printf '\n'
+	printf '{"ok":%s,"message":"%s","messageDe":"%s","output":"%s"}\n' \
+		"$response_ok" \
+		"$(json_escape "$response_message")" \
+		"$(json_escape "$response_message_de")" \
+		"$(json_escape "$response_output")"
+}
+
+if [ "${REQUEST_METHOD:-GET}" != "POST" ]; then
+	json_response false "Only POST requests are supported." "Es werden nur POST-Anfragen unterstützt."
+	exit 0
+fi
+
+content_length="${CONTENT_LENGTH:-0}"
+if ! printf '%s' "$content_length" | grep -Eq '^[0-9]+$' || [ "$content_length" -le 11 ]; then
+	json_response false "The file is empty." "Die Datei ist leer."
+	exit 0
+fi
+if [ "$content_length" -gt "$MAX_BYTES" ]; then
+	json_response false "The file is too large." "Die Datei ist zu groß."
+	exit 0
+fi
+
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+	lock_pid="$(cat "$LOCK_DIR/pid" 2>/dev/null || true)"
+	if [ -n "$lock_pid" ] && kill -0 "$lock_pid" 2>/dev/null; then
+		json_response false "The PIC is already being programmed." "Der PIC wird bereits programmiert."
+		exit 0
+	fi
+	rm -f "$LOCK_DIR/pid"
+	if ! rmdir "$LOCK_DIR" 2>/dev/null || ! mkdir "$LOCK_DIR" 2>/dev/null; then
+		json_response false "The PIC is already being programmed." "Der PIC wird bereits programmiert."
+		exit 0
+	fi
+fi
+printf '%s\n' "$$" > "$LOCK_DIR/pid"
+
+hex_file="$(mktemp "$TMP_DIR/srseii-pic-firmware.XXXXXX")" || {
+	rm -f "$LOCK_DIR/pid"
+	rmdir "$LOCK_DIR" 2>/dev/null
+	json_response false "Could not create a temporary file." "Temporäre Datei konnte nicht angelegt werden."
+	exit 0
+}
+uart_restore_needed=0
+
+restore_uart() {
+	if [ "$uart_restore_needed" -eq 1 ]; then
+		omega2-ctrl gpiomux set uart1 uart >/dev/null 2>&1
+		uart_restore_needed=0
+	fi
+}
+cleanup() {
+	restore_uart
+	rm -f "$hex_file" "$LOCK_DIR/pid"
+	rmdir "$LOCK_DIR" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+head -c "$content_length" > "$hex_file"
+if [ "$(wc -c < "$hex_file" | tr -d ' ')" -ne "$content_length" ]; then
+	json_response false "The upload was incomplete." "Der Upload war unvollständig."
+	exit 0
+fi
+
+# Intel HEX: every line is ":" + hex digits (even count, at least 5 bytes), byte sum must be 0
+# modulo 256, and the last record is the end-of-file record.
+validation="$(tr -d '\r' < "$hex_file" | LC_ALL=C awk '
+	function hexval(c) { return index("0123456789ABCDEF", toupper(c)) - 1 }
+	/^[ \t]*$/ { next }
+	{
+		if ($0 !~ /^:([0-9A-Fa-f][0-9A-Fa-f])+$/ || length($0) < 11) { print "bad"; exit }
+		sum = 0
+		for (i = 2; i < length($0); i += 2) {
+			sum += hexval(substr($0, i, 1)) * 16 + hexval(substr($0, i + 1, 1))
+		}
+		if (sum % 256 != 0) { print "bad"; exit }
+		last = toupper($0)
+		records++
+	}
+	END { if (records > 0 && last == ":00000001FF") print "ok"; else print "bad" }
+' | head -n 1)"
+if [ "$validation" != "ok" ]; then
+	json_response false "The file is not a valid PIC firmware (.hex) file." "Die Datei ist keine gültige PIC-Firmware-Datei (.hex)."
+	exit 0
+fi
+
+for tool in modprobe mknod omega2-ctrl p16; do
+	if ! command -v "$tool" >/dev/null 2>&1; then
+		json_response false "Required tool '$tool' is not available on this device." "Das benötigte Programm '$tool' ist auf diesem Gerät nicht verfügbar."
+		exit 0
+	fi
+done
+
+output=""
+if ! output="$(modprobe gpio-bb 2>&1)"; then
+	json_response false "The GPIO driver (gpio-bb) could not be loaded." "Der GPIO-Treiber (gpio-bb) konnte nicht geladen werden." "$output"
+	exit 0
+fi
+if [ ! -e "$GPIO_BB_DEV" ]; then
+	if ! mknod "$GPIO_BB_DEV" c 180 0 2>/dev/null; then
+		json_response false "The GPIO device could not be created." "Das GPIO-Gerät konnte nicht angelegt werden."
+		exit 0
+	fi
+fi
+
+# While programming, the UART pins are used as GPIOs; they are always switched back afterwards.
+uart_restore_needed=1
+if ! output="$(omega2-ctrl gpiomux set uart1 gpio 2>&1)"; then
+	json_response false "The serial interface could not be switched to programming mode." "Die serielle Schnittstelle konnte nicht in den Programmiermodus geschaltet werden." "$output"
+	exit 0
+fi
+
+program_ok=1
+output="$(p16 lvp p "$hex_file" 2>&1)" || program_ok=0
+
+restore_uart_output="$(omega2-ctrl gpiomux set uart1 uart 2>&1)"
+restore_status=$?
+uart_restore_needed=0
+
+if [ "$program_ok" -ne 1 ]; then
+	json_response false "Programming failed. Check that the SRSEII is powered correctly and try again." "Die Programmierung ist fehlgeschlagen. Prüfe die Stromversorgung des SRSEII und versuche es erneut." "$output"
+	exit 0
+fi
+if [ "$restore_status" -ne 0 ]; then
+	json_response false "The PIC was programmed, but the serial interface could not be switched back. Restart the SRSEII." "Der PIC wurde programmiert, aber die serielle Schnittstelle konnte nicht zurückgeschaltet werden. Starte den SRSEII neu." "$restore_uart_output"
+	exit 0
+fi
+
+json_response true "The PIC was programmed successfully." "Der PIC wurde erfolgreich programmiert." "$output"

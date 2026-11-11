@@ -92,7 +92,7 @@ Die Seite besteht aus einem Kopfbereich und fünf `<details class="section-toggl
 | 2 | **Status** (`status-toggle`) | Läuft der SRSEII sauber? Bereitschaft, Wartung, letzte Aktivitäten | **geöffnet** |
 | 3 | **Control your model railway** (`model-railway-toggle`) | Use Cases nach Bedienungsart | eingeklappt |
 | 4 | **SRSEII Configuration & Management** (`configuration-toggle`) | Inhalte (Icons, Lokliste) und S88-Konfiguration | eingeklappt |
-| 5 | **Advanced settings** (`expert-tools-toggle`) | LuCI, SSH/Terminal | eingeklappt |
+| 5 | **Advanced settings** (`expert-tools-toggle`) | LuCI, SSH/Terminal, PIC-Firmware | eingeklappt |
 
 - Auf-/Zuklappzustand von `network-toggle`, `status-toggle`, `model-railway-toggle` und `expert-tools-toggle` wird in `localStorage` gespeichert (Schlüssel `srseii.portal.section-states.v1`, Liste `persistentSectionIds`). Neue persistente Bereiche dort ergänzen.
 - Jeder Hauptbereich hat Titel (`h2`), kurzen Einleitungstext (`.feature-intro`) und einen `.section-body`.
@@ -184,6 +184,8 @@ Zwei Untergruppen:
 
 Karten **LuCI** („Advanced OpenWrt settings“) und **SSH / Terminal**, jeweils mit **Open**. Der Bereich trägt eine deutliche Warnung („you should know what you’re doing“).
 
+Karte **PIC firmware**: Link zur Firmware-Datei `srse2-slcan.hex` (GitHub GBert/misc), Datei-Auswahl (`.hex`), Bestätigungsdialog, Upload per POST an `pic-firmware`. Das CGI validiert Intel-HEX (Zeilenformat, Prüfsummen, EOF-Record, max. 512 KB), lädt `gpio-bb`, legt `/dev/gpio-bb` an, schaltet `uart1` auf `gpio`, ruft `p16 lvp p <Datei>` auf und schaltet anschließend `uart1` zurück auf `uart`; Sperre gegen Parallelaufrufe.
+
 ### 4.7 Dialoge
 
 - Natives `<dialog class="modal">` mit `modal-header`, `modal-close`-Button (×) und Inhalt; Schließen per ×-Button und Klick auf den Hintergrund.
@@ -247,6 +249,7 @@ Antwortkonvention: `ok` (bool), `message` (EN) und – wo vorhanden – `message
 | `loco-icons` | GET | PNG-Dateinamen in `/www/icons` |
 | | POST `?nameoct=<oktal>` + Binärkörper | PNG hochladen |
 | | POST `?action=delete-all` | alle Dateien direkt in `/www/icons` löschen |
+| `pic-firmware` | POST (Body: Intel-HEX-Datei, `application/octet-stream`) | programmiert den PIC (CAN↔seriell zur Gleisbox) per `p16 lvp p`; Antwort `{ok,message,messageDe,output}` |
 | `s88-config` | **nur POST**; Standard = lesen, `?action=write&…` = schreiben | S88-Gateway über CAN (7.5) |
 
 Mehrere Endpunkte vereinen Aktionen bewusst in **einem** CGI (z. B. `loco-list`); keine Aufteilung in Einzel-CGIs („loco-list-delete“, „…-download“, „…-refresh“ dürfen nicht existieren – getestet).
@@ -419,6 +422,7 @@ Tests liegen unter `tests/` als Python-Skripte mit Assertions auf Modulebene. Si
 | `test_loco_icons.py` | Icon-Upload-Regeln (CGI wird simuliert ausgeführt) |
 | `test_s88_config.py` | S88-Kanäle, Validierung, Lock, Rücklesen (CGI wird simuliert ausgeführt) |
 | `test_update.py` | Update-Endpunkt, Custom-Feeds und Fehlerdiagnose |
+| `test_pic_firmware.py` | PIC-Firmware-Endpunkt (CGI mit Fake-Tools): HEX-Validierung, Ablauf, UART-Rückschaltung |
 
 Checkliste für Änderungen:
 
