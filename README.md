@@ -2,79 +2,83 @@
 
 ## Deutsch
 
-Das **SRSEII Portal** ist ein einfaches Webinterface, um den SRSEII für die
-Modellbahn einzurichten und zu konfigurieren – ohne Linux- oder OpenWrt-Kenntnisse.
-Es unterstützt Anwendungen rund um Märklin-Gleisbox und Mobile Station.
-Das Portal ist auf Deutsch, Englisch, Niederländisch und Französisch verfügbar.
+Das **SRSEII Portal** ist eine komfortable Weboberfläche zur Einrichtung, Konfiguration und Verwaltung des SRSEII. Es macht viele Funktionen des SRSEII direkt im Browser zugänglich – übersichtlich und ohne Linux- oder OpenWrt-Kenntnisse.
 
-- WLAN einrichten und den Systemstatus prüfen
-- Updates starten und Modellbahn-Funktionen mit Assistenten einrichten
-- Modellbahn-Apps öffnen und bei Bedarf LuCI als Expertenoberfläche nutzen
+Das Portal unterstützt Anwendungen rund um die Märklin-Gleisbox und Mobile Station und ist in Deutsch, Englisch, Niederländisch und Französisch verfügbar.
+
+Status: Released
 
 ### Installation
 
-Über die Paketverwaltung des SRSEII, per SSH:
+Das SRSEII Portal ist offiziell im SRSEII-Feed von Gerd verfügbar.
 
-```sh
-opkg update && opkg install srseiiportal
-```
+Die Installation erfolgt bequem über die Paketverwaltung des SRSEII. Suche dort nach srseiiportal und installiere das Paket.
 
-Alternativ per SSH: Die URL des `srseiiportal_*_mipsel_24kc.ipk`-Pakets von
-den [Releases](https://github.com/RalfMende/SRSEIIPortal/releases) kopieren und einsetzen:
+Nach der Installation ist das Portal direkt über den Browser erreichbar.
 
-```sh
-cd /tmp && \
-wget -O srseiiportal.ipk 'PAKET-URL' && \
-opkg install srseiiportal.ipk
-```
+### Funktionen
 
-Nicht jedes Release enthält ein IPK; ein älteres Paket installiert eine ältere
-Version.
+Das SRSEII Portal bietet unter anderem folgende Funktionen:
 
-### Verwendung
+- **Systemübersicht**: Wichtige Informationen und Status des SRSEII auf einen Blick.
+- **WLAN-Assistent**: Unterstützung bei der Einrichtung der WLAN-Verbindung.
+- **Updates**: Firmware- und Software-Updates bequem über die Weboberfläche starten.
+- **Einrichtungsassistenten**: Unterstützung bei der Konfiguration verschiedener Modellbahn-Funktionen.
+- **Lokliste**: Lokomotiven verwalten und mit der Mobile Station synchronisieren; Einträge können bei Bedarf zurückgesetzt oder einzeln entfernt werden.
+- **Weitere Anwendungen**: Modellbahn-Anwendungen direkt aus dem Portal aufrufen.
+- **Expertenwerkzeuge**: Zugriff auf LuCI und Shell-In-A-Box für weitergehende Einstellungen und administrative Aufgaben.
 
-Das Portal ist dann unter `http://gleisbox` bzw. `http://<host>` erreichbar.
-LuCI bleibt unter `http://gleisbox/cgi-bin/luci/` erreichbar.
+### Aufruf
 
-Mehr Informationen und Bilder im [Stummiforum](https://www.stummiforum.de/t246231f7-Einfaches-Portal-zur-Einrichtung-des-SRSEII.html#msg2965595).
+Das Portal erreichst du nach der Installation im Browser unter: `http://gleisbox` bzw. `http://<host>`
+
+Die LuCI-Oberfläche ist weiterhin direkt erreichbar unter:
+`http://gleisbox/cgi-bin/luci/`
+
+### Screenshots
+
+Siehe unten
+
+### Weitere Informationen und Austausch
+
+Fragen, Anregungen und Rückmeldungen sind im Stummiforum willkommen:
+[SRSEII Portal – Diskussion im Stummiforum](https://www.stummiforum.de/t246231f7-Einfaches-Portal-zur-Einrichtung-des-SRSEII.html#msg2965595).
 
 ## English
 
-The **SRSEII Portal** is a simple web interface for setting up and configuring
-the SRSEII for your model railway – no Linux or OpenWrt knowledge required.
-It supports applications for the Märklin Gleisbox and Mobile Station.
-The portal is available in English, German, Dutch and French.
+The **SRSEII Portal** is a convenient web interface for setting up, configuring and managing the SRSEII. It makes many SRSEII functions accessible directly in your browser – without requiring Linux or OpenWrt knowledge for everyday use.
 
-- Set up Wi-Fi and check the system status
-- Start updates and set up model railway functions using guided assistants
-- Open model railway apps and use LuCI as an expert interface when needed
+The portal supports applications around the Märklin track box and Mobile Station. It is available in German, English, Dutch and French.
+
+Status: Released
 
 ### Installation
 
-Using the SRSEII package manager over SSH:
+The SRSEII Portal is officially available in Gerd's SRSEII package feed.
 
-```sh
-opkg update && opkg install srseiiportal
-```
+Open the SRSEII package manager, search for srseiiportal and install the package.
 
-Alternatively, over SSH: copy the URL of the `srseiiportal_*_mipsel_24kc.ipk`
-package from [releases](https://github.com/RalfMende/SRSEIIPortal/releases)
-and insert it below:
+### Features
 
-```sh
-cd /tmp && \
-wget -O srseiiportal.ipk 'PACKAGE-URL' && \
-opkg install srseiiportal.ipk
-```
+- **System overview**: Important SRSEII information and status at a glance.
+- **WLAN assistant**: Help with setting up the wireless network connection.
+- **Updates**: Start firmware and software updates through the web interface.
+- **Setup assistants**: Configure various model railway functions.
+- **Locomotive list**: Manage locomotives and synchronize them with the Mobile Station.
+- **Applications**: Open model railway applications directly from the portal.
+- **Advanced tools**: Access LuCI and Shell-In-A-Box for advanced configuration and administration.
 
-Not every release contains an IPK; an older package installs an older version.
+### Access
 
-### Use
+Open the portal in your browser:
+ `http://gleisbox` or `http://<host>`
 
-Afterwards, the portal can be opened at `http://gleisbox` or `http://<host>`.
-LuCI remains accessible at `http://gleisbox/cgi-bin/luci/`.
+The LuCI interface is also available at:
+`http://gleisbox/cgi-bin/luci/`
 
-For more information, visit the [Stummiforum thread](https://www.stummiforum.de/t246231f7-Einfaches-Portal-zur-Einrichtung-des-SRSEII.html#msg2965595) (German).
+### Feedback and discussion
+
+Questions, suggestions and feedback are welcome in the [Stummiforum discussion](https://www.stummiforum.de/t246231f7-Einfaches-Portal-zur-Einrichtung-des-SRSEII.html#msg2965595) (German).
 
 ### Screenshots
 
